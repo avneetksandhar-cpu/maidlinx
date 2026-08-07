@@ -1,14 +1,14 @@
 "use client";
 
 import { Button } from "@/components/ui/Button";
-import { ScreenLayout } from "@/components/layout/ScreenLayout";
-import { SectionLabel } from "@/components/marketing/SectionLabel";
+import { AppShell } from "@/components/layout/AppShell";
 import { authHandler } from "@/features/auth/handlers";
 import type { AuthMethod } from "@/features/auth/types";
 import { fadeUpShort } from "@/lib/animations";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 const fadeUp = fadeUpShort;
@@ -76,19 +76,21 @@ const authOptions: AuthOption[] = [
 ];
 
 export function AuthScreen() {
+  const router = useRouter();
   const [loadingMethod, setLoadingMethod] = useState<AuthMethod | null>(null);
 
   async function onAuth(method: AuthMethod) {
     setLoadingMethod(method);
     try {
       await authHandler(method);
+      router.push("/home");
     } finally {
       setLoadingMethod(null);
     }
   }
 
   return (
-    <ScreenLayout className="flex flex-col bg-background">
+    <AppShell className="justify-center">
       <div
         aria-hidden
         className="pointer-events-none fixed inset-0 bg-[radial-gradient(ellipse_60%_40%_at_50%_0%,rgba(201,169,98,0.06),transparent)]"
@@ -97,25 +99,29 @@ export function AuthScreen() {
       <motion.header
         initial="hidden"
         animate="visible"
-        className="relative z-10 flex flex-col items-center pt-16 pb-12 text-center"
+        className="relative z-10 flex flex-col items-center pt-12 pb-10 text-center"
       >
         <motion.div custom={0} variants={fadeUp}>
           <Link
             href="/"
-            className="text-sm font-semibold uppercase tracking-[0.35em] text-accent transition-colors hover:text-accent-hover"
+            className="text-xs font-semibold uppercase tracking-[0.35em] text-accent transition-colors hover:text-accent-hover"
           >
             Wingman
           </Link>
         </motion.div>
 
-        <motion.div custom={0.05} variants={fadeUp} className="mt-8">
-          <SectionLabel>Member Access</SectionLabel>
-        </motion.div>
+        <motion.p
+          custom={0.05}
+          variants={fadeUp}
+          className="text-label mt-8 text-accent"
+        >
+          Member Access
+        </motion.p>
 
         <motion.h1
           custom={0.1}
           variants={fadeUp}
-          className="mt-4 text-2xl font-bold tracking-tight text-ink sm:text-3xl"
+          className="mt-4 text-2xl font-bold tracking-tight text-ink"
         >
           Sign in to continue
         </motion.h1>
@@ -132,7 +138,7 @@ export function AuthScreen() {
       <motion.div
         initial="hidden"
         animate="visible"
-        className="relative z-10 flex flex-1 flex-col gap-3"
+        className="relative z-10 flex flex-1 flex-col justify-center gap-3"
       >
         {authOptions.map((option, index) => (
           <motion.div key={option.method} custom={0.25 + index * 0.08} variants={fadeUp}>
@@ -144,7 +150,8 @@ export function AuthScreen() {
               disabled={loadingMethod !== null && loadingMethod !== option.method}
               onClick={() => onAuth(option.method)}
               className={cn(
-                option.method !== "apple" && "border-border bg-surface text-ink hover:border-accent/30",
+                option.method !== "apple" &&
+                  "border-border bg-surface text-ink hover:border-accent/30",
               )}
               aria-label={option.label}
             >
@@ -162,7 +169,7 @@ export function AuthScreen() {
         animate="visible"
         custom={0.55}
         variants={fadeUp}
-        className="relative z-10 py-10 text-center"
+        className="relative z-10 py-8 text-center"
       >
         <p className="text-xs leading-relaxed text-ink-subtle">
           By continuing, you agree to our{" "}
@@ -176,6 +183,6 @@ export function AuthScreen() {
           .
         </p>
       </motion.footer>
-    </ScreenLayout>
+    </AppShell>
   );
 }

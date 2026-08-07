@@ -1,4 +1,4 @@
-import { StubPage } from "@/components/layout/StubPage";
+import { AppStubPage } from "@/components/layout/AppStubPage";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -7,7 +7,7 @@ export const metadata: Metadata = {
 
 export default function ProfilePage() {
   return (
-    <StubPage
+    <AppStubPage
       title="Profile"
       description="Membership, preferences, and account settings. Coming soon."
     />

@@ -105,7 +105,7 @@ export function OnboardingFlow() {
   );
 
   return (
-    <div className="relative mx-auto flex min-h-dvh w-full max-w-lg flex-col bg-background">
+    <div className="relative mx-auto flex min-h-dvh w-full max-w-[430px] flex-col bg-background shadow-[0_0_80px_rgba(0,0,0,0.8)]">
       <header className="absolute left-0 right-0 top-0 z-20 flex items-center justify-between px-6 pt-[max(1.5rem,env(safe-area-inset-top))]">
         <Link
           href="/"

@@ -135,7 +135,6 @@ export function HomeScreen() {
           </motion.h1>
 
           <motion.div custom={0.1} variants={fadeUp} className="relative mt-6">
-            <SearchIcon />
             <input
               type="search"
               placeholder="Search experiences, venues, hosts..."

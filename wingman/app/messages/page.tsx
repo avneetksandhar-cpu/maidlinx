@@ -1,4 +1,4 @@
-import { StubPage } from "@/components/layout/StubPage";
+import { AppStubPage } from "@/components/layout/AppStubPage";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -7,7 +7,7 @@ export const metadata: Metadata = {
 
 export default function MessagesPage() {
   return (
-    <StubPage
+    <AppStubPage
       title="Messages"
       description="Connect with hosts and concierge. Coming soon."
     />

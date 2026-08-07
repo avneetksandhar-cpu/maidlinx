@@ -1,4 +1,4 @@
-import { StubPage } from "@/components/layout/StubPage";
+import { AppStubPage } from "@/components/layout/AppStubPage";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -7,9 +7,9 @@ export const metadata: Metadata = {
 
 export default function ExperiencesPage() {
   return (
-    <StubPage
+    <AppStubPage
       title="Experiences"
-      description="Browse dining, yachts, events, travel, and concierge."
+      description="Browse dining, yachts, events, travel, and concierge. Coming soon."
     />
   );
 }
