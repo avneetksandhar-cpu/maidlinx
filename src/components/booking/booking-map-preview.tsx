@@ -122,11 +122,15 @@ export function BookingMapPreview({
       {canShowJsMap ? (
         <div
           className={cn(
-            "relative w-full bg-[#F1F8F5]",
+            "relative w-full overflow-hidden bg-[#F1F8F5]",
             compact ? "h-[140px]" : "aspect-[16/9] min-h-[160px]",
           )}
         >
-          <div ref={mapRef} className="absolute inset-0 h-full w-full" aria-hidden />
+          <div
+            ref={mapRef}
+            className="absolute inset-0 h-full w-full overflow-hidden"
+            aria-hidden
+          />
           <span className="sr-only">Map showing {label}</span>
         </div>
       ) : (

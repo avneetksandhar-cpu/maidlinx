@@ -18,7 +18,7 @@ export const marketingFaqs = [
   {
     question: "How does payment work?",
     answer:
-      "You pay a deposit to confirm your booking. The remaining balance is charged after your clean is complete.",
+      "You pay a deposit through Stripe to confirm your booking. Any remaining balance is handled with support after the job — we do not claim automatic post-clean charging until that flow is fully live.",
   },
   {
     question: "Can I reschedule?",

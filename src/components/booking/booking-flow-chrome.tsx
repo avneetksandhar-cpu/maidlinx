@@ -126,7 +126,12 @@ export function BookingShell({
   const showSticky = !hideCta && Boolean(onContinue);
 
   return (
-    <div className={cn("booking-shell min-h-dvh bg-[#FAFCFB]", className)}>
+    <div
+      className={cn(
+        "booking-shell min-h-dvh overflow-x-clip bg-[#FAFCFB]",
+        className,
+      )}
+    >
       <header className="sticky top-0 z-50 border-b border-[#E2E9E6] bg-[#FAFCFB]/95 backdrop-blur-md">
         <div className="mx-auto flex h-14 w-full max-w-[680px] items-center justify-between gap-3 px-4">
           <div className="flex min-w-0 items-center gap-1.5">
@@ -153,7 +158,10 @@ export function BookingShell({
       <main
         className={cn(
           "mx-auto w-full max-w-[680px] px-4 pt-7 md:pt-10",
-          showSticky ? "pb-[calc(7.5rem+env(safe-area-inset-bottom))]" : "pb-16",
+          /* Sticky bar ≈ 7.25rem; keep ≥1.5rem clearance above CTA on small phones */
+          showSticky
+            ? "pb-[calc(9rem+env(safe-area-inset-bottom))]"
+            : "pb-16",
         )}
       >
         <div className="booking-shell-enter mb-7 md:mb-9">

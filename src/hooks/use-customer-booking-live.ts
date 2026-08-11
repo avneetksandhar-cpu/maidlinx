@@ -35,8 +35,11 @@ export function useCustomerBookingLive({
 }: UseCustomerBookingLiveOptions): void {
   const onBookingRef = useRef(onBooking);
   const onErrorRef = useRef(onError);
-  onBookingRef.current = onBooking;
-  onErrorRef.current = onError;
+
+  useEffect(() => {
+    onBookingRef.current = onBooking;
+    onErrorRef.current = onError;
+  }, [onBooking, onError]);
 
   useEffect(() => {
     let cancelled = false;
