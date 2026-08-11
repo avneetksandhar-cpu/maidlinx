@@ -62,18 +62,45 @@ export function getClientEnv(): ClientEnv {
   return parsed.data;
 }
 
+/**
+ * Canonical site origin for metadata, sitemap, robots, and absolute OG URLs.
+ * Prefer NEXT_PUBLIC_SITE_URL, then NEXT_PUBLIC_APP_URL.
+ * Production fallback: https://maidlinx.com — local: http://localhost:3001
+ */
 export function getSiteUrl(): string {
   return (
     process.env.NEXT_PUBLIC_SITE_URL ??
     process.env.NEXT_PUBLIC_APP_URL ??
-    "http://localhost:3001"
+    (process.env.NODE_ENV === "production"
+      ? "https://maidlinx.com"
+      : "http://localhost:3001")
+  );
+}
+
+function nonEmpty(value: string | undefined): string | undefined {
+  const trimmed = value?.trim();
+  return trimmed ? trimmed : undefined;
+}
+
+/** Public Supabase URL for browser + server clients. */
+export function getSupabaseUrl(): string | undefined {
+  return nonEmpty(process.env.NEXT_PUBLIC_SUPABASE_URL);
+}
+
+/**
+ * Publishable/anon key for browser + cookie SSR clients.
+ * Prefers legacy ANON_KEY; falls back to PUBLISHABLE_KEY if present.
+ * Never reads service_role.
+ */
+export function getSupabaseAnonKey(): string | undefined {
+  return (
+    nonEmpty(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) ??
+    nonEmpty(process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY)
   );
 }
 
 export function hasSupabaseEnv(): boolean {
-  return Boolean(
-    process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-  );
+  return Boolean(getSupabaseUrl() && getSupabaseAnonKey());
 }
 
 export function hasStripeEnv(): boolean {

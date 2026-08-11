@@ -210,6 +210,33 @@ export type Database = {
         };
         Relationships: [];
       };
+      cleaner_live_locations: {
+        Row: {
+          booking_id: string;
+          cleaner_id: string;
+          lat: number;
+          lng: number;
+          accuracy: number | null;
+          updated_at: string;
+        };
+        Insert: {
+          booking_id: string;
+          cleaner_id: string;
+          lat: number;
+          lng: number;
+          accuracy?: number | null;
+          updated_at?: string;
+        };
+        Update: {
+          booking_id?: string;
+          cleaner_id?: string;
+          lat?: number;
+          lng?: number;
+          accuracy?: number | null;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       cleaner_documents: {
         Row: {
           id: string;
@@ -1341,6 +1368,166 @@ export type Database = {
           consumed_by_booking_id?: string | null;
           created_at?: string;
         };
+        Relationships: [];
+      };
+      pricing_rules: {
+        Row: {
+          id: string;
+          scope: string;
+          market_id: string | null;
+          dynamic_pricing_enabled: boolean;
+          demand_mult_min: number;
+          demand_mult_max: number;
+          supply_mult_min: number;
+          supply_mult_max: number;
+          min_total_cents: number | null;
+          max_total_cents: number | null;
+          min_contribution_margin_cents: number;
+          min_contribution_margin_pct: number;
+          cleaner_hourly_cents: number;
+          cleaners_default: number;
+          travel_base_cents: number;
+          complexity_cents_per_point: number;
+          recurring_weekly_mult: number;
+          recurring_biweekly_mult: number;
+          recurring_monthly_mult: number;
+          lead_time_same_day_mult: number;
+          lead_time_next_day_mult: number;
+          weekend_mult: number;
+          evening_mult: number;
+          max_discount_stack_pct: number;
+          params: Json;
+          is_active: boolean;
+          updated_by: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: Record<string, unknown>;
+        Update: Record<string, unknown>;
+        Relationships: [];
+      };
+      pricing_quotes: {
+        Row: {
+          id: string;
+          booking_quote_id: string | null;
+          quote_token: string;
+          market_id: string | null;
+          currency: string;
+          service_type: string;
+          input_snapshot: Json;
+          public_breakdown: Json;
+          calculation_audit: Json;
+          cost_estimate_cents: number;
+          contribution_margin_cents: number;
+          guardrail_applied: boolean;
+          dynamic_pricing_applied: boolean;
+          demand_multiplier: number;
+          supply_multiplier: number;
+          experiment_id: string | null;
+          experiment_variant: string | null;
+          discount_stack: Json;
+          subtotal_cents: number;
+          platform_fee_cents: number;
+          discount_cents: number;
+          total_cents: number;
+          expires_at: string;
+          consumed_by_booking_id: string | null;
+          created_at: string;
+        };
+        Insert: Record<string, unknown>;
+        Update: Record<string, unknown>;
+        Relationships: [];
+      };
+      pricing_experiments: {
+        Row: {
+          id: string;
+          key: string;
+          name: string;
+          description: string | null;
+          status: string;
+          variants: Json;
+          market_id: string | null;
+          started_at: string | null;
+          ended_at: string | null;
+          auto_deploy_winner: boolean;
+          created_by: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: Record<string, unknown>;
+        Update: Record<string, unknown>;
+        Relationships: [];
+      };
+      pricing_experiment_assignments: {
+        Row: {
+          id: string;
+          experiment_id: string;
+          anonymous_session_id: string;
+          variant_id: string;
+          pricing_quote_id: string | null;
+          booking_id: string | null;
+          converted: boolean;
+          revenue_cents: number | null;
+          created_at: string;
+        };
+        Insert: Record<string, unknown>;
+        Update: Record<string, unknown>;
+        Relationships: [];
+      };
+      funnel_events: {
+        Row: {
+          id: string;
+          event_name: string;
+          anonymous_session_id: string | null;
+          profile_id: string | null;
+          booking_id: string | null;
+          market_id: string | null;
+          utm_source: string | null;
+          utm_medium: string | null;
+          utm_campaign: string | null;
+          utm_content: string | null;
+          utm_term: string | null;
+          device_category: string | null;
+          browser_category: string | null;
+          props: Json;
+          created_at: string;
+        };
+        Insert: Record<string, unknown>;
+        Update: Record<string, unknown>;
+        Relationships: [];
+      };
+      market_demand: {
+        Row: {
+          id: string;
+          market_id: string;
+          bucket_start: string;
+          bucket_end: string;
+          demand_index: number;
+          booking_requests: number;
+          paid_bookings: number;
+          source: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: Record<string, unknown>;
+        Update: Record<string, unknown>;
+        Relationships: [];
+      };
+      cleaner_supply: {
+        Row: {
+          id: string;
+          market_id: string;
+          bucket_start: string;
+          bucket_end: string;
+          supply_index: number;
+          active_cleaners: number;
+          available_cleaners: number;
+          source: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: Record<string, unknown>;
+        Update: Record<string, unknown>;
         Relationships: [];
       };
       notification_outbox: {

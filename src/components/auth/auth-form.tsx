@@ -19,7 +19,7 @@ export function AuthForm({ mode }: AuthFormProps) {
   const searchParams = useSearchParams();
   const roleParam = searchParams?.get("role");
   const signupRole = roleParam === "cleaner" ? "cleaner" : "customer";
-  const defaultNext = signupRole === "cleaner" ? routes.cleanerDashboard : routes.dashboard;
+  const defaultNext = signupRole === "cleaner" ? routes.proHome : routes.account;
   const nextPath = searchParams?.get("next") ?? defaultNext;
 
   const [email, setEmail] = useState("");
@@ -43,7 +43,7 @@ export function AuthForm({ mode }: AuthFormProps) {
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!supabase) {
-      setError("Supabase is not configured. Add credentials to .env.local.");
+      setError("Sign-in is temporarily unavailable. Please try again shortly.");
       return;
     }
 
