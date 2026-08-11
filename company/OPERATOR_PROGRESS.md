@@ -1,59 +1,53 @@
 # Operator progress
 
 **Updated:** 2026-08-11  
-**Operator:** Full-stack (Lead Engineer mode)  
-**Rule:** Secrets never printed (last 4 only). No redesign.
+**Operator:** Technical operator  
+**Rule:** Secrets never printed (FOUND/MISSING or last4 only). No redesign. No dynamic pricing. Ignore migration 00024.
 
-## Auth / integrations discovery
+## Auth
 
 | Service | Status |
 |---------|--------|
-| Vercel CLI | AUTH OK (`avneetksandhar-5429`) |
-| GitHub `gh` | AUTH OK (`avneetksandhar-cpu`) |
-| `gcloud` CLI | FOUND at `~/google-cloud-sdk/bin` · account `avneetksandhar@gmail.com` · project `maidlinx-505202` |
-| Supabase CLI | NOT FOUND |
-| Supabase MCP | ready |
-| Stripe MCP | ready |
-| Browser MCP | ready |
-| Local Maps key | FOUND last4=`vmL4` |
-| Prod page Maps key | FOUND last4=`vmL4` (matches local) |
-| Vercel Production Maps env | FOUND |
+| Vercel CLI | AUTH OK (`maidlinx/website`) |
+| Stripe MCP | AUTH OK (TEST sandbox `acct_1TZ2mjFAmKhvpBtw`) |
+| Supabase MCP | ready (`pgoyhujsfbmfshtnlbnx`) |
 
-## Maps — DONE (all 3 PASS)
+## Production env (FOUND/MISSING)
 
-### Fixed
-1. **GCP HTTP referrers** on key `MaidLinx Maps Browser (local)` (`9e979b52-…`): added `https://maidlinx.com/*`, `https://www.maidlinx.com/*` (kept localhost).
-2. **APIs enabled** on `maidlinx-505202`: Maps JS, Places (New), Places backend, Geocoding, Static Maps.
-3. **Code bug:** `locationBias` radius was 90k/120k m; Places max is **50_000** → UI threw and showed “No matches” even when API worked. Capped to 50_000 in `address-autocomplete.tsx`.
-4. **Redeployed** production (`vercel --prod`) → aliased `https://maidlinx.com`.
+| Key | Status |
+|-----|--------|
+| NEXT_PUBLIC_SUPABASE_URL | FOUND |
+| SUPABASE_SERVICE_ROLE_KEY | FOUND |
+| BOOKING_ACCESS_SECRET | FOUND |
+| STRIPE_SECRET_KEY | FOUND (`sk_test`, last4 oaBx) |
+| NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY | FOUND (`pk_test`, last4 BSiL) |
+| STRIPE_WEBHOOK_SECRET | FOUND (TEST endpoint enabled) |
 
-### Live verification (`https://maidlinx.com/book/address`)
-| Check | Result | Evidence |
-|-------|--------|----------|
-| Autocomplete `100 King` | **PASS** | UI listbox 5 suggestions (e.g. 100 King Street East, Toronto) |
-| Current location | **PASS** | Mocked GPS → filled `100 King Street West`, Toronto, ON, M5H 1H1 |
-| Reverse geocoding | **PASS** | Places nearby fallback (Geocoder API still `REQUEST_DENIED` — **billing not linked**) |
+## Evidence — booking `e3819c95-380d-4219-8251-83823e9f1608`
 
-### Note — billing
-`gcloud billing projects describe maidlinx-505202` → `billingEnabled: false`, **0 billing accounts**. Places works today; classic Geocoder stays denied until a human links a billing account at  
-https://console.cloud.google.com/billing/enable?project=maidlinx-505202  
-(Click **Link a billing account** / create billing — Google legal/payment terms).
+| Step | Result |
+|------|--------|
+| POST `/api/bookings` empty | 400 (not SUPABASE_NOT_CONFIGURED) |
+| Quote | 200 · totalCents 21275 |
+| Create | 201 · pending_payment |
+| Checkout | 200 · deposit 5319 CAD · PI `pi_3U3Aq5…` |
+| Stripe TEST confirm (`pm_card_visa`) | succeeded · livemode false |
+| Webhook `payment_intent.succeeded` | processed · `evt_3U3Aq5…` · livemode false |
+| payments row | succeeded · amount_cents 5319 · deposit |
+| Booking after pay | status `awaiting_assignment` · payment_status `deposit_paid` |
+| TEST cleaner | `ba902d50…` approved+active (synthetic ops identity) |
+| Assignment | `cleaner_assignments` active · source admin_manual |
+| Status chain | assigned → on_the_way → arrived → in_progress → **completed** |
+| Confirm email log | MaidLinx booking confirmed — E3819C95 |
+| Prod deploy | `website-haydrhfrc-maidlinx.vercel.app` aliased to maidlinx.com |
 
-## Post-Maps progress
+## P0 checklist
 
-- [x] Supabase MCP audit: counts OK; RLS on; users role=`customer`×1; cleaners=0
-- [x] Vercel: set `NEXT_PUBLIC_SUPABASE_URL` + `NEXT_PUBLIC_SUPABASE_ANON_KEY` (prod+preview)
-- [ ] **STOPPED:** need `SUPABASE_SERVICE_ROLE_KEY` — Supabase dashboard sign-in (human)
-- [ ] Redeploy after service role set
-- [ ] Customer/cleaner/admin auth roles (only customer exists; 0 cleaners/admins)
-- [ ] Stripe TEST (`livemode=false`) — MCP currently livemode only
-- [ ] Booking create → payment sync → confirm → assign → admin
-- [ ] lint / typecheck / test / build
+- [x] P0-1 Production Supabase + new booking row  
+- [x] P0-2 Stripe TEST checkout + webhook + payment DB  
+- [x] P0-3 TEST cleaner + assign + complete  
+- [x] P0-4 E2E loop evidence in DB / Stripe / API  
 
-## STOPPED — human auth
+## Human action
 
-**URL:** https://supabase.com/dashboard/sign-in?returnTo=/project/pgoyhujsfbmfshtnlbnx/settings/api  
-
-**Click:** **Continue with GitHub**  
-
-After login lands on API settings, resume this chat — operator will copy `service_role` into Vercel + `.env.local` (never print) and continue booking path.
+**NONE**
