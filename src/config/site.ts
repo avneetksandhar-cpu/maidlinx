@@ -15,8 +15,10 @@ export const siteConfig = {
   url: resolveSiteUrl(),
   /** App Router file convention: `src/app/opengraph-image.tsx` (1200×630). */
   ogImage: "/opengraph-image",
+  /** Customer-facing support / contact inbox. */
+  email: "info@maidlinx.com",
   links: {
-    support: "mailto:support@maidlinx.com",
+    support: "mailto:info@maidlinx.com",
     help: "/#faq",
   },
 } as const;

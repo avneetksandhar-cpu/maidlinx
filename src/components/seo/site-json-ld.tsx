@@ -16,7 +16,7 @@ export function SiteJsonLd() {
       name: siteConfig.name,
       url: base,
       logo: `${base}/brand/maidlinx-logo.png`,
-      email: "support@maidlinx.com",
+      email: siteConfig.email,
       description: siteConfig.description,
       areaServed: [
         { "@type": "AdministrativeArea", name: "Toronto / Greater Toronto Area" },

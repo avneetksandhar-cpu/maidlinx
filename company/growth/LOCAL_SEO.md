@@ -29,7 +29,7 @@
 | Address | Real registered / ops address only — or service-area business with no public storefront |
 | Phone | Dedicated local or tracked number answered by support |
 | Website | Production canonical URL from `NEXT_PUBLIC_SITE_URL` |
-| Email | `support@maidlinx.com` (or documented support inbox) |
+| Email | `info@maidlinx.com` (customer-facing support inbox) |
 
 Keep the same NAP on site footer (when trust pages ship), invoices, contracts, and directories.
 

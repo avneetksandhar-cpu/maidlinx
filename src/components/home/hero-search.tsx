@@ -2,6 +2,7 @@
 
 import { ChevronRight } from "lucide-react";
 import { AddressAutocomplete } from "@/components/booking/address-autocomplete";
+import { siteConfig } from "@/config/site";
 import type { BookingState } from "@/lib/bookings/booking-state";
 
 interface HeroSearchProps {
@@ -45,7 +46,7 @@ export function HeroSearch({
           We&apos;re not in your area yet.{" "}
           <a
             className="font-medium text-[var(--maidlinx-green)] underline-offset-2 hover:underline"
-            href="mailto:support@maidlinx.com?subject=MaidLinx%20waitlist"
+            href={`${siteConfig.links.support}?subject=MaidLinx%20waitlist`}
           >
             Join the waitlist
           </a>

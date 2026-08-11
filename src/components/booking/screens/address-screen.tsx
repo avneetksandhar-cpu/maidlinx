@@ -8,6 +8,7 @@ import { ReturningCustomerBanner } from "@/components/booking/returning-customer
 import { SavedPlaceChips } from "@/components/booking/saved-place-chips";
 import { useBooking } from "@/components/booking/booking-provider";
 import { useBookingGuard } from "@/components/booking/use-booking-guard";
+import { siteConfig } from "@/config/site";
 import { BOOKING_SCREEN_PATHS } from "@/lib/bookings/booking-routes";
 import { isAddressComplete } from "@/lib/bookings/booking-routes";
 import { resolveServiceArea } from "@/lib/service-area";
@@ -142,7 +143,7 @@ export function AddressScreen() {
             We&apos;re not in your area yet.{" "}
             <a
               className="font-medium underline underline-offset-2"
-              href="mailto:support@maidlinx.com?subject=MaidLinx%20waitlist"
+              href={`${siteConfig.links.support}?subject=MaidLinx%20waitlist`}
             >
               Join the waitlist
             </a>
