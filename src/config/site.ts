@@ -1,11 +1,24 @@
+function resolveSiteUrl(): string {
+  return (
+    process.env.NEXT_PUBLIC_SITE_URL ??
+    process.env.NEXT_PUBLIC_APP_URL ??
+    (process.env.NODE_ENV === "production"
+      ? "https://maidlinx.com"
+      : "http://localhost:3001")
+  );
+}
+
 export const siteConfig = {
   name: "MaidLinx",
   description:
     "Book cleaning on demand in Toronto/GTA and South Florida. Enter your address, pick a service and time, and confirm online.",
-  url: process.env.NEXT_PUBLIC_SITE_URL ?? process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000",
-  ogImage: "/brand/maidlinx-logo.png",
+  url: resolveSiteUrl(),
+  /** App Router file convention: `src/app/opengraph-image.tsx` (1200×630). */
+  ogImage: "/opengraph-image",
+  /** Customer-facing support / contact inbox. */
+  email: "info@maidlinx.com",
   links: {
-    support: "mailto:support@maidlinx.com",
+    support: "mailto:info@maidlinx.com",
     help: "/#faq",
   },
 } as const;
@@ -19,6 +32,9 @@ export const routes = {
   about: "/about",
   signIn: "/sign-in",
   signUp: "/sign-up",
+  forgotPassword: "/forgot-password",
+  resetPassword: "/reset-password",
+  account: "/account",
   book: "/book",
   bookAddress: "/book/address",
   bookProperty: "/book/property",
@@ -33,7 +49,9 @@ export const routes = {
   bookReview: "/book/review",
   bookPayment: "/book/payment",
   bookConfirmation: (id: string) => `/book/confirmation/${id}`,
-  bookingStatus: (id: string) => `/booking/${id}`,
+  bookingStatus: (id: string) => `/bookings/${id}`,
+  bookings: "/dashboard/bookings",
+  bookingDetail: (id: string) => `/bookings/${id}`,
   earn: "/earn",
   becomeCleaner: "/earn",
   dashboard: "/dashboard",
@@ -44,28 +62,31 @@ export const routes = {
   dashboardProfile: "/dashboard/profile",
   dashboardSavedPlaces: "/dashboard/saved-places",
   dashboardNotifications: "/dashboard/notifications",
-  proDashboard: "/cleaner",
-  proJobs: "/cleaner/jobs",
-  proSchedule: "/cleaner/schedule",
-  proEarnings: "/cleaner/earnings",
-  proRatings: "/cleaner/ratings",
-  proAvailability: "/cleaner/availability",
-  proProfile: "/cleaner/profile",
-  proOnboarding: "/cleaner/onboarding",
-  proDocuments: "/cleaner/documents",
-  proJob: (id: string) => `/cleaner/jobs/${id}`,
-  cleanerDashboard: "/cleaner",
-  cleanerJobs: "/cleaner/jobs",
-  cleanerSchedule: "/cleaner/schedule",
-  cleanerEarnings: "/cleaner/earnings",
-  cleanerRatings: "/cleaner/ratings",
-  cleanerAvailability: "/cleaner/availability",
-  cleanerProfile: "/cleaner/profile",
-  cleanerSettings: "/cleaner/settings",
-  cleanerOnboarding: "/cleaner/onboarding",
-  cleanerDocuments: "/cleaner/documents",
-  cleanerJob: (id: string) => `/cleaner/jobs/${id}`,
-  proSettings: "/cleaner/settings",
+  dashboardSupport: "/dashboard/support",
+  dashboardReferrals: "/dashboard/referrals",
+  proHome: "/pro/home",
+  proDashboard: "/pro",
+  proJobs: "/pro/jobs",
+  proSchedule: "/pro/schedule",
+  proEarnings: "/pro/earnings",
+  proRatings: "/pro/ratings",
+  proAvailability: "/pro/availability",
+  proProfile: "/pro/profile",
+  proOnboarding: "/pro/onboarding",
+  proDocuments: "/pro/documents",
+  proJob: (id: string) => `/pro/jobs/${id}`,
+  cleanerDashboard: "/pro/home",
+  cleanerJobs: "/pro/jobs",
+  cleanerSchedule: "/pro/schedule",
+  cleanerEarnings: "/pro/earnings",
+  cleanerRatings: "/pro/ratings",
+  cleanerAvailability: "/pro/availability",
+  cleanerProfile: "/pro/profile",
+  cleanerSettings: "/pro/settings",
+  cleanerOnboarding: "/pro/onboarding",
+  cleanerDocuments: "/pro/documents",
+  cleanerJob: (id: string) => `/pro/jobs/${id}`,
+  proSettings: "/pro/settings",
   admin: "/admin",
   adminBookings: "/admin/bookings",
   adminCustomers: "/admin/customers",

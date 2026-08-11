@@ -54,8 +54,8 @@ export function ServiceScreen() {
   return (
     <BookingFlowChrome
       screenId="service"
-      title="Choose your clean"
-      subtitle="Estimated prices shown on each option."
+      title="What kind of clean?"
+      subtitle="Each option shows an estimated price for your space."
       hideCta
     >
       <ServiceTierSelector

@@ -58,7 +58,7 @@ export function PropertyScreen() {
     <BookingFlowChrome
       screenId="property"
       title="What are we cleaning?"
-      subtitle="Pick the space type — we’ll ask the right questions next."
+      subtitle="Choose the space — we’ll ask the right details next."
       hideCta
     >
       <PropertyTypeCards

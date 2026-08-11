@@ -59,15 +59,16 @@ export function DetailsScreen() {
       return;
     }
     setErrors({});
-    updateState({ step: 4 });
+    // Persist coalesced beds/baths/sqft so the service guard's isDetailsComplete matches.
+    updateState({ ...(result.synced ?? {}), step: 4 });
     router.push(BOOKING_SCREEN_PATHS.service);
   };
 
   return (
     <BookingFlowChrome
       screenId="details"
-      title="A few details"
-      subtitle="Helps us price accurately for your space."
+      title="A few details about the space"
+      subtitle="Helps us price accurately — you can edit these later."
       ctaLabel="Continue"
       onContinue={handleContinue}
     >

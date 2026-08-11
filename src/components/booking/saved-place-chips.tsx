@@ -13,7 +13,7 @@ import { cn } from "@/lib/utils";
 import { trackBookingEvent } from "@/lib/analytics/booking";
 
 export type SavedPlaceChipSelection = Partial<Step1Address> & {
-  source: "home" | "work" | "saved" | "recent" | "guest_recent";
+  source: "home" | "office" | "rental" | "work" | "saved" | "recent" | "guest_recent";
 };
 
 interface SavedPlaceChipsProps {
@@ -53,7 +53,7 @@ type Chip = {
 };
 
 /**
- * Uber-style quick picks: Home / Work / Recent above the address field.
+ * Uber-style quick picks: Home / Office / Rental / Recent above the address field.
  * Uses signed-in saved places when available, else guest recent addresses.
  */
 export function SavedPlaceChips({
@@ -83,7 +83,10 @@ export function SavedPlaceChips({
 
     const next: Chip[] = [];
     const home = saved.find((a) => normalizeLabel(a.label) === "home");
-    const work = saved.find((a) => normalizeLabel(a.label) === "work");
+    const office = saved.find(
+      (a) => normalizeLabel(a.label) === "office" || normalizeLabel(a.label) === "work",
+    );
+    const rental = saved.find((a) => normalizeLabel(a.label) === "rental");
 
     if (home) {
       next.push({
@@ -95,20 +98,30 @@ export function SavedPlaceChips({
         source: "home",
       });
     }
-    if (work) {
+    if (office) {
       next.push({
-        key: `work-${work.id}`,
-        label: "Work",
-        hint: work.addressLine1,
+        key: `office-${office.id}`,
+        label: "Office",
+        hint: office.addressLine1,
         icon: Briefcase,
-        address: work,
-        source: "work",
+        address: office,
+        source: "office",
+      });
+    }
+    if (rental) {
+      next.push({
+        key: `rental-${rental.id}`,
+        label: "Rental",
+        hint: rental.addressLine1,
+        icon: MapPin,
+        address: rental,
+        source: "rental",
       });
     }
 
-    // Other saved (non Home/Work), capped so the row stays scannable.
+    // Other saved (non Home/Office/Rental), capped so the row stays scannable.
     for (const place of saved) {
-      if (place.id === home?.id || place.id === work?.id) continue;
+      if (place.id === home?.id || place.id === office?.id || place.id === rental?.id) continue;
       if (next.length >= 4) break;
       next.push({
         key: `saved-${place.id}`,
@@ -140,11 +153,27 @@ export function SavedPlaceChips({
 
     if (next.length === 0 && guestRecent[0]) {
       const first = guestRecent[0];
+      const named =
+        first.label === "Home" ||
+        first.label === "Office" ||
+        first.label === "Work" ||
+        first.label === "Rental"
+          ? first.label === "Work"
+            ? "Office"
+            : first.label
+          : "Recent";
       next.push({
         key: `guest-${first.line1}-${first.postalCode}`,
-        label: first.label === "Home" || first.label === "Work" ? first.label : "Recent",
+        label: named,
         hint: first.line1,
-        icon: first.label === "Home" ? Home : first.label === "Work" ? Briefcase : Clock,
+        icon:
+          named === "Home"
+            ? Home
+            : named === "Office"
+              ? Briefcase
+              : named === "Rental"
+                ? MapPin
+                : Clock,
         address: guestToStructured(first),
         source: "guest_recent",
       });

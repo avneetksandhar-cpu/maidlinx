@@ -8,8 +8,10 @@ import { ReturningCustomerBanner } from "@/components/booking/returning-customer
 import { SavedPlaceChips } from "@/components/booking/saved-place-chips";
 import { useBooking } from "@/components/booking/booking-provider";
 import { useBookingGuard } from "@/components/booking/use-booking-guard";
+import { siteConfig } from "@/config/site";
 import { BOOKING_SCREEN_PATHS } from "@/lib/bookings/booking-routes";
 import { isAddressComplete } from "@/lib/bookings/booking-routes";
+import { buildAddressStatePatch } from "@/lib/bookings/booking-helpers";
 import { resolveServiceArea } from "@/lib/service-area";
 import type { BookingState } from "@/lib/bookings/booking-state";
 import { trackBookingEvent } from "@/lib/analytics/booking";
@@ -21,25 +23,12 @@ export function AddressScreen() {
   const { state, hydrated, blocked } = useBookingGuard("address");
 
   const applyAddress = (value: Partial<BookingState>, autoAdvance = false) => {
-    const area = resolveServiceArea({
-      postalCode: value.postalCode,
-      city: value.city,
-      state: value.state,
-      country: value.country,
-    });
-    const next: Partial<BookingState> = {
-      ...value,
-      marketId: area.marketId,
-      zoneId: area.zoneId,
-      inServiceArea: area.inServiceArea,
-      marketName: area.marketName ?? null,
-      step: area.inServiceArea ? 2 : 1,
-    };
+    const next = buildAddressStatePatch(state, value);
     updateState(next);
 
-    if (autoAdvance && area.inServiceArea) {
+    if (autoAdvance && next.inServiceArea) {
       trackBookingEvent("address_selected", {
-        marketId: area.marketId,
+        marketId: next.marketId ?? state.marketId,
         placeId: value.googlePlaceId,
       });
       router.push(BOOKING_SCREEN_PATHS.property);
@@ -57,9 +46,9 @@ export function AddressScreen() {
   return (
     <BookingFlowChrome
       screenId="address"
-      title="Where do you need cleaning?"
-      subtitle="Search an address, use your current location, or pick a saved place."
-      hideCta={!state.line1 || state.inServiceArea === false}
+      title="Where should we clean?"
+      subtitle="Search an address, use your current location, or choose a saved place."
+      hideCta={!isAddressComplete(state)}
       ctaLabel="Continue"
       ctaDisabled={!isAddressComplete(state)}
       onContinue={() => {
@@ -137,12 +126,12 @@ export function AddressScreen() {
           }}
         />
 
-        {state.line1 && state.inServiceArea === false ? (
+        {state.line1 && state.postalCode && state.inServiceArea === false ? (
           <p className="rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-950">
             We&apos;re not in your area yet.{" "}
             <a
               className="font-medium underline underline-offset-2"
-              href="mailto:support@maidlinx.com?subject=MaidLinx%20waitlist"
+              href={`${siteConfig.links.support}?subject=MaidLinx%20waitlist`}
             >
               Join the waitlist
             </a>
