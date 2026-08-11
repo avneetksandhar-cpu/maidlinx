@@ -43,7 +43,7 @@ export function AuthForm({ mode }: AuthFormProps) {
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!supabase) {
-      setError("Supabase is not configured. Add credentials to .env.local.");
+      setError("Sign-in is temporarily unavailable. Please try again shortly.");
       return;
     }
 

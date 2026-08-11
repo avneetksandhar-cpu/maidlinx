@@ -23,8 +23,11 @@ import { createBookingRequestSchema } from "@/lib/validations/booking-flow";
 
 export async function POST(request: Request) {
   if (!hasAdminEnv()) {
+    console.error(
+      "[bookings] SUPABASE_NOT_CONFIGURED: missing NEXT_PUBLIC_SUPABASE_URL and/or SUPABASE_SERVICE_ROLE_KEY",
+    );
     return jsonError(
-      "Booking storage is not configured. Add NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY to .env.local, then run `supabase db push`.",
+      "Booking is temporarily unavailable. Please try again shortly.",
       503,
       "SUPABASE_NOT_CONFIGURED",
     );

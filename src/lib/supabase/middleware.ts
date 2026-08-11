@@ -44,7 +44,7 @@ export async function updateSession(request: NextRequest) {
         matchesPrefix(pathname, ADMIN_API_PREFIXES)
       ) {
         return NextResponse.json(
-          { error: "Authentication is not configured. Add Supabase keys to .env.local." },
+          { error: "Sign-in is temporarily unavailable. Please try again shortly." },
           { status: 503 },
         );
       }

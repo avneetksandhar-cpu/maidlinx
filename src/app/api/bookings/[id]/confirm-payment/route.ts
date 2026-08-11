@@ -60,7 +60,8 @@ export async function POST(request: Request, context: RouteContext) {
     }
 
     if (!process.env.STRIPE_SECRET_KEY) {
-      return jsonError("Payment is not configured.", 503);
+      console.error("[confirm-payment] STRIPE_SECRET_KEY missing");
+      return jsonError("Payment is temporarily unavailable. Please try again shortly.", 503);
     }
 
     const stripe = getStripeServer();
