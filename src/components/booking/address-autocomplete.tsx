@@ -11,11 +11,12 @@ import {
 } from "@/lib/addresses/map";
 import {
   ensureGoogleMapsLoaded,
-  geocodeFailureReason,
   geolocationErrorReason,
   LOCATION_FINDING_MESSAGE,
   locationFailureMessage,
+  parsePlacesNewAddress,
   queryGeolocationPermission,
+  reverseGeocodeLatLng,
 } from "@/lib/addresses/geolocation";
 import type { SavedAddress, StructuredAddress } from "@/lib/addresses/types";
 import type { Step1Address } from "@/lib/validations/booking-flow";
@@ -41,13 +42,20 @@ interface AddressAutocompleteProps {
   onAddressSelected?: (address: Partial<Step1Address>) => void;
 }
 
-type Prediction = google.maps.places.AutocompletePrediction;
+/** Normalized Places API (New) suggestion for the dropdown. */
+type PlaceSuggestion = {
+  placeId: string;
+  description: string;
+  mainText: string;
+  secondaryText?: string;
+  placePrediction: google.maps.places.PlacePrediction;
+};
 
 type DropdownItem =
   | { kind: "saved"; address: SavedAddress }
   | { kind: "recent"; address: StructuredAddress }
   | { kind: "guest-recent"; address: RecentGuestAddress }
-  | { kind: "prediction"; prediction: Prediction }
+  | { kind: "prediction"; prediction: PlaceSuggestion }
   | { kind: "current-location" };
 
 function guestRecentToStructured(address: RecentGuestAddress): StructuredAddress {
@@ -83,46 +91,23 @@ function rememberGuestAddress(address: Partial<Step1Address>) {
   });
 }
 
-function parsePlace(
-  place: google.maps.places.PlaceResult,
+function parsedToBookingAddress(
+  parsed: NonNullable<ReturnType<typeof parsePlacesNewAddress>>,
   existingLine2?: string,
-): Partial<Step1Address> | null {
-  if (!place.address_components?.length && !place.formatted_address) {
-    return null;
-  }
-
-  const get = (type: string) =>
-    place.address_components?.find((c) => c.types.includes(type))?.long_name ?? "";
-
-  const getShort = (type: string) =>
-    place.address_components?.find((c) => c.types.includes(type))?.short_name ?? "";
-
-  const streetNumber = get("street_number");
-  const route = get("route");
-  const line1 =
-    [streetNumber, route].filter(Boolean).join(" ") ||
-    place.formatted_address?.split(",")[0]?.trim() ||
-    "";
-
-  const subpremise = get("subpremise");
-
+): Partial<Step1Address> {
   return {
-    line1,
-    line2: subpremise || existingLine2 || undefined,
-    city:
-      get("locality") ||
-      get("postal_town") ||
-      get("sublocality") ||
-      get("administrative_area_level_2"),
-    state: getShort("administrative_area_level_1"),
-    postalCode: get("postal_code"),
-    country: getShort("country") || "US",
-    latitude: place.geometry?.location?.lat(),
-    longitude: place.geometry?.location?.lng(),
-    googlePlaceId: place.place_id,
-    formattedAddress: place.formatted_address,
-    streetNumber: streetNumber || undefined,
-    route: route || undefined,
+    line1: parsed.addressLine1,
+    line2: parsed.unit || existingLine2 || undefined,
+    city: parsed.city,
+    state: parsed.region,
+    postalCode: parsed.postalCode,
+    country: parsed.country || "US",
+    latitude: parsed.latitude,
+    longitude: parsed.longitude,
+    googlePlaceId: parsed.placeId,
+    formattedAddress: parsed.formattedAddress,
+    streetNumber: parsed.streetNumber,
+    route: parsed.route,
   };
 }
 
@@ -153,17 +138,16 @@ function mergeAddress(
   };
 }
 
-/** Bias legacy AutocompleteService toward MaidLinx markets when hints are present. */
-function predictionBias(input: string): Pick<
-  google.maps.places.AutocompletionRequest,
-  "location" | "radius" | "bounds"
-> {
+/** Bias Places API (New) autocomplete toward MaidLinx markets when hints are present. */
+function predictionLocationBias(
+  input: string,
+): NonNullable<google.maps.places.AutocompleteRequest["locationBias"]> {
   const text = input.toLowerCase();
   const looksCanadian =
     /[a-z]\d[a-z]/.test(text) ||
     /\b(on|ontario|toronto|mississauga|brampton|vaughan|markham|oakville|gta)\b/.test(text);
   if (looksCanadian) {
-    return { location: { lat: 43.6532, lng: -79.3832 }, radius: 90_000 };
+    return { center: { lat: 43.6532, lng: -79.3832 }, radius: 90_000 };
   }
 
   const looksSouthFlorida =
@@ -171,17 +155,15 @@ function predictionBias(input: string): Pick<
       text,
     );
   if (looksSouthFlorida) {
-    return { location: { lat: 26.1224, lng: -80.1373 }, radius: 90_000 };
+    return { center: { lat: 26.1224, lng: -80.1373 }, radius: 90_000 };
   }
 
   // Default: soft preference across GTA ↔ South Florida corridor.
   return {
-    bounds: {
-      south: 25.4,
-      west: -82.9,
-      north: 44.6,
-      east: -78.8,
-    },
+    south: 25.4,
+    west: -82.9,
+    north: 44.6,
+    east: -78.8,
   };
 }
 
@@ -204,16 +186,14 @@ export function AddressAutocomplete({
   const apiKey = rawKey?.trim() ? rawKey.trim() : undefined;
   const listboxId = useId();
   const rootRef = useRef<HTMLDivElement>(null);
-  const placesAttrRef = useRef<HTMLDivElement | null>(null);
-  const autocompleteServiceRef = useRef<google.maps.places.AutocompleteService | null>(null);
-  const placesServiceRef = useRef<google.maps.places.PlacesService | null>(null);
   const sessionTokenRef = useRef<google.maps.places.AutocompleteSessionToken | null>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const predictionRequestRef = useRef(0);
   const onChangeRef = useRef(onChange);
   const valueRef = useRef(value);
 
   const [localReady, setLocalReady] = useState(false);
-  const [predictions, setPredictions] = useState<Prediction[]>([]);
+  const [predictions, setPredictions] = useState<PlaceSuggestion[]>([]);
   const [open, setOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
   const [loadingPredictions, setLoadingPredictions] = useState(false);
@@ -275,7 +255,11 @@ export function AddressAutocomplete({
     if (!apiKey || isReady) return;
 
     const interval = window.setInterval(() => {
-      if (window.google?.maps?.places) {
+      if (
+        window.google?.maps?.places &&
+        typeof google.maps.places.AutocompleteSuggestion?.fetchAutocompleteSuggestions ===
+          "function"
+      ) {
         setLocalReady(true);
         window.clearInterval(interval);
       }
@@ -326,23 +310,17 @@ export function AddressAutocomplete({
     return sessionTokenRef.current;
   }, []);
 
-  const ensureServices = useCallback(() => {
-    if (!window.google?.maps?.places) return false;
-    if (!autocompleteServiceRef.current) {
-      autocompleteServiceRef.current = new google.maps.places.AutocompleteService();
-    }
-    if (!placesServiceRef.current) {
-      if (!placesAttrRef.current) {
-        placesAttrRef.current = document.createElement("div");
-      }
-      placesServiceRef.current = new google.maps.places.PlacesService(placesAttrRef.current);
-    }
-    return true;
+  const placesNewReady = useCallback(() => {
+    return Boolean(
+      window.google?.maps?.places &&
+        typeof google.maps.places.AutocompleteSuggestion?.fetchAutocompleteSuggestions ===
+          "function",
+    );
   }, []);
 
   const fetchPredictions = useCallback(
     (input: string) => {
-      if (!isReady || !ensureServices()) {
+      if (!isReady || !placesNewReady()) {
         setPredictions([]);
         return;
       }
@@ -355,119 +333,133 @@ export function AddressAutocomplete({
         return;
       }
 
+      const requestId = ++predictionRequestRef.current;
       setLoadingPredictions(true);
       setPlacesError(null);
       setNoResults(false);
       const sessionToken = ensureSessionToken();
-      const bias = predictionBias(trimmed);
 
-      autocompleteServiceRef.current?.getPlacePredictions(
-        {
-          input: trimmed,
-          types: ["address"],
-          componentRestrictions: { country: ["us", "ca"] },
-          sessionToken: sessionToken ?? undefined,
-          ...bias,
-        },
-        (results, requestStatus) => {
+      void (async () => {
+        try {
+          const { suggestions } =
+            await google.maps.places.AutocompleteSuggestion.fetchAutocompleteSuggestions({
+              input: trimmed,
+              includedRegionCodes: ["us", "ca"],
+              includedPrimaryTypes: ["street_address", "route", "premise"],
+              sessionToken: sessionToken ?? undefined,
+              locationBias: predictionLocationBias(trimmed),
+            });
+
+          if (requestId !== predictionRequestRef.current) return;
+
+          const mapped: PlaceSuggestion[] = (suggestions ?? [])
+            .map((suggestion) => {
+              const prediction = suggestion.placePrediction;
+              if (!prediction?.placeId) return null;
+              const description =
+                prediction.text?.text?.trim() ||
+                prediction.mainText?.text?.trim() ||
+                trimmed;
+              return {
+                placeId: prediction.placeId,
+                description,
+                mainText: prediction.mainText?.text?.trim() || description,
+                secondaryText: prediction.secondaryText?.text?.trim() || undefined,
+                placePrediction: prediction,
+              } satisfies PlaceSuggestion;
+            })
+            .filter((item): item is PlaceSuggestion => Boolean(item));
+
           setLoadingPredictions(false);
-          if (requestStatus === google.maps.places.PlacesServiceStatus.OK && results?.length) {
-            setPredictions(results);
+          if (mapped.length) {
+            setPredictions(mapped);
             setOpen(true);
             setActiveIndex(-1);
             setNoResults(false);
             return;
           }
-          if (requestStatus === google.maps.places.PlacesServiceStatus.ZERO_RESULTS) {
-            setPredictions([]);
-            setNoResults(true);
-            setOpen(true);
-            return;
-          }
+          setPredictions([]);
+          setNoResults(true);
+          setOpen(true);
+        } catch (error) {
+          if (requestId !== predictionRequestRef.current) return;
+          setLoadingPredictions(false);
+          setPredictions([]);
           if (isDev()) {
-            console.error(
-              `[Google Maps] getPlacePredictions failed with status: ${requestStatus}`,
-            );
+            console.error("[Google Maps] fetchAutocompleteSuggestions failed", error);
           }
-          if (
-            requestStatus === google.maps.places.PlacesServiceStatus.REQUEST_DENIED ||
-            requestStatus === google.maps.places.PlacesServiceStatus.OVER_QUERY_LIMIT
-          ) {
+          const message = error instanceof Error ? error.message : String(error);
+          if (/REQUEST_DENIED|PERMISSION_DENIED|API_KEY|Billing|OVER_QUERY/i.test(message)) {
             setPlacesError(
               "Address suggestions are temporarily unavailable. You can enter your address manually.",
             );
             setManualExpanded(true);
+          } else {
+            setNoResults(true);
+            setOpen(true);
           }
-          setPredictions([]);
-        },
-      );
+        }
+      })();
     },
-    [ensureServices, ensureSessionToken, isReady],
+    [ensureSessionToken, isReady, placesNewReady],
   );
 
-  const selectPrediction = useCallback(
-    (prediction: Prediction) => {
-      if (!ensureServices()) return;
+  const selectPrediction = useCallback((prediction: PlaceSuggestion) => {
+    setResolvingPlace(true);
+    setOpen(false);
+    setPredictions([]);
+    setPlacesError(null);
+    setNoResults(false);
 
-      setResolvingPlace(true);
-      setOpen(false);
-      setPredictions([]);
-      setPlacesError(null);
-      setNoResults(false);
+    void (async () => {
+      try {
+        // Session token is attached automatically on first fetchFields when used with suggestions.
+        const place = prediction.placePrediction.toPlace();
+        await place.fetchFields({
+          fields: ["addressComponents", "formattedAddress", "location", "id", "displayName"],
+        });
+        sessionTokenRef.current = null;
 
-      const sessionToken = ensureSessionToken();
-      placesServiceRef.current?.getDetails(
-        {
-          placeId: prediction.place_id,
-          fields: ["address_components", "geometry", "place_id", "formatted_address"],
-          sessionToken: sessionToken ?? undefined,
-        },
-        (place, detailStatus) => {
+        const parsed = parsePlacesNewAddress(place, valueRef.current.line2);
+        if (!parsed?.addressLine1) {
+          onChangeRef.current(
+            mergeAddress(valueRef.current, {
+              line1: prediction.mainText || prediction.description,
+              googlePlaceId: prediction.placeId,
+            }),
+          );
+          setManualExpanded(true);
           setResolvingPlace(false);
-          // Complete billing session after place details.
-          sessionTokenRef.current = null;
+          return;
+        }
 
-          if (detailStatus !== google.maps.places.PlacesServiceStatus.OK || !place) {
-            if (isDev()) {
-              console.error(`[Google Maps] getDetails failed with status: ${detailStatus}`);
-            }
-            onChangeRef.current(
-              mergeAddress(valueRef.current, {
-                line1: prediction.structured_formatting?.main_text || prediction.description,
-              }),
-            );
-            setPlacesError("Could not load full address details. Please confirm the fields below.");
-            setManualExpanded(true);
-            return;
-          }
-
-          const parsed = parsePlace(place, valueRef.current.line2);
-          if (!parsed?.line1) {
-            onChangeRef.current(
-              mergeAddress(valueRef.current, {
-                line1: prediction.description,
-                googlePlaceId: prediction.place_id,
-              }),
-            );
-            setManualExpanded(true);
-            return;
-          }
-
-          setManualExpanded(false);
-          const next = mergeAddress(valueRef.current, parsed);
-          onChangeRef.current(next);
-          rememberGuestAddress(next);
-          trackBookingEvent("address_selected", {
-            source: "places",
-            placeId: next.googlePlaceId,
-          });
-          onAddressSelectedRef.current?.(next);
-          setGuestRecent(readRecentGuestAddresses());
-        },
-      );
-    },
-    [ensureServices, ensureSessionToken],
-  );
+        setManualExpanded(false);
+        const next = mergeAddress(valueRef.current, parsedToBookingAddress(parsed));
+        onChangeRef.current(next);
+        rememberGuestAddress(next);
+        trackBookingEvent("address_selected", {
+          source: "places",
+          placeId: next.googlePlaceId,
+        });
+        onAddressSelectedRef.current?.(next);
+        setGuestRecent(readRecentGuestAddresses());
+      } catch (error) {
+        if (isDev()) {
+          console.error("[Google Maps] Place.fetchFields failed", error);
+        }
+        onChangeRef.current(
+          mergeAddress(valueRef.current, {
+            line1: prediction.mainText || prediction.description,
+            googlePlaceId: prediction.placeId,
+          }),
+        );
+        setPlacesError("Could not load full address details. Please confirm the fields below.");
+        setManualExpanded(true);
+      } finally {
+        setResolvingPlace(false);
+      }
+    })();
+  }, []);
 
   const selectStructured = useCallback((address: StructuredAddress, source = "saved") => {
     setOpen(false);
@@ -562,22 +554,19 @@ export function AddressAutocomplete({
     setLocating(true);
     setOpen(false);
 
-    // Wait for script/Geocoder instead of immediately showing "isn't ready yet".
+    // Wait for Maps JS (Places nearby can reverse-geocode when Geocoding API is off).
     const mapsLoad = await ensureGoogleMapsLoaded();
-    if (mapsLoad !== "ready") {
+    const placesReady = Boolean(window.google?.maps?.places);
+    if (mapsLoad !== "ready" && !placesReady) {
       finishLocating();
       if (isDev()) {
-        console.warn("[address] Google Maps Geocoder not ready after wait", mapsLoad, maps.status);
+        console.warn("[address] Google Maps not ready after wait", mapsLoad, maps.status);
       }
-      // Auth/billing failures often leave google.maps present but unusable — not a transient race.
       const reason =
         mapsLoad === "unavailable" || maps.status === "error" ? "maps_denied" : "maps_unavailable";
       setLocationError(locationFailureMessage(reason));
       return;
     }
-
-    // Provider marked error (e.g. gm_authFailure) but Geocoder constructor exists — still try;
-    // REQUEST_DENIED maps to a clear non-retry-loop message below.
 
     navigator.geolocation.getCurrentPosition(
       (position) => {
@@ -586,49 +575,48 @@ export function AddressAutocomplete({
           lng: position.coords.longitude,
         };
 
-        if (typeof google.maps.Geocoder !== "function") {
-          finishLocating();
-          setLocationError(locationFailureMessage("maps_unavailable"));
-          return;
-        }
+        void (async () => {
+          try {
+            const result = await reverseGeocodeLatLng(latLng, {
+              existingUnit: valueRef.current.line2,
+            });
+            finishLocating();
+            if (!result.ok) {
+              if (isDev()) console.warn("[address] Reverse geocode failed", result.reason);
+              setLocationError(locationFailureMessage(result.reason));
+              return;
+            }
 
-        const geocoder = new google.maps.Geocoder();
-        geocoder.geocode({ location: latLng }, (results, geocodeStatus) => {
-          finishLocating();
-          if (geocodeStatus !== "OK" || !results?.[0]) {
-            if (isDev()) console.warn("[address] Reverse geocode failed", geocodeStatus);
-            setLocationError(locationFailureMessage(geocodeFailureReason(geocodeStatus)));
-            return;
-          }
-          const parsed = parsePlace(results[0], valueRef.current.line2);
-          if (!parsed?.line1) {
+            const address = result.address;
+            // Prefer GPS coordinates; keep reverse-geocoded placeId / fields.
+            // Customers see the formatted street address — never raw lat/lng.
+            const displayAddress =
+              address.formattedAddress?.trim() ||
+              [address.addressLine1, address.city, address.region].filter(Boolean).join(", ");
+            selectStructured(
+              {
+                formattedAddress: displayAddress,
+                addressLine1: address.addressLine1,
+                unit: address.unit,
+                city: address.city,
+                region: address.region,
+                postalCode: address.postalCode,
+                country: address.country || "US",
+                countryCode: address.country || "US",
+                latitude: latLng.lat,
+                longitude: latLng.lng,
+                placeId: address.placeId,
+                streetNumber: address.streetNumber,
+                route: address.route,
+              },
+              "current_location",
+            );
+          } catch (error) {
+            finishLocating();
+            if (isDev()) console.warn("[address] Reverse geocode exception", error);
             setLocationError(locationFailureMessage("geocode_failed"));
-            return;
           }
-          // Prefer GPS coordinates; keep reverse-geocoded placeId / fields.
-          // Customers see the formatted street address — never raw lat/lng.
-          const displayAddress =
-            parsed.formattedAddress?.trim() ||
-            [parsed.line1, parsed.city, parsed.state].filter(Boolean).join(", ");
-          selectStructured(
-            {
-              formattedAddress: displayAddress,
-              addressLine1: parsed.line1 ?? "",
-              unit: parsed.line2,
-              city: parsed.city ?? "",
-              region: parsed.state ?? "",
-              postalCode: parsed.postalCode ?? "",
-              country: parsed.country ?? "US",
-              countryCode: parsed.country ?? "US",
-              latitude: latLng.lat,
-              longitude: latLng.lng,
-              placeId: parsed.googlePlaceId,
-              streetNumber: parsed.streetNumber,
-              route: parsed.route,
-            },
-            "current_location",
-          );
-        });
+        })();
       },
       (error) => {
         finishLocating();
@@ -639,7 +627,7 @@ export function AddressAutocomplete({
         if (isDev()) console.warn("[address] Geolocation denied/failed", error.code);
         setLocationError(locationFailureMessage(reason));
       },
-      { enableHighAccuracy: false, timeout: 10_000, maximumAge: 60_000 },
+      { enableHighAccuracy: true, timeout: 10_000, maximumAge: 60_000 },
     );
   }, [apiKey, finishLocating, maps.status, selectStructured]);
 
@@ -939,13 +927,11 @@ export function AddressAutocomplete({
                 ) : null}
                 {dropdownItems.map((item, index) => {
                   if (item.kind !== "prediction") return null;
-                  const main =
-                    item.prediction.structured_formatting?.main_text ??
-                    item.prediction.description;
-                  const secondary = item.prediction.structured_formatting?.secondary_text;
+                  const main = item.prediction.mainText || item.prediction.description;
+                  const secondary = item.prediction.secondaryText;
                   return (
                     <li
-                      key={item.prediction.place_id}
+                      key={item.prediction.placeId}
                       role="option"
                       aria-selected={index === activeIndex}
                     >
