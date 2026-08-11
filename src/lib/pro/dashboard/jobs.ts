@@ -591,6 +591,10 @@ export async function transitionJobStatus(
       throw new Error("Cleaner profile not found.");
     }
 
+    // Cleaner Platform V1: server-side approval gates before real jobs.
+    const { requireCleanerCanTakeJobs } = await import("@/lib/cleaners/gates-store");
+    await requireCleanerCanTakeJobs(acceptedCleanerId);
+
     updatePayload.professional_profile_id = profileId;
     updatePayload.professional_id = profileId;
     updatePayload.cleaner_id = acceptedCleanerId;

@@ -331,6 +331,9 @@ export async function adminAssignCleaner(input: {
     throw new Error("Only approved, active cleaners can be assigned.");
   }
 
+  const { requireCleanerCanTakeJobs } = await import("@/lib/cleaners/gates-store");
+  await requireCleanerCanTakeJobs(cleaner.id);
+
   const { data: booking, error: bookingError } = await supabase
     .from("bookings")
     .select("id, status, professional_profile_id")

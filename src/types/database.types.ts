@@ -123,7 +123,31 @@ export type Database = {
           onboarding_submitted_at: string | null;
           onboarding_reviewed_at: string | null;
           rejection_reason: string | null;
-          created_at: string;
+
+          platform_stage: string;
+          identity_status: string;
+          identity_provider: string | null;
+          identity_external_ref: string | null;
+          identity_reviewed_at: string | null;
+          identity_reviewed_by: string | null;
+          background_status: string;
+          background_provider: string | null;
+          background_external_ref: string | null;
+          background_reviewed_at: string | null;
+          background_reviewed_by: string | null;
+          phone_verified_at: string | null;
+          email_verified_at: string | null;
+          training_completed_at: string | null;
+          assessment_passed_at: string | null;
+          activated_at: string | null;
+          trust_score: number;
+          reliability_score: number;
+          serious_flag_count: number;
+          requires_admin_review: boolean;
+          application: Json;
+          application_submitted_at: string | null;
+          maidlinx_verified: boolean;
+          verified_at: string | null;          created_at: string;
           updated_at: string;
         };
         Insert: {
@@ -164,7 +188,31 @@ export type Database = {
           onboarding_submitted_at?: string | null;
           onboarding_reviewed_at?: string | null;
           rejection_reason?: string | null;
-          created_at?: string;
+
+          platform_stage?: string;
+          identity_status?: string;
+          identity_provider?: string | null;
+          identity_external_ref?: string | null;
+          identity_reviewed_at?: string | null;
+          identity_reviewed_by?: string | null;
+          background_status?: string;
+          background_provider?: string | null;
+          background_external_ref?: string | null;
+          background_reviewed_at?: string | null;
+          background_reviewed_by?: string | null;
+          phone_verified_at?: string | null;
+          email_verified_at?: string | null;
+          training_completed_at?: string | null;
+          assessment_passed_at?: string | null;
+          activated_at?: string | null;
+          trust_score?: number;
+          reliability_score?: number;
+          serious_flag_count?: number;
+          requires_admin_review?: boolean;
+          application?: Json;
+          application_submitted_at?: string | null;
+          maidlinx_verified?: boolean;
+          verified_at?: string | null;          created_at?: string;
           updated_at?: string;
         };
         Update: {
@@ -205,9 +253,70 @@ export type Database = {
           onboarding_submitted_at?: string | null;
           onboarding_reviewed_at?: string | null;
           rejection_reason?: string | null;
-          created_at?: string;
+
+          platform_stage?: string;
+          identity_status?: string;
+          identity_provider?: string | null;
+          identity_external_ref?: string | null;
+          identity_reviewed_at?: string | null;
+          identity_reviewed_by?: string | null;
+          background_status?: string;
+          background_provider?: string | null;
+          background_external_ref?: string | null;
+          background_reviewed_at?: string | null;
+          background_reviewed_by?: string | null;
+          phone_verified_at?: string | null;
+          email_verified_at?: string | null;
+          training_completed_at?: string | null;
+          assessment_passed_at?: string | null;
+          activated_at?: string | null;
+          trust_score?: number;
+          reliability_score?: number;
+          serious_flag_count?: number;
+          requires_admin_review?: boolean;
+          application?: Json;
+          application_submitted_at?: string | null;
+          maidlinx_verified?: boolean;
+          verified_at?: string | null;          created_at?: string;
           updated_at?: string;
         };
+        Relationships: [];
+      };
+
+      cleaner_approval_gates: {
+        Row: Record<string, unknown>;
+        Insert: Record<string, unknown>;
+        Update: Record<string, unknown>;
+        Relationships: [];
+      };
+      academy_modules: {
+        Row: Record<string, unknown>;
+        Insert: Record<string, unknown>;
+        Update: Record<string, unknown>;
+        Relationships: [];
+      };
+      cleaner_training_progress: {
+        Row: Record<string, unknown>;
+        Insert: Record<string, unknown>;
+        Update: Record<string, unknown>;
+        Relationships: [];
+      };
+      cleaner_assessment_attempts: {
+        Row: Record<string, unknown>;
+        Insert: Record<string, unknown>;
+        Update: Record<string, unknown>;
+        Relationships: [];
+      };
+      cleaner_trust_flags: {
+        Row: Record<string, unknown>;
+        Insert: Record<string, unknown>;
+        Update: Record<string, unknown>;
+        Relationships: [];
+      };
+      cleaner_platform_audit_log: {
+        Row: Record<string, unknown>;
+        Insert: Record<string, unknown>;
+        Update: Record<string, unknown>;
         Relationships: [];
       };
       cleaner_live_locations: {
@@ -516,7 +625,31 @@ export type Database = {
           onboarding_submitted_at: string | null;
           onboarding_reviewed_at: string | null;
           rejection_reason: string | null;
-          created_at: string;
+
+          platform_stage: string;
+          identity_status: string;
+          identity_provider: string | null;
+          identity_external_ref: string | null;
+          identity_reviewed_at: string | null;
+          identity_reviewed_by: string | null;
+          background_status: string;
+          background_provider: string | null;
+          background_external_ref: string | null;
+          background_reviewed_at: string | null;
+          background_reviewed_by: string | null;
+          phone_verified_at: string | null;
+          email_verified_at: string | null;
+          training_completed_at: string | null;
+          assessment_passed_at: string | null;
+          activated_at: string | null;
+          trust_score: number;
+          reliability_score: number;
+          serious_flag_count: number;
+          requires_admin_review: boolean;
+          application: Json;
+          application_submitted_at: string | null;
+          maidlinx_verified: boolean;
+          verified_at: string | null;          created_at: string;
           updated_at: string;
         };
         Insert: {
@@ -549,7 +682,31 @@ export type Database = {
           onboarding_submitted_at?: string | null;
           onboarding_reviewed_at?: string | null;
           rejection_reason?: string | null;
-          created_at?: string;
+
+          platform_stage?: string;
+          identity_status?: string;
+          identity_provider?: string | null;
+          identity_external_ref?: string | null;
+          identity_reviewed_at?: string | null;
+          identity_reviewed_by?: string | null;
+          background_status?: string;
+          background_provider?: string | null;
+          background_external_ref?: string | null;
+          background_reviewed_at?: string | null;
+          background_reviewed_by?: string | null;
+          phone_verified_at?: string | null;
+          email_verified_at?: string | null;
+          training_completed_at?: string | null;
+          assessment_passed_at?: string | null;
+          activated_at?: string | null;
+          trust_score?: number;
+          reliability_score?: number;
+          serious_flag_count?: number;
+          requires_admin_review?: boolean;
+          application?: Json;
+          application_submitted_at?: string | null;
+          maidlinx_verified?: boolean;
+          verified_at?: string | null;          created_at?: string;
           updated_at?: string;
         };
         Update: {
@@ -582,6 +739,30 @@ export type Database = {
           onboarding_submitted_at?: string | null;
           onboarding_reviewed_at?: string | null;
           rejection_reason?: string | null;
+          platform_stage?: string;
+          identity_status?: string;
+          identity_provider?: string | null;
+          identity_external_ref?: string | null;
+          identity_reviewed_at?: string | null;
+          identity_reviewed_by?: string | null;
+          background_status?: string;
+          background_provider?: string | null;
+          background_external_ref?: string | null;
+          background_reviewed_at?: string | null;
+          background_reviewed_by?: string | null;
+          phone_verified_at?: string | null;
+          email_verified_at?: string | null;
+          training_completed_at?: string | null;
+          assessment_passed_at?: string | null;
+          activated_at?: string | null;
+          trust_score?: number;
+          reliability_score?: number;
+          serious_flag_count?: number;
+          requires_admin_review?: boolean;
+          application?: Json;
+          application_submitted_at?: string | null;
+          maidlinx_verified?: boolean;
+          verified_at?: string | null;
           created_at?: string;
           updated_at?: string;
         };
