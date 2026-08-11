@@ -9,6 +9,15 @@ export const metadata: Metadata = {
     "Book office, retail, restaurant, and commercial cleaning on demand with MaidLinx in Toronto/GTA and South Florida.",
   alternates: { canonical: "/for-business" },
   openGraph: {
+    type: "website",
+    url: "/for-business",
+    siteName: "MaidLinx",
+    title: "Business Cleaning | MaidLinx",
+    description:
+      "Book office, retail, restaurant, and commercial cleaning on demand with MaidLinx in Toronto/GTA and South Florida.",
+  },
+  twitter: {
+    card: "summary_large_image",
     title: "Business Cleaning | MaidLinx",
     description:
       "Book office, retail, restaurant, and commercial cleaning on demand with MaidLinx in Toronto/GTA and South Florida.",

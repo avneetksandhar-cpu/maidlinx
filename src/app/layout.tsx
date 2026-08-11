@@ -40,18 +40,13 @@ export const metadata: Metadata = {
     siteName: siteConfig.name,
     title: defaultTitle,
     description: siteConfig.description,
-    images: [
-      {
-        url: siteConfig.ogImage,
-        alt: siteConfig.name,
-      },
-    ],
+    // Image from App Router `opengraph-image.tsx` (1200×630); avoid duplicating here.
   },
   twitter: {
     card: "summary_large_image",
     title: defaultTitle,
     description: siteConfig.description,
-    images: [siteConfig.ogImage],
+    // Image from App Router `twitter-image.tsx`.
   },
   robots: {
     index: true,

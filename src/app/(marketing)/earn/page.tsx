@@ -9,6 +9,15 @@ export const metadata: Metadata = {
     "Apply to clean with MaidLinx in Toronto/GTA and South Florida. Set availability, accept jobs, and get paid for completed cleans.",
   alternates: { canonical: "/earn" },
   openGraph: {
+    type: "website",
+    url: "/earn",
+    siteName: "MaidLinx",
+    title: "Earn as a Cleaner | MaidLinx",
+    description:
+      "Apply to clean with MaidLinx in Toronto/GTA and South Florida. Set availability, accept jobs, and get paid for completed cleans.",
+  },
+  twitter: {
+    card: "summary_large_image",
     title: "Earn as a Cleaner | MaidLinx",
     description:
       "Apply to clean with MaidLinx in Toronto/GTA and South Florida. Set availability, accept jobs, and get paid for completed cleans.",

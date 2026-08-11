@@ -24,7 +24,7 @@
 | Structured data | MISSING → fixed | Organization + WebSite + FAQPage (no fake ratings) |
 | Public URL inventory | THIN | Only `/`, `/for-business`, `/earn` are real marketing URLs |
 | Custom 404 | MISSING → fixed | `src/app/not-found.tsx` |
-| OG share image | WEAK | Logo used; not a 1200×630 social card |
+| OG share image | FIXED | App Router `opengraph-image.tsx` / `twitter-image.tsx` (1200×630); see `SOCIAL_PREVIEWS.md` |
 | Legal / content pages | MISSING | `routes.legal.*`, `/services`, `/about`, `/reviews` referenced but not shipped |
 
 ---
@@ -47,7 +47,7 @@
 |----|-------|----------------|--------------------------------------|
 | P1-1 | Thin public site graph | Almost all demand must land on `/` | Add `/services`, market hubs, 2–3 service pages after MVP |
 | P1-2 | Nav routes to missing pages | `routes.services`, `howItWorks`, `reviews`, `about`, legal paths 404 if hit directly | Either ship pages or remove/adjust route constants + footer links |
-| P1-3 | Weak OG image | Social shares look like a logo crop | Design truthful 1200×630 brand OG (no fake ratings on creative) |
+| P1-3 | Weak OG image | Social shares look like a logo crop | Done: dynamic 1200×630 brand OG + `SOCIAL_PREVIEWS.md` cache refresh notes |
 | P1-4 | FAQ answers client-gated | Accordion hides closed answers from HTML | Prefer SSR-visible FAQ text (or keep JSON-LD as bridge — JSON-LD shipped) |
 | P1-5 | No dedicated market landing URLs | Local intent has nowhere to land except homepage copy | Propose `/locations/toronto-gta`, `/locations/south-florida` only when content + ops ready |
 | P1-6 | Manifest description weaker than site | PWA copy omits markets | Align `manifest.json` description with `siteConfig` (cosmetic) |

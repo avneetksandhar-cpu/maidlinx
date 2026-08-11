@@ -1,9 +1,20 @@
+function resolveSiteUrl(): string {
+  return (
+    process.env.NEXT_PUBLIC_SITE_URL ??
+    process.env.NEXT_PUBLIC_APP_URL ??
+    (process.env.NODE_ENV === "production"
+      ? "https://maidlinx.com"
+      : "http://localhost:3001")
+  );
+}
+
 export const siteConfig = {
   name: "MaidLinx",
   description:
     "Book cleaning on demand in Toronto/GTA and South Florida. Enter your address, pick a service and time, and confirm online.",
-  url: process.env.NEXT_PUBLIC_SITE_URL ?? process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3001",
-  ogImage: "/brand/maidlinx-logo.png",
+  url: resolveSiteUrl(),
+  /** App Router file convention: `src/app/opengraph-image.tsx` (1200×630). */
+  ogImage: "/opengraph-image",
   links: {
     support: "mailto:support@maidlinx.com",
     help: "/#faq",

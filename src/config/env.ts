@@ -62,11 +62,18 @@ export function getClientEnv(): ClientEnv {
   return parsed.data;
 }
 
+/**
+ * Canonical site origin for metadata, sitemap, robots, and absolute OG URLs.
+ * Prefer NEXT_PUBLIC_SITE_URL, then NEXT_PUBLIC_APP_URL.
+ * Production fallback: https://maidlinx.com — local: http://localhost:3001
+ */
 export function getSiteUrl(): string {
   return (
     process.env.NEXT_PUBLIC_SITE_URL ??
     process.env.NEXT_PUBLIC_APP_URL ??
-    "http://localhost:3001"
+    (process.env.NODE_ENV === "production"
+      ? "https://maidlinx.com"
+      : "http://localhost:3001")
   );
 }
 
