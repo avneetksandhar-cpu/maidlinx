@@ -1,0 +1,9 @@
+{
+  "projectId": "maidlinx",
+  "apiVersion": "1.0.0",
+  "framework": "nextjs",
+  "buildCommand": "npm run build",
+  "devCommand": "npm run dev",
+  "installCommand": "npm install",
+  "outputDirectory": ".next"
+}

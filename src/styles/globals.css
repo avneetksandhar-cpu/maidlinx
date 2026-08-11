@@ -1,0 +1,232 @@
+@import "tailwindcss";
+
+@theme {
+  /* MaidLinx — bright premium: white/off-white, near-black, turquoise accent */
+  --color-background: #fafafa;
+  --color-surface: #ffffff;
+  --color-ink: #111827;
+  --color-ink-muted: #6b7280;
+  --color-ink-subtle: #9ca3af;
+  --color-accent: #0d9488;
+  --color-accent-hover: #0f766e;
+  --color-accent-muted: #f0fdfa;
+  --color-navy: #111827;
+  --color-navy-light: #1f2937;
+  --color-teal: #0d9488;
+  --color-teal-muted: #ccfbf1;
+  --color-border: #e5e7eb;
+  --color-border-strong: #d1d5db;
+  --color-success: #059669;
+  --color-error: #dc2626;
+
+  /* Legacy aliases */
+  --color-surface-muted: #f4f5f7;
+  --color-surface-elevated: #ffffff;
+  --color-gold: #0d9488;
+  --color-gold-hover: #0f766e;
+  --color-gold-muted: #f0fdfa;
+
+  --font-sans: var(--font-dm-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-dm-sans), ui-sans-serif, system-ui, sans-serif;
+
+  --radius-sm: 0.5rem;
+  --radius-md: 0.625rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+
+  --shadow-soft: 0 1px 2px rgb(17 24 39 / 0.04);
+  --shadow-card: 0 1px 3px rgb(17 24 39 / 0.05), 0 4px 12px rgb(17 24 39 / 0.04);
+  --shadow-elevated: 0 8px 24px rgb(17 24 39 / 0.08);
+
+  --spacing-section: 4rem;
+  --spacing-section-lg: 5.5rem;
+}
+
+@layer base {
+  *,
+  *::before,
+  *::after {
+    border-color: var(--color-border);
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+
+  body {
+    background-color: var(--color-background);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    line-height: 1.6;
+  }
+
+  ::selection {
+    background-color: var(--color-accent-muted);
+    color: var(--color-ink);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    letter-spacing: -0.025em;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .container-app {
+    width: min(72rem, calc(100% - 2rem));
+    margin-inline: auto;
+  }
+
+  .container-narrow {
+    width: min(42rem, calc(100% - 2rem));
+    margin-inline: auto;
+  }
+
+  .bg-background {
+    background-color: var(--color-background);
+  }
+
+  .text-accent {
+    color: var(--color-accent);
+  }
+
+  .bg-accent {
+    background-color: var(--color-accent);
+  }
+
+  .border-subtle {
+    border-color: var(--color-border);
+  }
+
+  .booking-step-title {
+    font-family: var(--font-display);
+    font-size: 1.875rem;
+    font-weight: 600;
+    letter-spacing: -0.03em;
+    line-height: 1.15;
+    color: var(--color-ink);
+  }
+
+  .booking-step-subtitle {
+    margin-top: 0.5rem;
+    font-size: 1rem;
+    line-height: 1.5;
+    color: var(--color-ink-muted);
+  }
+
+  .booking-select-card {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    border-radius: 0.75rem;
+    border: 1px solid var(--color-border);
+    background-color: var(--color-surface);
+    padding: 1.125rem 1.25rem;
+    text-align: left;
+    transition:
+      border-color 180ms ease,
+      background-color 180ms ease,
+      box-shadow 180ms ease,
+      transform 180ms ease;
+  }
+
+  .booking-select-card:hover:not(:disabled) {
+    border-color: var(--color-border-strong);
+    background-color: var(--color-surface-muted);
+  }
+
+  .booking-select-card[data-selected="true"] {
+    border-color: var(--color-accent);
+    background-color: var(--color-accent-muted);
+    box-shadow: 0 0 0 1px rgb(13 148 136 / 0.15);
+  }
+
+  .booking-input-lg {
+    height: 3.5rem;
+    padding-inline: 1.125rem;
+    font-size: 1.0625rem;
+  }
+
+  .booking-input-hero {
+    height: 3.75rem;
+    padding-inline: 1.25rem;
+    font-size: 1.125rem;
+  }
+
+  @media (min-width: 640px) {
+    .booking-input-hero {
+      height: 4rem;
+    }
+  }
+
+  .booking-wizard-shell {
+    min-height: calc(100dvh - 3.5rem);
+    padding-bottom: 6rem;
+  }
+
+  .booking-progress-track {
+    height: 2px;
+    width: 100%;
+    overflow: hidden;
+    background-color: var(--color-border);
+  }
+
+  .booking-progress-fill {
+    height: 100%;
+    background-color: var(--color-accent);
+    transition: width 220ms ease;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes riseIn {
+    from {
+      opacity: 0;
+      transform: translateY(16px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}

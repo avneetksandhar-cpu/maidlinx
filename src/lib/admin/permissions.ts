@@ -1,0 +1,86 @@
+export const ADMIN_PERMISSIONS = [
+  "bookings.read",
+  "bookings.write",
+  "customers.read",
+  "customers.write",
+  "cleaners.read",
+  "cleaners.write",
+  "payments.read",
+  "revenue.read",
+  "analytics.read",
+  "pricing.write",
+  "coupons.write",
+  "service_areas.write",
+  "markets.read",
+  "markets.write",
+  "services.read",
+  "services.write",
+  "assignments.read",
+  "assignments.write",
+  "reviews.read",
+  "support.read",
+  "support.write",
+  "disputes.write",
+  "refunds.write",
+  "payouts.read",
+  "logs.read",
+  "permissions.write",
+  "audit.read",
+] as const;
+
+export type AdminPermission = (typeof ADMIN_PERMISSIONS)[number];
+
+export const ADMIN_ROLE_PRESETS: Record<string, AdminPermission[]> = {
+  super_admin: [...ADMIN_PERMISSIONS],
+  operator: [
+    "bookings.read",
+    "bookings.write",
+    "customers.read",
+    "cleaners.read",
+    "cleaners.write",
+    "payments.read",
+    "revenue.read",
+    "analytics.read",
+    "markets.read",
+    "services.read",
+    "assignments.read",
+    "assignments.write",
+    "reviews.read",
+    "support.read",
+    "support.write",
+    "disputes.write",
+    "refunds.write",
+    "payouts.read",
+    "logs.read",
+    "audit.read",
+  ],
+  support: [
+    "bookings.read",
+    "customers.read",
+    "cleaners.read",
+    "assignments.read",
+    "reviews.read",
+    "support.read",
+    "support.write",
+    "disputes.write",
+    "refunds.write",
+    "audit.read",
+  ],
+  finance: [
+    "revenue.read",
+    "analytics.read",
+    "payments.read",
+    "refunds.write",
+    "payouts.read",
+    "audit.read",
+  ],
+};
+
+export function hasPermission(
+  permissions: string[],
+  required: AdminPermission,
+  roleLabel?: string,
+): boolean {
+  if (roleLabel === "super_admin") return true;
+  return permissions.includes(required);
+}
