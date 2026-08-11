@@ -139,6 +139,9 @@ function mergeAddress(
 }
 
 /** Bias Places API (New) autocomplete toward MaidLinx markets when hints are present. */
+/** Places Autocomplete locationBias circle radius must be ≤ 50_000 meters. */
+const LOCATION_BIAS_RADIUS_M = 50_000;
+
 function predictionLocationBias(
   input: string,
 ): NonNullable<google.maps.places.AutocompleteRequest["locationBias"]> {
@@ -147,7 +150,7 @@ function predictionLocationBias(
     /[a-z]\d[a-z]/.test(text) ||
     /\b(on|ontario|toronto|mississauga|brampton|vaughan|markham|oakville|gta)\b/.test(text);
   if (looksCanadian) {
-    return { center: { lat: 43.6532, lng: -79.3832 }, radius: 90_000 };
+    return { center: { lat: 43.6532, lng: -79.3832 }, radius: LOCATION_BIAS_RADIUS_M };
   }
 
   const looksSouthFlorida =
@@ -155,11 +158,11 @@ function predictionLocationBias(
       text,
     );
   if (looksSouthFlorida) {
-    return { center: { lat: 26.1224, lng: -80.1373 }, radius: 90_000 };
+    return { center: { lat: 26.1224, lng: -80.1373 }, radius: LOCATION_BIAS_RADIUS_M };
   }
 
   // Default: prefer GTA (primary market); FL still returned via region codes.
-  return { center: { lat: 43.6532, lng: -79.3832 }, radius: 120_000 };
+  return { center: { lat: 43.6532, lng: -79.3832 }, radius: LOCATION_BIAS_RADIUS_M };
 }
 
 function isDev() {

@@ -59,7 +59,8 @@ export function DetailsScreen() {
       return;
     }
     setErrors({});
-    updateState({ step: 4 });
+    // Persist coalesced beds/baths/sqft so the service guard's isDetailsComplete matches.
+    updateState({ ...(result.synced ?? {}), step: 4 });
     router.push(BOOKING_SCREEN_PATHS.service);
   };
 

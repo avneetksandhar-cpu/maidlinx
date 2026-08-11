@@ -4,9 +4,9 @@ import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { useBookingState } from "@/hooks/use-booking-state";
 import { HomeHero } from "@/components/home/home-hero";
-import { resolveServiceArea } from "@/lib/service-area";
 import { routes } from "@/config/site";
 import type { BookingState } from "@/lib/bookings/booking-state";
+import { buildAddressStatePatch } from "@/lib/bookings/booking-helpers";
 import { BOOKING_SCREEN_PATHS, isAddressComplete } from "@/lib/bookings/booking-routes";
 import { GoogleMapsProvider } from "@/components/booking/google-maps-provider";
 import { trackBookingEvent } from "@/lib/analytics/booking";
@@ -49,24 +49,12 @@ export function BookingPage({
   const router = useRouter();
 
   const applyAddress = (value: Partial<BookingState>, autoAdvance = false) => {
-    const area = resolveServiceArea({
-      postalCode: value.postalCode,
-      city: value.city,
-      state: value.state,
-      country: value.country,
-    });
-    updateState({
-      ...value,
-      marketId: area.marketId,
-      zoneId: area.zoneId,
-      inServiceArea: area.inServiceArea,
-      marketName: area.marketName ?? null,
-      step: area.inServiceArea ? 2 : 1,
-    });
+    const next = buildAddressStatePatch(state, value);
+    updateState(next);
 
-    if (autoAdvance && area.inServiceArea) {
+    if (autoAdvance && next.inServiceArea) {
       trackBookingEvent("address_selected", {
-        marketId: area.marketId,
+        marketId: next.marketId ?? state.marketId,
         source: "homepage_hero",
       });
       router.push(BOOKING_SCREEN_PATHS.property);

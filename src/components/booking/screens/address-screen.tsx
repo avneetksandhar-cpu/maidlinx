@@ -11,6 +11,7 @@ import { useBookingGuard } from "@/components/booking/use-booking-guard";
 import { siteConfig } from "@/config/site";
 import { BOOKING_SCREEN_PATHS } from "@/lib/bookings/booking-routes";
 import { isAddressComplete } from "@/lib/bookings/booking-routes";
+import { buildAddressStatePatch } from "@/lib/bookings/booking-helpers";
 import { resolveServiceArea } from "@/lib/service-area";
 import type { BookingState } from "@/lib/bookings/booking-state";
 import { trackBookingEvent } from "@/lib/analytics/booking";
@@ -22,25 +23,12 @@ export function AddressScreen() {
   const { state, hydrated, blocked } = useBookingGuard("address");
 
   const applyAddress = (value: Partial<BookingState>, autoAdvance = false) => {
-    const area = resolveServiceArea({
-      postalCode: value.postalCode,
-      city: value.city,
-      state: value.state,
-      country: value.country,
-    });
-    const next: Partial<BookingState> = {
-      ...value,
-      marketId: area.marketId,
-      zoneId: area.zoneId,
-      inServiceArea: area.inServiceArea,
-      marketName: area.marketName ?? null,
-      step: area.inServiceArea ? 2 : 1,
-    };
+    const next = buildAddressStatePatch(state, value);
     updateState(next);
 
-    if (autoAdvance && area.inServiceArea) {
+    if (autoAdvance && next.inServiceArea) {
       trackBookingEvent("address_selected", {
-        marketId: area.marketId,
+        marketId: next.marketId ?? state.marketId,
         placeId: value.googlePlaceId,
       });
       router.push(BOOKING_SCREEN_PATHS.property);

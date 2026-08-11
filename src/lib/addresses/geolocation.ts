@@ -372,28 +372,46 @@ async function reverseGeocodeViaPlacesNearby(
  * Reverse-geocode GPS coordinates to a structured street address.
  * Tries Geocoder first, then Places nearby (when Geocoding API is not enabled).
  * Never returns raw coordinates as the customer-facing address.
+ * Hard-caps wait so UI cannot stick on “Finding your location…”.
  */
 export async function reverseGeocodeLatLng(
   latLng: { lat: number; lng: number },
-  options?: { existingUnit?: string },
+  options?: { existingUnit?: string; timeoutMs?: number },
 ): Promise<{ ok: true; address: ReverseGeocodeResult } | { ok: false; reason: LocationFailureReason }> {
-  const mapsLoad = await ensureGoogleMapsLoaded();
-  if (mapsLoad !== "ready" && !window.google?.maps?.places) {
-    return {
-      ok: false,
-      reason: mapsLoad === "timeout" ? "maps_unavailable" : "maps_denied",
-    };
-  }
+  const timeoutMs = options?.timeoutMs ?? 12_000;
 
-  const fromGeocoder = await reverseGeocodeViaGeocoder(latLng, options?.existingUnit);
-  if (fromGeocoder?.addressLine1) {
-    return { ok: true, address: fromGeocoder };
-  }
+  const run = async (): Promise<
+    { ok: true; address: ReverseGeocodeResult } | { ok: false; reason: LocationFailureReason }
+  > => {
+    const mapsLoad = await ensureGoogleMapsLoaded();
+    if (mapsLoad !== "ready" && !window.google?.maps?.places) {
+      return {
+        ok: false,
+        reason: mapsLoad === "timeout" ? "maps_unavailable" : "maps_denied",
+      };
+    }
 
-  const fromNearby = await reverseGeocodeViaPlacesNearby(latLng, options?.existingUnit);
-  if (fromNearby?.addressLine1) {
-    return { ok: true, address: fromNearby };
-  }
+    const fromGeocoder = await reverseGeocodeViaGeocoder(latLng, options?.existingUnit);
+    if (fromGeocoder?.addressLine1) {
+      return { ok: true, address: fromGeocoder };
+    }
 
-  return { ok: false, reason: "geocode_failed" };
+    const fromNearby = await reverseGeocodeViaPlacesNearby(latLng, options?.existingUnit);
+    if (fromNearby?.addressLine1) {
+      return { ok: true, address: fromNearby };
+    }
+
+    return { ok: false, reason: "geocode_failed" };
+  };
+
+  try {
+    return await Promise.race([
+      run(),
+      new Promise<{ ok: false; reason: LocationFailureReason }>((resolve) => {
+        window.setTimeout(() => resolve({ ok: false, reason: "timeout" }), timeoutMs);
+      }),
+    ]);
+  } catch {
+    return { ok: false, reason: "geocode_failed" };
+  }
 }
