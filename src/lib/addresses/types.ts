@@ -11,6 +11,8 @@ export interface StructuredAddress {
   latitude?: number;
   longitude?: number;
   placeId?: string;
+  streetNumber?: string;
+  route?: string;
 }
 
 export interface SavedAddress extends StructuredAddress {
@@ -21,5 +23,5 @@ export interface SavedAddress extends StructuredAddress {
   updatedAt: string;
 }
 
-export const ADDRESS_LABEL_PRESETS = ["Home", "Work", "Other"] as const;
+export const ADDRESS_LABEL_PRESETS = ["Home", "Office", "Rental", "Other"] as const;
 export type AddressLabelPreset = (typeof ADDRESS_LABEL_PRESETS)[number];
