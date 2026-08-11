@@ -30,6 +30,7 @@ export async function POST(request: Request) {
       ...parsed.data,
       description: parsed.data.description ?? null,
       maxUses: parsed.data.maxUses ?? null,
+      maxUsesPerCustomer: null,
       validFrom: parsed.data.validFrom ?? null,
       validUntil: parsed.data.validUntil ?? null,
     });
