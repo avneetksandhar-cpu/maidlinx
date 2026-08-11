@@ -121,6 +121,8 @@ function parsePlace(
     longitude: place.geometry?.location?.lng(),
     googlePlaceId: place.place_id,
     formattedAddress: place.formatted_address,
+    streetNumber: streetNumber || undefined,
+    route: route || undefined,
   };
 }
 
@@ -144,6 +146,10 @@ function mergeAddress(
     formattedAddress: options?.clearPlaceMeta
       ? undefined
       : (patch.formattedAddress ?? value.formattedAddress),
+    streetNumber: options?.clearPlaceMeta
+      ? undefined
+      : (patch.streetNumber ?? value.streetNumber),
+    route: options?.clearPlaceMeta ? undefined : (patch.route ?? value.route),
   };
 }
 
@@ -617,6 +623,8 @@ export function AddressAutocomplete({
               latitude: latLng.lat,
               longitude: latLng.lng,
               placeId: parsed.googlePlaceId,
+              streetNumber: parsed.streetNumber,
+              route: parsed.route,
             },
             "current_location",
           );
@@ -772,16 +780,16 @@ export function AddressAutocomplete({
             disabled={locating}
             aria-busy={locating || undefined}
             className={cn(
-              "inline-flex items-center gap-1.5 text-sm font-medium transition-colors duration-150",
+              "inline-flex min-h-11 items-center gap-2 rounded-lg px-1 py-2 text-sm font-medium transition-colors duration-150 touch-manipulation",
               locating
                 ? "cursor-wait text-ink-muted"
                 : "text-accent underline-offset-2 hover:underline",
             )}
           >
             {locating ? (
-              <Loader2 className="size-3.5 shrink-0 animate-spin" aria-hidden />
+              <Loader2 className="size-4 shrink-0 animate-spin" aria-hidden />
             ) : (
-              <LocateFixed className="size-3.5 shrink-0" aria-hidden />
+              <LocateFixed className="size-4 shrink-0" aria-hidden />
             )}
             {locating ? LOCATION_FINDING_MESSAGE : "Use my current location"}
           </button>
@@ -800,7 +808,7 @@ export function AddressAutocomplete({
           <ul
             id={listboxId}
             role="listbox"
-            className="absolute left-0 right-0 top-full z-[90] mt-1.5 max-h-80 overflow-auto rounded-xl border border-border bg-surface py-1.5 shadow-elevated"
+            className="absolute inset-x-0 top-full z-[90] mt-1.5 max-h-[min(20rem,55dvh)] w-full overflow-y-auto overscroll-contain rounded-xl border border-border bg-surface py-1.5 shadow-elevated"
           >
             {showIdleSection ? (
               <>
@@ -818,7 +826,7 @@ export function AddressAutocomplete({
                           disabled={locating}
                           aria-busy={locating || undefined}
                           className={cn(
-                            "flex w-full items-center gap-3 px-4 py-3 text-left transition-colors duration-150",
+                            "flex min-h-12 w-full items-center gap-3 px-4 py-3.5 text-left transition-colors duration-150 touch-manipulation",
                             index === activeIndex ? "bg-accent-muted" : "hover:bg-surface-muted",
                             locating && "cursor-wait opacity-70",
                           )}
@@ -827,11 +835,11 @@ export function AddressAutocomplete({
                           onClick={() => void locateCurrent()}
                         >
                           {locating ? (
-                            <Loader2 className="size-4 shrink-0 animate-spin text-accent" aria-hidden />
+                            <Loader2 className="size-5 shrink-0 animate-spin text-accent" aria-hidden />
                           ) : (
-                            <LocateFixed className="size-4 shrink-0 text-accent" aria-hidden />
+                            <LocateFixed className="size-5 shrink-0 text-accent" aria-hidden />
                           )}
-                          <span className="text-sm font-medium text-accent">
+                          <span className="text-sm font-medium text-accent sm:text-[15px]">
                             {locating ? LOCATION_FINDING_MESSAGE : "Use my current location"}
                           </span>
                         </button>
@@ -868,7 +876,7 @@ export function AddressAutocomplete({
                         type="button"
                         id={`${listboxId}-option-${index}`}
                         className={cn(
-                          "flex w-full flex-col items-start px-4 py-3 text-left transition-colors duration-150",
+                          "flex min-h-12 w-full flex-col items-start px-4 py-3.5 text-left transition-colors duration-150 touch-manipulation",
                           index === activeIndex ? "bg-accent-muted" : "hover:bg-surface-muted",
                         )}
                         onMouseEnter={() => setActiveIndex(index)}
@@ -924,16 +932,16 @@ export function AddressAutocomplete({
                         type="button"
                         id={`${listboxId}-option-${index}`}
                         className={cn(
-                          "flex w-full flex-col items-start px-4 py-3 text-left transition-colors duration-150",
+                          "flex min-h-12 w-full flex-col items-start px-4 py-3.5 text-left transition-colors duration-150 touch-manipulation",
                           index === activeIndex ? "bg-accent-muted" : "hover:bg-surface-muted",
                         )}
                         onMouseEnter={() => setActiveIndex(index)}
                         onMouseDown={(event) => event.preventDefault()}
                         onClick={() => selectPrediction(item.prediction)}
                       >
-                        <span className="text-sm font-medium text-ink">{main}</span>
+                        <span className="text-sm font-medium text-ink sm:text-[15px]">{main}</span>
                         {secondary ? (
-                          <span className="mt-0.5 text-xs text-ink-muted">{secondary}</span>
+                          <span className="mt-0.5 text-xs text-ink-muted sm:text-sm">{secondary}</span>
                         ) : null}
                       </button>
                     </li>

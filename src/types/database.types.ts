@@ -210,6 +210,33 @@ export type Database = {
         };
         Relationships: [];
       };
+      cleaner_live_locations: {
+        Row: {
+          booking_id: string;
+          cleaner_id: string;
+          lat: number;
+          lng: number;
+          accuracy: number | null;
+          updated_at: string;
+        };
+        Insert: {
+          booking_id: string;
+          cleaner_id: string;
+          lat: number;
+          lng: number;
+          accuracy?: number | null;
+          updated_at?: string;
+        };
+        Update: {
+          booking_id?: string;
+          cleaner_id?: string;
+          lat?: number;
+          lng?: number;
+          accuracy?: number | null;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       cleaner_documents: {
         Row: {
           id: string;

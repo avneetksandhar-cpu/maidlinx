@@ -11,6 +11,8 @@ export interface StructuredAddress {
   latitude?: number;
   longitude?: number;
   placeId?: string;
+  streetNumber?: string;
+  route?: string;
 }
 
 export interface SavedAddress extends StructuredAddress {

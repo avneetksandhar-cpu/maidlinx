@@ -18,6 +18,7 @@ In **APIs & Services → Library**, enable:
 - **Places API**
 - **Maps JavaScript API**
 - **Geocoding API** (required for **Use my current location** reverse lookup)
+- **Maps Static API** (map previews on access / review / confirmation; live-tracking fallback)
 
 ## 3. Create an API key
 
@@ -85,5 +86,10 @@ In Cloud Console → **Credentials → your key**:
    - Places API
    - Maps JavaScript API
    - Geocoding API
+   - Maps Static API
 
 This is a browser (`NEXT_PUBLIC_`) key — treat referrer + API restrictions as required for production.
+
+## 8. Live cleaner tracking
+
+See [LIVE_LOCATION.md](./LIVE_LOCATION.md) for cleaner GPS upsert, customer read API, and privacy rules. Requires Maps JS (or Static Maps fallback) plus the `00020_cleaner_live_locations` migration applied to your Supabase project.

@@ -16,6 +16,9 @@ export const step1AddressSchema = z.object({
   longitude: z.number().optional(),
   googlePlaceId: z.string().trim().optional(),
   formattedAddress: z.string().trim().optional(),
+  /** Parsed Places components (optional; line1 remains the display street). */
+  streetNumber: z.string().trim().optional(),
+  route: z.string().trim().optional(),
   /** Hint only — server resolves market from address via `@/lib/markets`. */
   marketId: z.string().trim().optional(),
   zoneId: z.string().trim().optional(),

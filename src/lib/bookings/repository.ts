@@ -69,6 +69,8 @@ export interface StoredBooking {
   address_state: string | null;
   address_postal_code: string | null;
   address_country: string | null;
+  address_latitude: number | null;
+  address_longitude: number | null;
   google_place_id: string | null;
   stripe_payment_intent_id: string | null;
   notes: string | null;
@@ -114,6 +116,10 @@ function mapRow(
     address_state: row.address_state ? String(row.address_state) : null,
     address_postal_code: row.address_postal_code ? String(row.address_postal_code) : null,
     address_country: row.address_country ? String(row.address_country) : null,
+    address_latitude:
+      row.address_latitude != null ? Number(row.address_latitude) : null,
+    address_longitude:
+      row.address_longitude != null ? Number(row.address_longitude) : null,
     google_place_id: row.google_place_id ? String(row.google_place_id) : null,
     stripe_payment_intent_id: row.stripe_payment_intent_id
       ? String(row.stripe_payment_intent_id)

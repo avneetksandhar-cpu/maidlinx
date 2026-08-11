@@ -99,8 +99,51 @@ declare global {
   }
 
   namespace google.maps {
-    // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-    interface Map {}
+    interface MapOptions {
+      center?: LatLngLiteral;
+      zoom?: number;
+      disableDefaultUI?: boolean;
+      gestureHandling?: string;
+      clickableIcons?: boolean;
+      mapTypeControl?: boolean;
+      streetViewControl?: boolean;
+      fullscreenControl?: boolean;
+      zoomControl?: boolean;
+      styles?: Array<Record<string, unknown>>;
+    }
+
+    class Map {
+      constructor(mapDiv: HTMLElement, opts?: MapOptions);
+      setCenter(latLng: LatLngLiteral): void;
+      fitBounds(bounds: LatLngBounds, padding?: number | Padding): void;
+      panTo(latLng: LatLngLiteral): void;
+    }
+
+    interface Padding {
+      top: number;
+      right: number;
+      bottom: number;
+      left: number;
+    }
+
+    class LatLngBounds {
+      extend(point: LatLngLiteral): void;
+      isEmpty(): boolean;
+    }
+
+    interface MarkerOptions {
+      map?: Map | null;
+      position?: LatLngLiteral;
+      title?: string;
+      label?: string | { text: string; color?: string; fontWeight?: string };
+      icon?: string | { path?: unknown; scale?: number; fillColor?: string; fillOpacity?: number; strokeWeight?: number; strokeColor?: string };
+    }
+
+    class Marker {
+      constructor(opts?: MarkerOptions);
+      setPosition(latLng: LatLngLiteral): void;
+      setMap(map: Map | null): void;
+    }
 
     interface LatLngLiteral {
       lat: number;
