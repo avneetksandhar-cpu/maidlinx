@@ -7,6 +7,9 @@
 **Live markets (truthful only):** Toronto / GTA · South Florida  
 **Not live for marketing claims:** New York, California (inactive in `src/config/markets.ts`)
 
+**Related growth docs:** `SEO_ROADMAP.md` · `KEYWORD_MAP.md` · `MARKET_EXPANSION.md` · `COMPETITOR_GAPS.md` · `LOCAL_SEO.md`  
+**Rule:** Architecture proposals below are not a green light to mass-publish location pages — see quality gate in `SEO_ROADMAP.md`.
+
 ---
 
 ## SEO health snapshot

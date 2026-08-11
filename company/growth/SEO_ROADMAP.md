@@ -7,7 +7,8 @@
 **Ethics:** No stuffing, hidden text, fake GBP/reviews, doorway pages, spam backlinks, mass AI city pages  
 **Coordination:** Sibling technical foundations in `SEO_AUDIT.md` + `LOCAL_SEO.md` — this doc owns architecture + process; avoid conflicting mass page creation
 
-**Related:** `KEYWORD_MAP.md` · `MARKET_EXPANSION.md` · `COMPETITOR_GAPS.md`
+**Related:** `GROWTH_ROADMAP.md` (P0–P3 growth sequencing) · `KEYWORD_MAP.md` · `MARKET_EXPANSION.md` · `COMPETITOR_GAPS.md` · `CONTENT_CALENDAR.md`  
+**Split:** This file = page architecture, quality gate, programmatic rules, organic KPI. `GROWTH_ROADMAP.md` = prioritized growth backlog vs MVP gate.
 
 ---
 

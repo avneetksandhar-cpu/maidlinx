@@ -4,6 +4,8 @@
 **Do not claim:** New York, California, or any city outside active service zones.  
 **Rule:** No fake Google Business Profiles, invented addresses, or purchased reviews.
 
+**Related:** `SEO_ROADMAP.md` (architecture + quality gate) · `MARKET_EXPANSION.md` (cluster launch) · `KEYWORD_MAP.md`
+
 ---
 
 ## 1. Google Business Profile (GBP)

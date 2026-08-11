@@ -14,6 +14,15 @@
 | Deposit paid (Stripe sandbox/prod) | TBD | Payment integrity = P0 |
 | Confirmation viewed | TBD | |
 
+## Organic growth (placeholders)
+
+| Metric | Value | Notes |
+|--------|-------|-------|
+| Organic sessions | TBD | GSC / analytics when verified |
+| Organic → start booking | TBD | Prefer UTM or landing classification |
+| **Completed paid bookings from organic** | TBD | **Primary SEO KPI** (`SEO_ROADMAP.md`) |
+| GBP → site clicks → bookings | TBD | After real GBP live |
+
 ## Acquisition / SEO (placeholders)
 
 | Metric | Value | Notes |
