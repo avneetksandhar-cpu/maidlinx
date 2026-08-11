@@ -118,7 +118,7 @@ export function ReviewScreen() {
       ctaLoading={loading}
       onContinue={() => {
         if (loading || pricingError) return;
-        updateState({ step: 8 });
+        updateState({ step: 10 });
         router.push(BOOKING_SCREEN_PATHS.payment);
       }}
     >
@@ -135,7 +135,7 @@ export function ReviewScreen() {
           <Row
             label="Entry / parking / gate"
             value={accessLabel}
-            href={BOOKING_SCREEN_PATHS.details}
+            href={BOOKING_SCREEN_PATHS.access}
           />
           <Row label="Property" value={propertyLabel} href={BOOKING_SCREEN_PATHS.property} />
           <Row
@@ -144,8 +144,8 @@ export function ReviewScreen() {
             href={BOOKING_SCREEN_PATHS.details}
           />
           <Row label="Service" value={serviceLabel} href={BOOKING_SCREEN_PATHS.service} />
-          <Row label="Extras" value={extrasLabel} href={BOOKING_SCREEN_PATHS.extras} />
-          <Row label="When" value={whenLabel || "—"} href={BOOKING_SCREEN_PATHS.schedule} />
+          <Row label="Add-ons" value={extrasLabel} href={BOOKING_SCREEN_PATHS.addons} />
+          <Row label="When" value={whenLabel || "—"} href={BOOKING_SCREEN_PATHS.date} />
         </div>
 
         {pricingError ? (

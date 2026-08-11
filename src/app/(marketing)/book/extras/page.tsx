@@ -1,5 +1,6 @@
-import { ExtrasScreen } from "@/components/booking/screens/extras-screen";
+import { redirect } from "next/navigation";
+import { BOOKING_SCREEN_PATHS } from "@/lib/bookings/booking-routes";
 
-export default function BookExtrasPage() {
-  return <ExtrasScreen />;
+export default function BookExtrasLegacyPage() {
+  redirect(BOOKING_SCREEN_PATHS.addons);
 }

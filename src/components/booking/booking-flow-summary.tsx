@@ -8,6 +8,8 @@ import { cn } from "@/lib/utils";
 interface BookingFlowSummaryProps {
   className?: string;
   footerHint?: React.ReactNode;
+  estimatedTotal?: string | null;
+  priceLoading?: boolean;
 }
 
 function SummaryRow({ label, value }: { label: string; value: string }) {
@@ -19,7 +21,12 @@ function SummaryRow({ label, value }: { label: string; value: string }) {
   );
 }
 
-export function BookingFlowSummary({ className, footerHint }: BookingFlowSummaryProps) {
+export function BookingFlowSummary({
+  className,
+  footerHint,
+  estimatedTotal,
+  priceLoading,
+}: BookingFlowSummaryProps) {
   const { state } = useBooking();
 
   const address =
@@ -36,7 +43,7 @@ export function BookingFlowSummary({ className, footerHint }: BookingFlowSummary
   const extrasLabel =
     extrasCount === 0
       ? null
-      : `${extrasCount} extra${extrasCount === 1 ? "" : "s"}`;
+      : `${extrasCount} add-on${extrasCount === 1 ? "" : "s"}`;
   const whenLabel = [state.date, state.arrivalWindow].filter(Boolean).join(" · ") || null;
 
   const hasAny = Boolean(address || propertyLabel || serviceLabel || whenLabel);
@@ -56,7 +63,7 @@ export function BookingFlowSummary({ className, footerHint }: BookingFlowSummary
           {address ? <SummaryRow label="Address" value={address} /> : null}
           {propertyLabel ? <SummaryRow label="Space" value={propertyLabel} /> : null}
           {serviceLabel ? <SummaryRow label="Service" value={serviceLabel} /> : null}
-          {extrasLabel ? <SummaryRow label="Extras" value={extrasLabel} /> : null}
+          {extrasLabel ? <SummaryRow label="Add-ons" value={extrasLabel} /> : null}
           {whenLabel ? <SummaryRow label="When" value={whenLabel} /> : null}
           {state.extras?.length ? (
             <p className="pt-2 text-xs text-ink-subtle">
@@ -71,7 +78,17 @@ export function BookingFlowSummary({ className, footerHint }: BookingFlowSummary
           Your details appear here as you go.
         </p>
       )}
-      {footerHint ? <div className="mt-4 border-t border-border pt-4">{footerHint}</div> : null}
+      {estimatedTotal ? (
+        <div className="mt-4 flex items-center justify-between border-t border-border pt-4">
+          <span className="text-sm font-medium text-ink">Estimated total</span>
+          <span className="text-base font-semibold tabular-nums text-ink">
+            {priceLoading ? "Updating…" : estimatedTotal}
+          </span>
+        </div>
+      ) : null}
+      {footerHint && !estimatedTotal ? (
+        <div className="mt-4 border-t border-border pt-4">{footerHint}</div>
+      ) : null}
     </aside>
   );
 }

@@ -10,8 +10,10 @@ export const BOOKING_SCREENS = [
   { id: "property", path: "/book/property", label: "Property", shortLabel: "Type" },
   { id: "details", path: "/book/details", label: "Details", shortLabel: "Details" },
   { id: "service", path: "/book/service", label: "Service", shortLabel: "Clean" },
-  { id: "extras", path: "/book/extras", label: "Extras", shortLabel: "Extras" },
-  { id: "schedule", path: "/book/schedule", label: "Schedule", shortLabel: "When" },
+  { id: "addons", path: "/book/addons", label: "Add-ons", shortLabel: "Extras" },
+  { id: "date", path: "/book/date", label: "Date", shortLabel: "Date" },
+  { id: "time", path: "/book/time", label: "Time", shortLabel: "Time" },
+  { id: "access", path: "/book/access", label: "Access", shortLabel: "Access" },
   { id: "review", path: "/book/review", label: "Review", shortLabel: "Review" },
   { id: "payment", path: "/book/payment", label: "Payment", shortLabel: "Pay" },
 ] as const;
@@ -21,6 +23,12 @@ export type BookingScreenId = (typeof BOOKING_SCREENS)[number]["id"];
 export const BOOKING_SCREEN_PATHS = Object.fromEntries(
   BOOKING_SCREENS.map((s) => [s.id, s.path]),
 ) as Record<BookingScreenId, string>;
+
+/** Legacy path aliases kept for bookmarks / older links. */
+export const BOOKING_LEGACY_REDIRECTS: Record<string, BookingScreenId> = {
+  "/book/extras": "addons",
+  "/book/schedule": "date",
+};
 
 export function getBookingScreen(id: BookingScreenId) {
   return BOOKING_SCREENS.find((s) => s.id === id)!;
@@ -94,13 +102,25 @@ export function isExtrasComplete(state: BookingState): boolean {
   return Array.isArray(state.extras);
 }
 
-export function isScheduleComplete(state: BookingState): boolean {
+/** Date step: preset + concrete YYYY-MM-DD. */
+export function isDateComplete(state: BookingState): boolean {
   return Boolean(
-    state.schedulePreset &&
-      state.date &&
-      /^\d{4}-\d{2}-\d{2}$/.test(state.date) &&
-      state.arrivalWindow,
+    state.schedulePreset && state.date && /^\d{4}-\d{2}-\d{2}$/.test(state.date),
   );
+}
+
+/** Time step: arrival window (ASAP resolves one automatically). */
+export function isTimeComplete(state: BookingState): boolean {
+  return Boolean(state.arrivalWindow);
+}
+
+/** Access notes are optional — step is always completable. */
+export function isAccessComplete(): boolean {
+  return true;
+}
+
+export function isScheduleComplete(state: BookingState): boolean {
+  return isDateComplete(state) && isTimeComplete(state);
 }
 
 export function isReviewReady(state: BookingState): boolean {
@@ -119,17 +139,31 @@ const COMPLETION: Record<BookingScreenId, (state: BookingState) => boolean> = {
   property: isAddressComplete,
   details: (s) => isAddressComplete(s) && isPropertyComplete(s),
   service: (s) => isAddressComplete(s) && isPropertyComplete(s) && isDetailsComplete(s),
-  extras: (s) =>
+  addons: (s) =>
     isAddressComplete(s) &&
     isPropertyComplete(s) &&
     isDetailsComplete(s) &&
     isServiceComplete(s),
-  schedule: (s) =>
+  date: (s) =>
     isAddressComplete(s) &&
     isPropertyComplete(s) &&
     isDetailsComplete(s) &&
     isServiceComplete(s) &&
     isExtrasComplete(s),
+  time: (s) =>
+    isAddressComplete(s) &&
+    isPropertyComplete(s) &&
+    isDetailsComplete(s) &&
+    isServiceComplete(s) &&
+    isExtrasComplete(s) &&
+    isDateComplete(s),
+  access: (s) =>
+    isAddressComplete(s) &&
+    isPropertyComplete(s) &&
+    isDetailsComplete(s) &&
+    isServiceComplete(s) &&
+    isExtrasComplete(s) &&
+    isScheduleComplete(s),
   review: isReviewReady,
   payment: isReviewReady,
 };
@@ -143,13 +177,17 @@ export function getGuardRedirect(
   state: BookingState,
 ): string | null {
   if (COMPLETION[screenId](state)) {
-    // Skip extras for quote-only services
+    // Skip add-ons for quote-only services
     if (
-      screenId === "extras" &&
+      screenId === "addons" &&
       state.serviceType &&
       isQuoteOnlyService(state.serviceType)
     ) {
-      return BOOKING_SCREEN_PATHS.schedule;
+      return BOOKING_SCREEN_PATHS.date;
+    }
+    // ASAP already has a window — skip time picker
+    if (screenId === "time" && state.schedulePreset === "asap" && isTimeComplete(state)) {
+      return BOOKING_SCREEN_PATHS.access;
     }
     return null;
   }
@@ -158,9 +196,10 @@ export function getGuardRedirect(
   if (!isPropertyComplete(state)) return BOOKING_SCREEN_PATHS.property;
   if (!isDetailsComplete(state)) return BOOKING_SCREEN_PATHS.details;
   if (!isServiceComplete(state)) return BOOKING_SCREEN_PATHS.service;
-  if (!isExtrasComplete(state)) return BOOKING_SCREEN_PATHS.extras;
-  if (!isScheduleComplete(state)) return BOOKING_SCREEN_PATHS.schedule;
-  return BOOKING_SCREEN_PATHS.review;
+  if (!isExtrasComplete(state)) return BOOKING_SCREEN_PATHS.addons;
+  if (!isDateComplete(state)) return BOOKING_SCREEN_PATHS.date;
+  if (!isTimeComplete(state)) return BOOKING_SCREEN_PATHS.time;
+  return BOOKING_SCREEN_PATHS.access;
 }
 
 export function getPreviousScreen(
@@ -172,11 +211,14 @@ export function getPreviousScreen(
 
   let prev = BOOKING_SCREENS[index - 1]!.id;
   if (
-    prev === "extras" &&
+    prev === "addons" &&
     state.serviceType &&
     isQuoteOnlyService(state.serviceType)
   ) {
     prev = "service";
+  }
+  if (prev === "time" && state.schedulePreset === "asap") {
+    prev = "date";
   }
   return prev;
 }
@@ -190,11 +232,14 @@ export function getNextScreen(
 
   let next = BOOKING_SCREENS[index + 1]!.id;
   if (
-    next === "extras" &&
+    next === "addons" &&
     state.serviceType &&
     isQuoteOnlyService(state.serviceType)
   ) {
-    next = "schedule";
+    next = "date";
+  }
+  if (next === "time" && state.schedulePreset === "asap") {
+    next = "access";
   }
   return next;
 }

@@ -9,7 +9,7 @@ export default function BookLayout({
   return (
     <GoogleMapsProvider>
       <BookingProvider>
-        <div className="min-h-[calc(100dvh-3.5rem)] bg-background py-4 sm:py-6">{children}</div>
+        <div className="min-h-dvh bg-background">{children}</div>
       </BookingProvider>
     </GoogleMapsProvider>
   );

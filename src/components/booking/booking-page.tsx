@@ -126,7 +126,7 @@ export function BookingPage({
   return (
     <GoogleMapsProvider>
       {showHero ? (
-        <section className="relative overflow-hidden bg-background">
+        <section className="relative flex min-h-[calc(100dvh-3.5rem)] items-center overflow-hidden bg-background">
           <div
             className="pointer-events-none absolute inset-0 opacity-70"
             style={{
@@ -145,7 +145,7 @@ export function BookingPage({
                   Cleaning, on demand.
                 </h1>
                 <p className="mt-3 max-w-md text-base text-ink-muted sm:text-lg">
-                  Book trusted cleaning professionals in minutes.
+                  Book cleaning pros nearby in minutes.
                 </p>
 
                 <div className="mt-7 max-w-xl space-y-4">

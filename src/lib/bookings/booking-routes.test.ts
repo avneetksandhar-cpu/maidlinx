@@ -40,7 +40,7 @@ describe("booking route guards", () => {
     expect(getGuardRedirect("details", baseAddress())).toBe(BOOKING_SCREEN_PATHS.property);
   });
 
-  it("skips extras for quote-only services", () => {
+  it("skips addons for quote-only services", () => {
     const state = baseAddress({
       propertyType: "post_construction",
       bedrooms: 0,
@@ -49,9 +49,9 @@ describe("booking route guards", () => {
       serviceType: "post_construction",
       serviceTierId: "pro",
     });
-    expect(getNextScreen("service", state)).toBe("schedule");
-    expect(getGuardRedirect("extras", state)).toBe(BOOKING_SCREEN_PATHS.schedule);
-    expect(getPreviousScreen("schedule", state)).toBe("service");
+    expect(getNextScreen("service", state)).toBe("date");
+    expect(getGuardRedirect("addons", state)).toBe(BOOKING_SCREEN_PATHS.date);
+    expect(getPreviousScreen("date", state)).toBe("service");
   });
 
   it("blocks payment until schedule is complete", () => {
@@ -65,7 +65,47 @@ describe("booking route guards", () => {
       extras: [],
     });
     expect(isScheduleComplete(state)).toBe(false);
-    expect(getGuardRedirect("payment", state)).toBe(BOOKING_SCREEN_PATHS.schedule);
+    expect(getGuardRedirect("payment", state)).toBe(BOOKING_SCREEN_PATHS.date);
+  });
+
+  it("splits date → time → access → review", () => {
+    const withDate = baseAddress({
+      propertyType: "house",
+      bedrooms: 2,
+      bathrooms: 2,
+      squareFootage: 1500,
+      serviceType: "standard",
+      serviceTierId: "standard",
+      extras: [],
+      schedulePreset: "tomorrow",
+      date: "2026-08-12",
+    });
+    expect(getNextScreen("date", withDate)).toBe("time");
+    expect(getGuardRedirect("time", withDate)).toBeNull();
+    expect(getGuardRedirect("access", withDate)).toBe(BOOKING_SCREEN_PATHS.time);
+
+    const withTime = { ...withDate, arrivalWindow: "morning" as const };
+    expect(getNextScreen("time", withTime)).toBe("access");
+    expect(getGuardRedirect("access", withTime)).toBeNull();
+    expect(getNextScreen("access", withTime)).toBe("review");
+  });
+
+  it("skips time for ASAP", () => {
+    const state = baseAddress({
+      propertyType: "house",
+      bedrooms: 2,
+      bathrooms: 2,
+      squareFootage: 1500,
+      serviceType: "standard",
+      serviceTierId: "standard",
+      extras: [],
+      schedulePreset: "asap",
+      date: "2026-08-11",
+      arrivalWindow: "afternoon",
+    });
+    expect(getNextScreen("date", state)).toBe("access");
+    expect(getGuardRedirect("time", state)).toBe(BOOKING_SCREEN_PATHS.access);
+    expect(getPreviousScreen("access", state)).toBe("date");
   });
 
   it("allows review when full draft is ready", () => {

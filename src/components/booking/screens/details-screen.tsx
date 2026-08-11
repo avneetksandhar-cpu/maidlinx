@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { BookingFlowChrome } from "@/components/booking/booking-flow-chrome";
 import { DynamicServiceQuestions } from "@/components/booking/dynamic-service-questions";
-import { Input, Label, Textarea } from "@/components/ui";
+import { Input, Label } from "@/components/ui";
 import { useBooking } from "@/components/booking/booking-provider";
 import { useBookingGuard } from "@/components/booking/use-booking-guard";
 import { BOOKING_SCREEN_PATHS } from "@/lib/bookings/booking-routes";
@@ -99,20 +99,6 @@ export function DetailsScreen() {
             onChange={(e) => updateState({ line2: e.target.value })}
             placeholder="Apt, suite, floor…"
             className="mt-2 rounded-xl"
-          />
-        </div>
-
-        <div>
-          <Label htmlFor="accessNotes" className="text-sm text-ink-muted">
-            Entry, parking, or gate instructions (optional)
-          </Label>
-          <Textarea
-            id="accessNotes"
-            value={state.accessNotes ?? ""}
-            onChange={(e) => updateState({ accessNotes: e.target.value })}
-            placeholder="Buzzer/gate code, parking spot, pet notes…"
-            className="mt-2 rounded-xl"
-            rows={3}
           />
         </div>
       </div>

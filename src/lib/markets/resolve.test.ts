@@ -88,44 +88,37 @@ describe("resolveMarket", () => {
     expect(result.zone?.id).toBeTruthy();
   });
 
-  it("resolves NYC ZIP to NEW_YORK", () => {
+  it("does not book NYC while NEW_YORK is inactive", () => {
     const result = resolveMarket({
       postalCode: "10001",
       city: "New York",
       state: "NY",
       country: "US",
     });
-    expect(result.market?.code).toBe("NEW_YORK");
-    expect(result.market?.currency).toBe("USD");
-    expect(result.market?.timezone).toBe("America/New_York");
-    expect(result.zone?.id).toBe("zone_nyc_manhattan");
-    expect(result.inServiceArea).toBe(true);
+    expect(result.inServiceArea).toBe(false);
+    expect(result.market).toBeNull();
   });
 
-  it("resolves Los Angeles ZIP to CALIFORNIA", () => {
+  it("does not book Los Angeles while CALIFORNIA is inactive", () => {
     const result = resolveMarket({
       postalCode: "90012",
       city: "Los Angeles",
       state: "CA",
       country: "US",
     });
-    expect(result.market?.code).toBe("CALIFORNIA");
-    expect(result.market?.currency).toBe("USD");
-    expect(result.market?.timezone).toBe("America/Los_Angeles");
-    expect(result.zone?.id).toBe("zone_la");
-    expect(result.inServiceArea).toBe(true);
+    expect(result.inServiceArea).toBe(false);
+    expect(result.market).toBeNull();
   });
 
-  it("resolves San Francisco ZIP to CALIFORNIA Bay Area zone", () => {
+  it("does not book San Francisco while CALIFORNIA is inactive", () => {
     const result = resolveMarket({
       postalCode: "94105",
       city: "San Francisco",
       state: "CA",
       country: "US",
     });
-    expect(result.market?.code).toBe("CALIFORNIA");
-    expect(result.zone?.id).toBe("zone_sf_bay");
-    expect(result.inServiceArea).toBe(true);
+    expect(result.inServiceArea).toBe(false);
+    expect(result.market).toBeNull();
   });
 
   it("rejects unsupported regions (e.g. Seattle)", () => {
@@ -139,23 +132,19 @@ describe("resolveMarket", () => {
     expect(result.inServiceArea).toBe(false);
   });
 
-  it("exposes seed market codes for all active markets", () => {
+  it("exposes only Toronto/GTA and South Florida as active customer markets", () => {
     expect(getMarketByCode("TORONTO_GTA")?.slug).toBe("toronto-gta");
     expect(getMarketByCode("SOUTH_FLORIDA")?.slug).toBe("south-florida");
-    expect(getMarketByCode("NEW_YORK")?.slug).toBe("new-york");
-    expect(getMarketByCode("CALIFORNIA")?.slug).toBe("california");
-    expect(getActiveMarkets().map((m) => m.id)).toEqual(
-      expect.arrayContaining(["TORONTO_GTA", "SOUTH_FLORIDA", "NEW_YORK", "CALIFORNIA"]),
-    );
+    expect(getMarketByCode("NEW_YORK")?.active).toBe(false);
+    expect(getMarketByCode("CALIFORNIA")?.active).toBe(false);
+    expect(getActiveMarkets().map((m) => m.id)).toEqual(["TORONTO_GTA", "SOUTH_FLORIDA"]);
   });
 });
 
 describe("marketSupportsService", () => {
-  it("allows residential across seeded markets", () => {
+  it("allows residential across active seeded markets", () => {
     expect(marketSupportsService("TORONTO_GTA", "standard")).toBe(true);
     expect(marketSupportsService("SOUTH_FLORIDA", "residential")).toBe(true);
-    expect(marketSupportsService("NEW_YORK", "standard")).toBe(true);
-    expect(marketSupportsService("CALIFORNIA", "residential")).toBe(true);
   });
 
   it("rejects unknown services", () => {

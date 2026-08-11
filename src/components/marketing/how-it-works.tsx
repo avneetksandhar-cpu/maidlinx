@@ -15,7 +15,7 @@ const steps = [
   },
   {
     title: "Relax",
-    description: "Pay securely. A vetted Pro handles the rest.",
+    description: "Pay securely. Your Pro handles the rest.",
   },
 ] as const;
 

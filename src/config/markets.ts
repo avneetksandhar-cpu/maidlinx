@@ -63,7 +63,8 @@ export const MARKETS: MarketConfig[] = [
     country: "US",
     currency: "USD",
     timezone: "America/New_York",
-    active: true,
+    // Not customer-facing until ops enables booking here.
+    active: false,
     center: { latitude: 40.7128, longitude: -74.006 },
     regions: ["NY"],
   },
@@ -75,7 +76,8 @@ export const MARKETS: MarketConfig[] = [
     country: "US",
     currency: "USD",
     timezone: "America/Los_Angeles",
-    active: true,
+    // Not customer-facing until ops enables booking here.
+    active: false,
     center: { latitude: 34.0522, longitude: -118.2437 },
     regions: ["CA"],
   },
@@ -231,12 +233,12 @@ export const SERVICE_ZONES: ServiceZoneConfig[] = [
     ],
   },
 
-  // --- New York (USD) ---
+  // --- New York (USD) — inactive until launched ---
   {
     id: "zone_nyc_manhattan",
     marketId: "NEW_YORK",
     name: "Manhattan",
-    active: true,
+    active: false,
     postalCodes: ["100", "101", "102"],
     cities: ["new york", "manhattan", "nyc"],
   },
@@ -244,7 +246,7 @@ export const SERVICE_ZONES: ServiceZoneConfig[] = [
     id: "zone_nyc_brooklyn",
     marketId: "NEW_YORK",
     name: "Brooklyn",
-    active: true,
+    active: false,
     postalCodes: ["112"],
     cities: ["brooklyn"],
   },
@@ -252,7 +254,7 @@ export const SERVICE_ZONES: ServiceZoneConfig[] = [
     id: "zone_nyc_queens",
     marketId: "NEW_YORK",
     name: "Queens",
-    active: true,
+    active: false,
     postalCodes: ["111", "113", "114", "116"],
     cities: ["queens", "long island city", "astoria", "flushing", "jamaica"],
   },
@@ -260,7 +262,7 @@ export const SERVICE_ZONES: ServiceZoneConfig[] = [
     id: "zone_nyc_bronx",
     marketId: "NEW_YORK",
     name: "Bronx",
-    active: true,
+    active: false,
     postalCodes: ["104"],
     cities: ["bronx", "the bronx"],
   },
@@ -268,7 +270,7 @@ export const SERVICE_ZONES: ServiceZoneConfig[] = [
     id: "zone_nyc_staten_island",
     marketId: "NEW_YORK",
     name: "Staten Island",
-    active: true,
+    active: false,
     postalCodes: ["103"],
     cities: ["staten island"],
   },
@@ -276,7 +278,7 @@ export const SERVICE_ZONES: ServiceZoneConfig[] = [
     id: "zone_ny_metro",
     marketId: "NEW_YORK",
     name: "NY Metro",
-    active: true,
+    active: false,
     // Westchester + western Long Island / NYC-adjacent
     postalCodes: ["105", "106", "107", "108", "109", "110", "115"],
     cities: [
@@ -290,12 +292,12 @@ export const SERVICE_ZONES: ServiceZoneConfig[] = [
     ],
   },
 
-  // --- California (USD) ---
+  // --- California (USD) — inactive until launched ---
   {
     id: "zone_la",
     marketId: "CALIFORNIA",
     name: "Los Angeles",
-    active: true,
+    active: false,
     postalCodes: ["900", "901", "902", "903", "904", "905", "906", "907", "908", "910", "911", "912", "913", "914", "915", "916", "917", "918"],
     cities: [
       "los angeles",
@@ -317,7 +319,7 @@ export const SERVICE_ZONES: ServiceZoneConfig[] = [
     id: "zone_orange_county",
     marketId: "CALIFORNIA",
     name: "Orange County",
-    active: true,
+    active: false,
     postalCodes: ["926", "927", "928"],
     cities: [
       "irvine",
@@ -334,7 +336,7 @@ export const SERVICE_ZONES: ServiceZoneConfig[] = [
     id: "zone_sf_bay",
     marketId: "CALIFORNIA",
     name: "San Francisco Bay Area",
-    active: true,
+    active: false,
     postalCodes: ["940", "941", "943", "944", "945", "946", "947", "948", "949", "950", "951"],
     cities: [
       "san francisco",
@@ -353,7 +355,7 @@ export const SERVICE_ZONES: ServiceZoneConfig[] = [
     id: "zone_san_diego",
     marketId: "CALIFORNIA",
     name: "San Diego",
-    active: true,
+    active: false,
     postalCodes: ["919", "920", "921"],
     cities: ["san diego", "la jolla", "chula vista", "carlsbad", "oceanside"],
   },

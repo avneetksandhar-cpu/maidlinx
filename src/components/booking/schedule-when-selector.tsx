@@ -22,6 +22,8 @@ const PRESETS: Array<{
 ];
 
 interface ScheduleWhenSelectorProps {
+  /** Split booking funnel: date-only, time-only, or combined (legacy). */
+  mode?: "date" | "time" | "all";
   schedulePreset?: SchedulePreset;
   date?: string;
   arrivalWindow?: string;
@@ -38,6 +40,7 @@ interface ScheduleWhenSelectorProps {
 }
 
 export function ScheduleWhenSelector({
+  mode = "all",
   schedulePreset,
   date,
   arrivalWindow,
@@ -53,8 +56,12 @@ export function ScheduleWhenSelector({
     return d.toISOString().slice(0, 10);
   }, []);
 
-  const showWindows = schedulePreset && schedulePreset !== "asap";
-  const showDatePicker = schedulePreset === "date";
+  const showPresets = mode === "date" || mode === "all";
+  const showWindows =
+    (mode === "time" || mode === "all") &&
+    Boolean(schedulePreset) &&
+    (mode === "time" || schedulePreset !== "asap");
+  const showDatePicker = showPresets && schedulePreset === "date";
 
   const suggestedWindows = useMemo(() => {
     if (!date || !showWindows) return [];
@@ -79,6 +86,7 @@ export function ScheduleWhenSelector({
 
   return (
     <div className="space-y-6">
+      {showPresets ? (
       <fieldset>
         <legend className="mb-3 block text-sm font-medium text-ink-muted">
           When do you need us?
@@ -121,6 +129,7 @@ export function ScheduleWhenSelector({
           <p className="mt-2 text-sm text-error">{errors.schedulePreset}</p>
         ) : null}
       </fieldset>
+      ) : null}
 
       {showDatePicker ? (
         <div>
@@ -193,7 +202,7 @@ export function ScheduleWhenSelector({
         </fieldset>
       ) : null}
 
-      {schedulePreset === "asap" && date ? (
+      {(mode === "date" || mode === "all") && schedulePreset === "asap" && date ? (
         <p className="rounded-xl bg-accent-muted/60 px-4 py-3 text-sm text-ink">
           We&apos;ll aim for the soonest window today
           {arrivalWindow
@@ -201,6 +210,10 @@ export function ScheduleWhenSelector({
             : ""}
           .
         </p>
+      ) : null}
+
+      {mode === "time" && !date ? (
+        <p className="text-sm text-ink-muted">Pick a day first, then choose a window.</p>
       ) : null}
     </div>
   );

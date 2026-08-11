@@ -15,7 +15,7 @@ const dmSans = DM_Sans({
 export const metadata: Metadata = {
   metadataBase: new URL(getSiteUrl()),
   title: {
-    default: `${siteConfig.name} | Professional Home Cleaning`,
+    default: `${siteConfig.name} | Book Cleaning On Demand`,
     template: `%s | ${siteConfig.name}`,
   },
   description: siteConfig.description,

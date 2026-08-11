@@ -1,11 +1,12 @@
 export const siteConfig = {
   name: "MaidLinx",
   description:
-    "Book trusted cleaning professionals online. Choose your service, pick a time, and relax while MaidLinx handles the rest.",
+    "Book cleaning on demand in Toronto/GTA and South Florida. Enter your address, pick a service and time, and confirm online.",
   url: process.env.NEXT_PUBLIC_SITE_URL ?? process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000",
   ogImage: "/brand/maidlinx-logo.png",
   links: {
     support: "mailto:support@maidlinx.com",
+    help: "/#faq",
   },
 } as const;
 
@@ -23,8 +24,12 @@ export const routes = {
   bookProperty: "/book/property",
   bookDetails: "/book/details",
   bookService: "/book/service",
-  bookExtras: "/book/extras",
-  bookSchedule: "/book/schedule",
+  bookExtras: "/book/addons",
+  bookAddons: "/book/addons",
+  bookSchedule: "/book/date",
+  bookDate: "/book/date",
+  bookTime: "/book/time",
+  bookAccess: "/book/access",
   bookReview: "/book/review",
   bookPayment: "/book/payment",
   bookConfirmation: (id: string) => `/book/confirmation/${id}`,

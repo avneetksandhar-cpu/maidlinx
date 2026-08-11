@@ -2,10 +2,10 @@ import { Shield, CreditCard, BadgeCheck, Headphones } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const trustItems = [
-  { icon: BadgeCheck, label: "Vetted cleaners" },
-  { icon: CreditCard, label: "Upfront pricing" },
+  { icon: BadgeCheck, label: "Ops-reviewed Pros" },
+  { icon: CreditCard, label: "Upfront estimates" },
   { icon: Shield, label: "Secure payments" },
-  { icon: Headphones, label: "Satisfaction support" },
+  { icon: Headphones, label: "Customer support" },
 ] as const;
 
 interface TrustBarProps {

@@ -12,14 +12,14 @@ const faqs = [
       "Your estimate is based on home size, number of bedrooms and bathrooms, cleaning type, and any extras you add. The price you see is verified on our servers before checkout.",
   },
   {
-    question: "Are your cleaners vetted?",
+    question: "How do you select cleaners?",
     answer:
-      "Yes. Every professional on MaidLinx passes a background check and maintains a customer review profile.",
+      "Pros apply and are reviewed by MaidLinx ops before they can take jobs. Ratings from past customers help keep quality high.",
   },
   {
     question: "What if I'm not satisfied?",
     answer:
-      "Contact our support team within 24 hours of your service. We'll work with you and your cleaner to make it right.",
+      "Contact support after your service and we’ll work with you and your cleaner to make it right. Outcomes depend on the situation.",
   },
   {
     question: "How does payment work?",

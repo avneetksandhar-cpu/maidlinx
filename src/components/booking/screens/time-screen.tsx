@@ -6,16 +6,17 @@ import { BookingFlowChrome } from "@/components/booking/booking-flow-chrome";
 import { ScheduleWhenSelector } from "@/components/booking/schedule-when-selector";
 import { useBooking } from "@/components/booking/booking-provider";
 import { useBookingGuard } from "@/components/booking/use-booking-guard";
-import { BOOKING_SCREEN_PATHS, isScheduleComplete } from "@/lib/bookings/booking-routes";
-import { step5ScheduleSchema, fieldErrors } from "@/lib/bookings/booking-helpers";
-import type { SchedulePreset } from "@/lib/bookings/booking-state";
+import {
+  BOOKING_SCREEN_PATHS,
+  isTimeComplete,
+} from "@/lib/bookings/booking-routes";
 import type { ArrivalWindowId } from "@/lib/bookings/constants";
 import { trackBookingEvent } from "@/lib/analytics/booking";
 
-export function ScheduleScreen() {
+export function TimeScreen() {
   const router = useRouter();
   const { updateState } = useBooking();
-  const { state, hydrated, blocked } = useBookingGuard("schedule");
+  const { state, hydrated, blocked } = useBookingGuard("time");
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   if (!hydrated || blocked) {
@@ -28,19 +29,14 @@ export function ScheduleScreen() {
 
   return (
     <BookingFlowChrome
-      screenId="schedule"
-      title="When should we come?"
-      subtitle="ASAP, today, tomorrow, or pick a date and window."
+      screenId="time"
+      title="What time works?"
+      subtitle="Choose an arrival window — preference only for now."
       ctaLabel="Continue"
-      ctaDisabled={!isScheduleComplete(state)}
+      ctaDisabled={!isTimeComplete(state)}
       onContinue={() => {
-        if (!state.schedulePreset) {
-          setErrors({ schedulePreset: "Choose when you need cleaning." });
-          return;
-        }
-        const parsed = step5ScheduleSchema.safeParse(state);
-        if (!parsed.success) {
-          setErrors(fieldErrors(parsed.error));
+        if (!state.arrivalWindow) {
+          setErrors({ arrivalWindow: "Choose an arrival window." });
           return;
         }
         setErrors({});
@@ -50,22 +46,21 @@ export function ScheduleScreen() {
           window: state.arrivalWindow,
         });
         updateState({ step: 7 });
-        router.push(BOOKING_SCREEN_PATHS.review);
+        router.push(BOOKING_SCREEN_PATHS.access);
       }}
     >
       <ScheduleWhenSelector
+        mode="time"
         schedulePreset={state.schedulePreset}
         date={state.date}
         arrivalWindow={state.arrivalWindow}
         marketId={state.marketId}
-        onPresetChange={(preset: SchedulePreset, resolved) => {
-          updateState({
-            schedulePreset: preset,
-            date: resolved.date,
-            arrivalWindow: resolved.arrivalWindow,
-          });
+        onPresetChange={() => {
+          /* date step owns presets */
         }}
-        onDateChange={(date) => updateState({ date, schedulePreset: "date" })}
+        onDateChange={() => {
+          /* date step owns date */
+        }}
         onWindowChange={(arrivalWindow: ArrivalWindowId) => updateState({ arrivalWindow })}
         errors={errors}
       />

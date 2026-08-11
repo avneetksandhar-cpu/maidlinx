@@ -4,13 +4,14 @@ import Link from "next/link";
 import { useState } from "react";
 import { Menu, X } from "lucide-react";
 import { SiteLogo } from "@/components/brand/site-logo";
-import { routes } from "@/config/site";
+import { routes, siteConfig } from "@/config/site";
 import { cn } from "@/lib/utils";
 
 const navItems = [
   { label: "Services", href: `${routes.home}#services` },
   { label: "Business", href: routes.forBusiness },
   { label: "Become a Pro", href: routes.becomeCleaner },
+  { label: "Help", href: siteConfig.links.help },
 ] as const;
 
 interface SiteHeaderProps {

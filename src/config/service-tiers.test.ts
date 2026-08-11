@@ -6,9 +6,15 @@ import {
 import { getPropertyQuestions, PROPERTY_TYPES } from "@/config/property-types";
 
 describe("service tiers", () => {
-  it("returns Standard/Deep/Move/Pro ladder for house", () => {
+  it("returns Standard/Deep Clean/Move Clean/Commercial for house", () => {
     const tiers = getServiceTiersForProperty("house");
-    expect(tiers.map((t) => t.id)).toEqual(["standard", "deep", "move", "pro"]);
+    expect(tiers.map((t) => t.id)).toEqual(["standard", "deep", "move", "commercial"]);
+    expect(tiers.map((t) => t.label)).toEqual([
+      "Standard",
+      "Deep Clean",
+      "Move Clean",
+      "Commercial",
+    ]);
     expect(tiers.every((t) => t.label && t.serviceType)).toBe(true);
   });
 
@@ -32,21 +38,18 @@ describe("service tiers", () => {
 
 describe("property types", () => {
   it("covers the customer booking set", () => {
-    const ids = PROPERTY_TYPES.map((p) => p.id);
-    expect(ids).toEqual(
-      expect.arrayContaining([
-        "house",
-        "apartment",
-        "office",
-        "retail",
-        "restaurant",
-        "airbnb",
-        "move",
-        "post_construction",
-        "commercial",
-        "other",
-      ]),
-    );
+    const ids = PROPERTY_TYPES.filter((p) => p.customerFacing).map((p) => p.id);
+    expect(ids).toEqual([
+      "house",
+      "apartment",
+      "office",
+      "airbnb",
+      "retail",
+      "restaurant",
+      "commercial",
+      "post_construction",
+      "other",
+    ]);
   });
 
   it("returns conditional questions per property", () => {

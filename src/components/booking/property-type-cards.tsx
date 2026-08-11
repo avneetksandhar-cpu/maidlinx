@@ -13,7 +13,7 @@ import {
   MoreHorizontal,
   type LucideIcon,
 } from "lucide-react";
-import { PROPERTY_TYPES, type PropertyTypeId } from "@/config/property-types";
+import { CUSTOMER_PROPERTY_TYPES, type PropertyTypeId } from "@/config/property-types";
 import { cn } from "@/lib/utils";
 
 const ICONS: Record<string, LucideIcon> = {
@@ -32,9 +32,9 @@ const ICONS: Record<string, LucideIcon> = {
 const SECTIONS: Array<{
   id: string;
   label: string;
-  questionSets: Array<(typeof PROPERTY_TYPES)[number]["questionSet"]>;
+  questionSets: Array<(typeof CUSTOMER_PROPERTY_TYPES)[number]["questionSet"]>;
 }> = [
-  { id: "residential", label: "Home", questionSets: ["residential", "airbnb", "move"] },
+  { id: "residential", label: "Home", questionSets: ["residential", "airbnb"] },
   { id: "commercial", label: "Business", questionSets: ["commercial"] },
   { id: "specialty", label: "Specialty", questionSets: ["construction", "other"] },
 ];
@@ -52,7 +52,7 @@ export function PropertyTypeCards({ value, onChange, error, className }: Propert
       <legend className="sr-only">Property type</legend>
       <div className="space-y-6">
         {SECTIONS.map((section) => {
-          const types = PROPERTY_TYPES.filter((type) =>
+          const types = CUSTOMER_PROPERTY_TYPES.filter((type) =>
             section.questionSets.includes(type.questionSet),
           );
           if (types.length === 0) return null;

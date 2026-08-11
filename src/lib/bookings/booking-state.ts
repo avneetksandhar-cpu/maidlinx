@@ -6,7 +6,7 @@ import type { ServiceAnswers } from "@/lib/services/questions";
 
 /**
  * Multi-screen booking funnel (one decision per route):
- * ADDRESS → PROPERTY → DETAILS → SERVICE → EXTRAS → SCHEDULE → REVIEW → PAYMENT
+ * ADDRESS → PROPERTY → DETAILS → SERVICE → ADDONS → DATE → TIME → ACCESS → REVIEW → PAYMENT
  * Post-pay matching lives at /booking/[id].
  *
  * Numeric ids kept for legacy BookingForm step sync; prefer BOOKING_SCREENS paths.
@@ -16,10 +16,12 @@ export const BOOKING_FLOW_STEPS = [
   { id: 2, label: "Property", shortLabel: "Property" },
   { id: 3, label: "Details", shortLabel: "Details" },
   { id: 4, label: "Service", shortLabel: "Service" },
-  { id: 5, label: "Extras", shortLabel: "Extras" },
-  { id: 6, label: "When", shortLabel: "When" },
-  { id: 7, label: "Review", shortLabel: "Review" },
-  { id: 8, label: "Payment", shortLabel: "Pay" },
+  { id: 5, label: "Add-ons", shortLabel: "Extras" },
+  { id: 6, label: "Date", shortLabel: "Date" },
+  { id: 7, label: "Time", shortLabel: "Time" },
+  { id: 8, label: "Access", shortLabel: "Access" },
+  { id: 9, label: "Review", shortLabel: "Review" },
+  { id: 10, label: "Payment", shortLabel: "Pay" },
 ] as const;
 
 /** @deprecated Use BOOKING_FLOW_STEPS — unified wizard for all viewports */
@@ -31,9 +33,9 @@ export const MOBILE_WIZARD_STEPS = BOOKING_FLOW_STEPS;
 export const BOOKING_FLOW_STEP_COUNT = BOOKING_FLOW_STEPS.length;
 
 /** @deprecated Prefer /book/payment route */
-export const BOOKING_PAYMENT_STEP = 8;
+export const BOOKING_PAYMENT_STEP = 10;
 /** @deprecated Prefer /booking/[id] route */
-export const BOOKING_MATCHING_STEP = 9;
+export const BOOKING_MATCHING_STEP = 11;
 
 export {
   PROPERTY_TYPES,

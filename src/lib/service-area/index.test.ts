@@ -38,16 +38,15 @@ describe("resolveServiceArea", () => {
     expect(result.currency).toBe("USD");
   });
 
-  it("resolves San Francisco via California market config", () => {
+  it("rejects San Francisco while California market is inactive", () => {
     const result = resolveServiceArea({
       postalCode: "94105",
       city: "San Francisco",
       state: "CA",
       country: "US",
     });
-    expect(result.inServiceArea).toBe(true);
-    expect(result.marketId).toBe("CALIFORNIA");
-    expect(result.currency).toBe("USD");
+    expect(result.inServiceArea).toBe(false);
+    expect(result.marketId).toBeUndefined();
   });
 
   it("rejects Seattle (out of area)", () => {

@@ -10,8 +10,8 @@ const services = [
 ] as const;
 
 const reasons = [
-  { title: "Vetted professionals", description: "Background-checked Pros with real reviews." },
-  { title: "Upfront pricing", description: "See your total before you book." },
+  { title: "Reviewed Pros", description: "Pros are approved by MaidLinx ops before taking jobs." },
+  { title: "Upfront pricing", description: "See an estimated total before you book." },
   { title: "Secure payments", description: "Deposit to confirm, balance after the clean." },
 ] as const;
 

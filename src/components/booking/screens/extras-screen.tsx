@@ -16,7 +16,7 @@ import { Button } from "@/components/ui";
 export function ExtrasScreen() {
   const router = useRouter();
   const { updateState } = useBooking();
-  const { state, hydrated, blocked } = useBookingGuard("extras");
+  const { state, hydrated, blocked } = useBookingGuard("addons");
 
   const quoteInput = useMemo(
     () => buildQuoteInput(state, { requireAddress: true }),
@@ -42,7 +42,7 @@ export function ExtrasScreen() {
 
   return (
     <BookingFlowChrome
-      screenId="extras"
+      screenId="addons"
       title="Anything extra?"
       subtitle="Optional add-ons — skip if you don’t need any."
       ctaLabel={totalLabel ? `Continue · ${totalLabel}` : "Continue"}
@@ -50,17 +50,17 @@ export function ExtrasScreen() {
         <div className="flex items-center justify-between gap-3 text-sm">
           <span className="text-ink-muted">
             {(state.extras?.length ?? 0) === 0
-              ? "No extras"
-              : `${state.extras!.length} extra${state.extras!.length === 1 ? "" : "s"}`}
+              ? "No add-ons"
+              : `${state.extras!.length} add-on${state.extras!.length === 1 ? "" : "s"}`}
           </span>
           <span className="font-semibold tabular-nums text-ink">
-            {totalLabel ? (loading ? "Updating…" : totalLabel) : "—"}
+            {totalLabel ? (loading ? "Updating…" : `Estimated total ${totalLabel}`) : "—"}
           </span>
         </div>
       }
       onContinue={() => {
         updateState({ step: 6 });
-        router.push(BOOKING_SCREEN_PATHS.schedule);
+        router.push(BOOKING_SCREEN_PATHS.date);
       }}
     >
       <div className="space-y-4">
@@ -79,10 +79,10 @@ export function ExtrasScreen() {
           className="w-full rounded-xl"
           onClick={() => {
             updateState({ extras: [], step: 6 });
-            router.push(BOOKING_SCREEN_PATHS.schedule);
+            router.push(BOOKING_SCREEN_PATHS.date);
           }}
         >
-          No extras
+          No add-ons
         </Button>
       </div>
     </BookingFlowChrome>

@@ -45,7 +45,7 @@ export function Footer() {
           <div>
             <SiteLogo />
             <p className="mt-4 max-w-xs text-sm leading-6 text-ink-muted">
-              Cleaning, on demand. Vetted Pros, upfront pricing, secure payments.
+              Cleaning, on demand. Upfront estimates, secure payments, support when you need it.
             </p>
             <p className="mt-3 max-w-xs text-xs leading-5 text-ink-subtle">
               Markets: {marketsLine}

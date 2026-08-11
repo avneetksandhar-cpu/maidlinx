@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
 import { SiteLogo } from "@/components/brand/site-logo";
@@ -8,12 +8,15 @@ import { Button } from "@/components/ui";
 import { BookingFlowSummary } from "@/components/booking/booking-flow-summary";
 import {
   BOOKING_SCREENS,
+  BOOKING_SCREEN_PATHS,
   getBookingScreenIndex,
   getPreviousScreen,
   type BookingScreenId,
 } from "@/lib/bookings/booking-routes";
 import { useBooking } from "@/components/booking/booking-provider";
-import { cn } from "@/lib/utils";
+import { buildQuoteInput } from "@/lib/bookings/booking-helpers";
+import { useBookingPricing } from "@/hooks/use-booking-pricing";
+import { cn, formatCurrency } from "@/lib/utils";
 import { routes, siteConfig } from "@/config/site";
 
 interface BookingFlowChromeProps {
@@ -85,9 +88,34 @@ export function BookingFlowChrome({
   const { state } = useBooking();
   const prev = getPreviousScreen(screenId, state);
 
+  const quoteInput = useMemo(
+    () => buildQuoteInput(state, { requireAddress: true, allowPreview: true }),
+    [state],
+  );
+  const { pricing, loading: priceLoading } = useBookingPricing({
+    quoteInput,
+    enabled: Boolean(quoteInput && state.serviceType && state.squareFootage),
+  });
+
+  const estimatedTotal =
+    pricing && !pricing.quoteOnly
+      ? formatCurrency(pricing.totalCents, pricing.currency)
+      : null;
+
+  const priceHint = estimatedTotal ? (
+    <div className="flex items-center justify-between gap-3 text-sm">
+      <span className="text-ink-muted">Estimated total</span>
+      <span className="font-semibold tabular-nums text-ink">
+        {priceLoading ? "Updating…" : estimatedTotal}
+      </span>
+    </div>
+  ) : null;
+
+  const mergedFooterHint = footerHint ?? priceHint;
+
   const handleBack = () => {
     if (prev) {
-      router.push(`/book/${prev}`);
+      router.push(BOOKING_SCREEN_PATHS[prev]);
       return;
     }
     router.push(routes.home);
@@ -108,20 +136,12 @@ export function BookingFlowChrome({
             </button>
             <SiteLogo variant="mark" href={routes.home} className="shrink-0" />
           </div>
-          <div className="flex items-center gap-1 sm:gap-3">
-            <a
-              href={siteConfig.links.support}
-              className="rounded-lg px-3 py-2 text-sm font-medium text-ink-muted transition-colors duration-200 hover:text-ink"
-            >
-              Help
-            </a>
-            <Link
-              href={routes.signIn}
-              className="rounded-lg px-3 py-2 text-sm font-medium text-ink-muted transition-colors duration-200 hover:text-ink"
-            >
-              Account
-            </Link>
-          </div>
+          <a
+            href={siteConfig.links.support}
+            className="rounded-lg px-3 py-2 text-sm font-medium text-ink-muted transition-colors duration-200 hover:text-ink"
+          >
+            Help
+          </a>
         </div>
         <BookingProgressBar currentId={screenId} />
       </header>
@@ -137,7 +157,11 @@ export function BookingFlowChrome({
 
         <div className="hidden lg:block">
           <div className="sticky top-20">
-            <BookingFlowSummary footerHint={footerHint} />
+            <BookingFlowSummary
+              footerHint={mergedFooterHint}
+              estimatedTotal={estimatedTotal}
+              priceLoading={priceLoading}
+            />
             {!hideCta && onContinue ? (
               <Button
                 type="button"
@@ -157,7 +181,7 @@ export function BookingFlowChrome({
       {!hideCta && onContinue ? (
         <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-surface/95 px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 backdrop-blur-md lg:hidden">
           <div className="mx-auto w-full max-w-lg space-y-2">
-            {footerHint}
+            {mergedFooterHint}
             <Button
               type="button"
               variant="accent"

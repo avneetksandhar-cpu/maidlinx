@@ -170,7 +170,7 @@ export function getServiceTiersForProperty(
     ];
   }
 
-  // House, apt/condo, other — classic UberX-style ladder
+  // House, apt/condo, other — marketplace selections
   void property;
   return [
     {
@@ -183,25 +183,24 @@ export function getServiceTiersForProperty(
     },
     {
       id: "deep",
-      label: "Deep",
+      label: "Deep Clean",
       description: "Top-to-bottom with extra attention",
       serviceType: "deep",
       serviceSlug: "deep",
     },
     {
       id: "move",
-      label: "Move",
+      label: "Move Clean",
       description: "Empty-home move-in or move-out",
       serviceType: "move_out",
       serviceSlug: "move-out",
     },
     {
-      id: "pro",
-      label: "Pro",
-      description: "Top-rated Pros for premium cleans",
-      serviceType: "deep",
-      serviceSlug: "deep",
-      badge: "Top Pros",
+      id: "commercial",
+      label: "Commercial",
+      description: "Offices and business spaces",
+      serviceType: "office",
+      serviceSlug: "office",
     },
   ];
 }

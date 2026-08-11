@@ -60,7 +60,11 @@ export type BookingFunnelStep =
   | "estimate"
   | "service"
   | "extras"
+  | "addons"
   | "schedule"
+  | "date"
+  | "time"
+  | "access"
   | "review"
   | "pay"
   | "payment"
@@ -78,7 +82,11 @@ export type BookingFunnelEvent =
   | "funnel_estimate"
   | "funnel_service"
   | "funnel_extras"
+  | "funnel_addons"
   | "funnel_schedule"
+  | "funnel_date"
+  | "funnel_time"
+  | "funnel_access"
   | "funnel_review"
   | "funnel_pay"
   | "funnel_payment"
@@ -135,7 +143,11 @@ const STEP_TO_EVENT: Record<BookingFunnelStep, BookingFunnelEvent> = {
   estimate: "funnel_estimate",
   service: "funnel_service",
   extras: "funnel_extras",
+  addons: "funnel_addons",
   schedule: "funnel_schedule",
+  date: "funnel_date",
+  time: "funnel_time",
+  access: "funnel_access",
   review: "funnel_review",
   pay: "funnel_pay",
   payment: "funnel_payment",
@@ -162,13 +174,24 @@ export function trackBookingScreen(
     | "property"
     | "details"
     | "service"
+    | "addons"
     | "extras"
+    | "date"
+    | "time"
+    | "access"
     | "schedule"
     | "review"
     | "payment",
   props?: BookingFunnelProps,
 ) {
-  const step: BookingFunnelStep = screenId === "payment" ? "payment" : screenId;
+  const step: BookingFunnelStep =
+    screenId === "payment"
+      ? "payment"
+      : screenId === "extras"
+        ? "addons"
+        : screenId === "schedule"
+          ? "date"
+          : screenId;
   trackFunnelStep(step, { screen: screenId, ...props });
 }
 

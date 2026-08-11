@@ -1,5 +1,6 @@
-import { ScheduleScreen } from "@/components/booking/screens/schedule-screen";
+import { redirect } from "next/navigation";
+import { BOOKING_SCREEN_PATHS } from "@/lib/bookings/booking-routes";
 
-export default function BookSchedulePage() {
-  return <ScheduleScreen />;
+export default function BookScheduleLegacyPage() {
+  redirect(BOOKING_SCREEN_PATHS.date);
 }
