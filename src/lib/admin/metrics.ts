@@ -89,6 +89,10 @@ export interface PlatformMetrics {
   totalRevenueCents: number;
   platformFeesCents: number;
   proPayoutsCents: number;
+  platformMarginCents: number;
+  averageOrderValueCents: number;
+  repeatRatePercent: number;
+  cancelRatePercent: number;
   totalCustomers: number;
   totalCleaners: number;
   activeCleaners: number;
@@ -118,7 +122,9 @@ export async function getPlatformMetrics(): Promise<PlatformMetrics> {
     disputesRes,
     refundsRes,
   ] = await Promise.all([
-    supabase.from("bookings").select("status, total_cents, platform_fee_cents, subtotal_cents"),
+    supabase
+      .from("bookings")
+      .select("status, total_cents, platform_fee_cents, subtotal_cents, customer_id, customer_email"),
     supabase.from("profiles").select("*", { count: "exact", head: true }).eq("role", "customer"),
     supabase.from("professionals").select("*", { count: "exact", head: true }),
     supabase
@@ -150,6 +156,30 @@ export async function getPlatformMetrics(): Promise<PlatformMetrics> {
   const totalRevenueCents = completed.reduce((s, b) => s + Number(b.total_cents), 0);
   const platformFeesCents = completed.reduce((s, b) => s + Number(b.platform_fee_cents), 0);
   const proPayoutsCents = completed.reduce((s, b) => s + Number(b.subtotal_cents), 0);
+  const platformMarginCents = Math.max(0, totalRevenueCents - proPayoutsCents);
+  const averageOrderValueCents =
+    completed.length > 0 ? Math.round(totalRevenueCents / completed.length) : 0;
+
+  const customerKeys = new Map<string, number>();
+  for (const b of completed) {
+    const key = b.customer_id
+      ? `id:${b.customer_id}`
+      : b.customer_email
+        ? `email:${String(b.customer_email).toLowerCase()}`
+        : null;
+    if (!key) continue;
+    customerKeys.set(key, (customerKeys.get(key) ?? 0) + 1);
+  }
+  const customersWithCompleted = customerKeys.size;
+  const repeatCustomers = Array.from(customerKeys.values()).filter((n) => n >= 2).length;
+  const repeatRatePercent =
+    customersWithCompleted > 0
+      ? Math.round((repeatCustomers / customersWithCompleted) * 1000) / 10
+      : 0;
+
+  const decided = completed.length + cancelled.length;
+  const cancelRatePercent =
+    decided > 0 ? Math.round((cancelled.length / decided) * 1000) / 10 : 0;
 
   return {
     totalBookings: bookings.length,
@@ -159,6 +189,10 @@ export async function getPlatformMetrics(): Promise<PlatformMetrics> {
     totalRevenueCents,
     platformFeesCents,
     proPayoutsCents,
+    platformMarginCents,
+    averageOrderValueCents,
+    repeatRatePercent,
+    cancelRatePercent,
     totalCustomers: customersRes.count ?? 0,
     totalCleaners: cleanersRes.count ?? 0,
     activeCleaners: activeCleanersRes.count ?? 0,

@@ -32,8 +32,8 @@ export function DateScreen() {
   return (
     <BookingFlowChrome
       screenId="date"
-      title="Which day?"
-      subtitle="ASAP, today, tomorrow, or pick a date."
+      title="Which day works?"
+      subtitle="ASAP, today, tomorrow — or pick a date on the calendar."
       ctaLabel="Continue"
       ctaDisabled={!isDateComplete(state)}
       onContinue={() => {

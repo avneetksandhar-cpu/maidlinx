@@ -12,7 +12,7 @@ const services = [
 const reasons = [
   { title: "Reviewed Pros", description: "Pros are approved by MaidLinx ops before taking jobs." },
   { title: "Upfront pricing", description: "See an estimated total before you book." },
-  { title: "Secure payments", description: "Deposit to confirm, balance after the clean." },
+  { title: "Secure payments", description: "Deposit to confirm via Stripe. Remaining balance settled with support after the job." },
 ] as const;
 
 export function ServiceSections() {

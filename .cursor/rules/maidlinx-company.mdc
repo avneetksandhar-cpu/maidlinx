@@ -1,0 +1,36 @@
+---
+description: MaidLinx shared company rules — marketplace priorities, safety, secrets
+alwaysApply: true
+---
+
+# MaidLinx company rules
+
+Two-sided marketplace: customers book cleaning; cleaners fulfill; admin assigns/ops.
+
+## Priority (highest → lowest)
+
+1. Safety / security / payments integrity
+2. Booking + payment critical path
+3. Customer experience of that path
+4. Cleaner operations for that path
+5. Revenue correctness
+6. Growth
+7. Cosmetic polish
+
+Never sacrifice payment or security for speed, growth, or polish.
+
+## Never
+
+- Expose or commit secrets (`.env.local`, service role, Stripe secrets)
+- Put service-role keys or secrets in browser / client bundles
+- Store card data; use Stripe only
+- Invent metrics, fake reviews, or misleading claims
+- Destructive DB / prod changes without human approval
+- Redesign/rewrite the app unless Product scopes it
+- Expand scope until CRITICAL MVP in `company/CURRENT_SPRINT.md` passes
+
+## Always
+
+- Read `company/` board before large work; update `AGENT_REPORTS/` after significant role work
+- Prefer minimal diffs that keep booking → pay → confirm → assign → cleaner flow working
+- Avoid fighting sibling agents on `.env.local` / Supabase; stick to `.cursor/`, `AGENTS.md`, `company/`, skills when configuring the company

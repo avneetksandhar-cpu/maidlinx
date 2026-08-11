@@ -3,12 +3,17 @@
  *
  * Tables: recurring_plans, recurring_occurrences (migration 00017).
  * Full occurrence → booking generation is DEFERRED — do not fake generation.
+ * Stripe Subscriptions / auto-charge are NOT implemented.
  */
 
 import { createAdminClient, hasAdminEnv } from "@/lib/supabase/admin";
 import type { Json } from "@/types/database.types";
 
+export { RECURRING_FREQUENCIES, RECURRING_TERMS, isRecurringCadence } from "./frequencies";
+export type { RecurringFrequencyId } from "./frequencies";
+
 export const RECURRING_GENERATION_IMPLEMENTED = false;
+export const RECURRING_STRIPE_SUBSCRIPTIONS_IMPLEMENTED = false;
 
 export type RecurringFrequency = "weekly" | "biweekly" | "monthly";
 
@@ -83,6 +88,6 @@ export async function generateDueOccurrences(_asOf = new Date()): Promise<{
     generated: 0,
     deferred: true,
     message:
-      "Recurring occurrence generation is not implemented. Plans may be stored; bookings are not auto-created.",
+      "Recurring occurrence generation is not implemented. Plans may be stored; bookings are not auto-created. Stripe recurring charges are not enabled.",
   };
 }

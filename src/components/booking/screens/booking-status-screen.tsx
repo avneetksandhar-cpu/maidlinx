@@ -3,14 +3,16 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { MatchingStep } from "@/components/booking/matching-step";
+import { BookingMapPreview } from "@/components/booking/booking-map-preview";
 import { BookingStatusTimeline } from "@/components/booking/booking-status-timeline";
+import { LiveCleanerMap } from "@/components/booking/live-cleaner-map";
 import {
   fetchBooking,
   isBookingPaymentConfirmed,
   pollBookingUntilConfirmed,
 } from "@/lib/bookings/client-api";
 import type { StoredBooking } from "@/lib/bookings/repository";
-import { getBookingStatusLabel } from "@/lib/bookings/status";
+import { getBookingStatusLabel, isLiveLocationStatus } from "@/lib/bookings/status";
 import { getCustomerTimelineState } from "@/lib/bookings/status-timeline";
 import { Button, Heading, Text } from "@/components/ui";
 import { formatCurrency } from "@/lib/utils";
@@ -139,12 +141,30 @@ export function BookingStatusScreen({
   const cleanerName = booking.cleaner
     ? [booking.cleaner.firstName, booking.cleaner.lastName].filter(Boolean).join(" ")
     : null;
+  const addressLabel = [
+    booking.address_line1,
+    booking.address_line2,
+    booking.address_city,
+    booking.address_state,
+    booking.address_postal_code,
+  ]
+    .filter(Boolean)
+    .join(", ");
 
   // Prefer dedicated matching UI while waiting; show assigned profile when real cleaner exists.
   if (timeline.findingProfessional || !booking.cleaner) {
     return (
       <div className="mx-auto max-w-lg px-4 py-8">
         <MatchingStep booking={booking} accessToken={accessToken} bookingState={state} />
+        {addressLabel ? (
+          <div className="mt-6">
+            <BookingMapPreview
+              latitude={booking.address_latitude}
+              longitude={booking.address_longitude}
+              label={addressLabel}
+            />
+          </div>
+        ) : null}
       </div>
     );
   }
@@ -152,18 +172,37 @@ export function BookingStatusScreen({
   return (
     <div className="mx-auto max-w-lg px-4 py-8">
       <div className="text-center">
-        <div className="mx-auto mb-6 flex size-16 items-center justify-center rounded-full bg-accent-muted text-accent">
+        <div className="mx-auto mb-6 flex size-16 items-center justify-center rounded-full bg-[#F1F8F5] text-accent">
           <span className="text-2xl font-semibold">✓</span>
         </div>
-        <Heading as="h1" className="text-2xl tracking-tight">
+        <Heading as="h1" className="text-[1.75rem] font-bold tracking-tight md:text-[2rem]">
           Your MaidLinx Pro is assigned
         </Heading>
-        <Text muted className="mt-2">
-          Reference #{booking.id.slice(0, 8).toUpperCase()}
+        <Text muted className="mt-2 text-[16px]">
+          Booking #{booking.id.slice(0, 8).toUpperCase()}
         </Text>
       </div>
 
-      <div className="mt-8 rounded-2xl border border-border p-5">
+      <div className="mt-8 space-y-4">
+        {isLiveLocationStatus(booking.status) ? (
+          <LiveCleanerMap
+            bookingId={booking.id}
+            accessToken={accessToken}
+            status={booking.status}
+            customerLat={booking.address_latitude}
+            customerLng={booking.address_longitude}
+            addressLabel={addressLabel}
+          />
+        ) : (
+          <BookingMapPreview
+            latitude={booking.address_latitude}
+            longitude={booking.address_longitude}
+            label={addressLabel}
+          />
+        )}
+      </div>
+
+      <div className="mt-8 rounded-2xl border border-[#E2E9E6] bg-white p-5 shadow-soft">
         <p className="font-display text-xl font-semibold text-ink">
           {cleanerName || "Your cleaner"}
         </p>

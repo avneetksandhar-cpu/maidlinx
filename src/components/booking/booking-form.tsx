@@ -19,6 +19,7 @@ import { ServiceTierSelector } from "@/components/booking/service-tier-selector"
 import { getServiceBySlug, isQuoteOnlyService } from "@/config/services";
 import { getPropertyType, type PropertyTypeId } from "@/config/property-types";
 import type { ServiceTier } from "@/config/service-tiers";
+import { siteConfig } from "@/config/site";
 import { resolveServiceArea } from "@/lib/service-area";
 import {
   BOOKING_FLOW_STEPS,
@@ -523,7 +524,7 @@ export function BookingForm({ state, onChange, mode, className, startAtProperty 
           Paid booking is unavailable here.{" "}
           <a
             className="font-medium underline underline-offset-2"
-            href="mailto:support@maidlinx.com?subject=MaidLinx%20waitlist"
+            href={`${siteConfig.links.support}?subject=MaidLinx%20waitlist`}
           >
             Join the waitlist
           </a>{" "}

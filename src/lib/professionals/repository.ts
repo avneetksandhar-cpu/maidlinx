@@ -1,4 +1,5 @@
-import { createAdminClient } from "@/lib/supabase/admin";
+import { createAdminClient, hasAdminEnv } from "@/lib/supabase/admin";
+import { createClient } from "@/lib/supabase/server";
 import {
   parseOnboardingStatus,
   parseStripeConnectStatus,
@@ -7,6 +8,13 @@ import {
   type StripeConnectStatus,
 } from "@/lib/cleaners/onboarding";
 import type { UserRole } from "@/types/database.types";
+
+async function getDbClient() {
+  if (hasAdminEnv()) {
+    return createAdminClient();
+  }
+  return createClient();
+}
 
 export interface ProfessionalProfile {
   id: string;
@@ -83,7 +91,7 @@ export async function ensureProfessionalProfile(input: {
   phone?: string | null;
   avatarUrl?: string | null;
 }): Promise<ProfessionalProfile> {
-  const supabase = createAdminClient();
+  const supabase = await getDbClient();
 
   const { data: existingProfile, error: fetchError } = await supabase
     .from("profiles")
@@ -176,7 +184,9 @@ export async function ensureProfessionalProfile(input: {
     throw new Error(proError?.message ?? "Failed to create professional record.");
   }
 
-  await supabase.from("notification_preferences").insert({ profile_id: profile.id });
+  if (hasAdminEnv()) {
+    await supabase.from("notification_preferences").insert({ profile_id: profile.id });
+  }
 
   return mapProfessional(profile as Record<string, unknown>, professional as Record<string, unknown>, input.email);
 }
@@ -193,7 +203,7 @@ export async function updateProfessionalProfile(
     serviceRadiusKm?: number;
   },
 ): Promise<void> {
-  const supabase = createAdminClient();
+  const supabase = await getDbClient();
 
   const { error: profileError } = await supabase
     .from("profiles")

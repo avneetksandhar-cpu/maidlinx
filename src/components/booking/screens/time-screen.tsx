@@ -30,8 +30,8 @@ export function TimeScreen() {
   return (
     <BookingFlowChrome
       screenId="time"
-      title="What time works?"
-      subtitle="Choose an arrival window — preference only for now."
+      title="What time works best?"
+      subtitle="Pick an arrival window — we’ll treat it as your preference."
       ctaLabel="Continue"
       ctaDisabled={!isTimeComplete(state)}
       onContinue={() => {

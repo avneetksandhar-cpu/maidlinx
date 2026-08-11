@@ -1,104 +1,71 @@
 import Link from "next/link";
 import { Suspense } from "react";
-import { BookingCard } from "@/components/dashboard/booking-card";
-import { DashboardHeader } from "@/components/dashboard/dashboard-header";
-import { BookEmptyState } from "@/components/dashboard/empty-state";
-import { Card, CardContent, Heading, Text } from "@/components/ui";
-import { routes } from "@/config/site";
-import { getCustomerBookings, getInvoices, getReceipts } from "@/lib/dashboard/bookings";
+import { GoogleMapsProvider } from "@/components/booking/google-maps-provider";
+import {
+  CustomerHomeDashboard,
+  pickActiveCustomerBooking,
+} from "@/components/post-booking/customer-home-dashboard";
+import { getCustomerBookings } from "@/lib/dashboard/bookings";
 import { requireCustomerSession } from "@/lib/dashboard/session";
+import { getBookingById } from "@/lib/bookings/repository";
+import { isPaidBookingStatus } from "@/lib/bookings/status";
+import type { StoredBooking } from "@/lib/bookings/repository";
+import { routes } from "@/config/site";
 
 export const metadata = {
-  title: "Dashboard",
+  title: "Home",
 };
 
 async function DashboardOverview() {
   const { profile, email } = await requireCustomerSession();
 
-  const [upcoming, past, invoices, receipts] = await Promise.all([
-    getCustomerBookings(profile.id, email, "upcoming"),
-    getCustomerBookings(profile.id, email, "past"),
-    getInvoices(profile.id, email),
-    getReceipts(profile.id, email),
-  ]);
+  const upcoming = await getCustomerBookings(profile.id, email, "upcoming");
 
-  const firstName = profile.firstName ?? "there";
+  let activeBooking: StoredBooking | null = null;
+  const candidates = upcoming.filter((b) => isPaidBookingStatus(b.status));
+  const storedCandidates: StoredBooking[] = [];
+
+  for (const row of candidates.slice(0, 5)) {
+    try {
+      const full = await getBookingById(row.id);
+      if (!full) continue;
+      // Only surface bookings this customer owns (repository is id-based; session already scoped list).
+      storedCandidates.push(full);
+    } catch {
+      // Skip rows that cannot be loaded.
+    }
+  }
+
+  activeBooking = pickActiveCustomerBooking(storedCandidates);
 
   return (
-    <>
-      <DashboardHeader
-        title={`Welcome back, ${firstName}`}
-        description="Manage bookings, invoices, and account preferences in one place."
+    <GoogleMapsProvider>
+      <CustomerHomeDashboard
+        firstName={profile.firstName ?? "there"}
+        activeBooking={activeBooking}
+        upcoming={upcoming}
       />
-
-      <div className="mb-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <StatCard label="Upcoming" value={upcoming.length} href={routes.dashboardBookings} />
-        <StatCard label="Past bookings" value={past.length} href={routes.dashboardBookings} />
-        <StatCard label="Invoices" value={invoices.length} href={routes.dashboardInvoices} />
-        <StatCard label="Receipts" value={receipts.length} href={routes.dashboardReceipts} />
-      </div>
-
-      <section>
-        <div className="mb-4 flex items-center justify-between">
-          <Heading as="h2" className="text-xl">
-            Upcoming bookings
-          </Heading>
-          {upcoming.length > 0 && (
-            <Link href={routes.dashboardBookings} className="text-sm font-medium text-accent hover:text-accent-hover">
-              View all
-            </Link>
-          )}
-        </div>
-
-        {upcoming.length === 0 ? (
-          <BookEmptyState />
-        ) : (
-          <div className="space-y-4">
-            {upcoming.slice(0, 3).map((booking) => (
-              <BookingCard key={booking.id} booking={booking} />
-            ))}
-          </div>
-        )}
-      </section>
-    </>
-  );
-}
-
-function StatCard({ label, value, href }: { label: string; value: number; href: string }) {
-  return (
-    <Link href={href}>
-      <Card className="transition-shadow hover:shadow-elevated">
-        <CardContent>
-          <Text muted className="text-sm">
-            {label}
-          </Text>
-          <p className="mt-1 font-display text-3xl font-semibold text-ink">{value}</p>
-        </CardContent>
-      </Card>
-    </Link>
+    </GoogleMapsProvider>
   );
 }
 
 function DashboardSkeleton() {
   return (
-    <div className="animate-pulse space-y-6">
-      <div className="h-10 w-64 rounded-lg bg-border" />
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="h-24 rounded-xl bg-border" />
-        ))}
-      </div>
-      <div className="h-48 rounded-xl bg-border" />
+    <div className="mx-auto max-w-[430px] animate-pulse space-y-6">
+      <div className="h-8 w-40 rounded-lg bg-[var(--maidlinx-border)]" />
+      <div className="h-24 rounded-2xl bg-[var(--maidlinx-border)]" />
+      <div className="h-64 rounded-2xl bg-[var(--maidlinx-border)]" />
     </div>
   );
 }
 
 export default function DashboardPage() {
   return (
-    <div className="px-4 py-8 sm:px-6 lg:px-10">
-      <Suspense fallback={<DashboardSkeleton />}>
-        <DashboardOverview />
-      </Suspense>
-    </div>
+    <Suspense fallback={<DashboardSkeleton />}>
+      <DashboardOverview />
+      <p className="sr-only">
+        <Link href={routes.book}>Book a clean</Link>
+      </p>
+    </Suspense>
   );
 }

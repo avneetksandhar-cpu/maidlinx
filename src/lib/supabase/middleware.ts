@@ -1,10 +1,11 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { getSupabaseAnonKey, getSupabaseUrl } from "@/config/env";
 import { normalizeRole } from "@/lib/auth/roles";
 import type { UserRole } from "@/lib/auth/types";
 
-const AUTH_ROUTES = ["/sign-in", "/sign-up"];
-const CUSTOMER_PREFIXES = ["/dashboard"];
+const AUTH_ROUTES = ["/sign-in", "/sign-up", "/forgot-password", "/reset-password"];
+const CUSTOMER_PREFIXES = ["/dashboard", "/account"];
 const CLEANER_PREFIXES = ["/cleaner", "/pro"];
 const CLEANER_API_PREFIXES = ["/api/cleaner", "/api/pro"];
 const ADMIN_PREFIXES = ["/admin"];
@@ -16,8 +17,8 @@ function matchesPrefix(pathname: string, prefixes: string[]): boolean {
 
 function homeForRole(role: UserRole): string {
   if (role === "admin") return "/admin";
-  if (role === "cleaner") return "/cleaner";
-  return "/dashboard";
+  if (role === "cleaner") return "/pro/home";
+  return "/account";
 }
 
 export async function updateSession(request: NextRequest) {
@@ -32,8 +33,8 @@ export async function updateSession(request: NextRequest) {
     matchesPrefix(pathname, ADMIN_PREFIXES) ||
     matchesPrefix(pathname, ADMIN_API_PREFIXES);
 
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  const url = getSupabaseUrl();
+  const anonKey = getSupabaseAnonKey();
 
   // Fail closed for protected routes when Supabase is not configured.
   if (!url || !anonKey) {
@@ -43,7 +44,7 @@ export async function updateSession(request: NextRequest) {
         matchesPrefix(pathname, ADMIN_API_PREFIXES)
       ) {
         return NextResponse.json(
-          { error: "Authentication is not configured. Add Supabase keys to .env.local." },
+          { error: "Sign-in is temporarily unavailable. Please try again shortly." },
           { status: 503 },
         );
       }
@@ -129,7 +130,7 @@ export async function updateSession(request: NextRequest) {
 
     if (matchesPrefix(pathname, CUSTOMER_PREFIXES) && role === "cleaner") {
       const redirectUrl = request.nextUrl.clone();
-      redirectUrl.pathname = "/cleaner";
+      redirectUrl.pathname = "/pro/home";
       return NextResponse.redirect(redirectUrl);
     }
   }

@@ -1,4 +1,5 @@
-import { createAdminClient } from "@/lib/supabase/admin";
+import { createAdminClient, hasAdminEnv } from "@/lib/supabase/admin";
+import { createClient } from "@/lib/supabase/server";
 import { normalizeRole } from "@/lib/auth/roles";
 import type { AuthProfile, UserRole } from "@/lib/auth/types";
 
@@ -23,8 +24,16 @@ function mapProfile(row: Record<string, unknown>): AuthProfile {
   };
 }
 
+async function getDbClient() {
+  if (hasAdminEnv()) {
+    return createAdminClient();
+  }
+  // Auth trigger normally creates the row; fall back to the user-scoped client.
+  return createClient();
+}
+
 export async function ensureProfileForUser(input: EnsureProfileInput): Promise<AuthProfile> {
-  const supabase = createAdminClient();
+  const supabase = await getDbClient();
 
   const { data: existing, error: fetchError } = await supabase
     .from("profiles")
@@ -50,6 +59,7 @@ export async function ensureProfileForUser(input: EnsureProfileInput): Promise<A
     return mapProfile({ ...existing, ...updates });
   }
 
+  // Never allow client/metadata self-assignment of admin.
   const bootstrapEmail = process.env.ADMIN_BOOTSTRAP_EMAIL?.toLowerCase();
   const requestedRole = normalizeRole(input.role ?? null);
   const role: UserRole =
@@ -76,10 +86,21 @@ export async function ensureProfileForUser(input: EnsureProfileInput): Promise<A
     .single();
 
   if (createError || !created) {
+    // Trigger may have raced; re-read own row.
+    const { data: raced } = await supabase
+      .from("profiles")
+      .select("id, role, first_name, last_name, phone, avatar_url")
+      .eq("id", input.userId)
+      .maybeSingle();
+    if (raced) {
+      return mapProfile(raced as Record<string, unknown>);
+    }
     throw new Error(createError?.message ?? "Failed to create profile.");
   }
 
-  await supabase.from("notification_preferences").insert({ profile_id: created.id });
+  if (hasAdminEnv()) {
+    await supabase.from("notification_preferences").insert({ profile_id: created.id });
+  }
 
   return mapProfile(created as Record<string, unknown>);
 }

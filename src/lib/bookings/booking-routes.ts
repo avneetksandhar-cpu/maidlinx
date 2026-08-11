@@ -47,7 +47,7 @@ export function bookingPath(id: BookingScreenId, query?: Record<string, string>)
 
 export function bookingStatusPath(id: string, token?: string | null): string {
   const q = token ? `?token=${encodeURIComponent(token)}` : "";
-  return `/booking/${id}${q}`;
+  return `/bookings/${id}${q}`;
 }
 
 export function isAddressComplete(state: BookingState): boolean {
@@ -254,10 +254,24 @@ export function getBookingEntryPath(options?: {
   return BOOKING_SCREEN_PATHS.address;
 }
 
+/**
+ * Furthest incomplete screen for abandoned-draft recovery.
+ * Prefers date/time when address+service are filled (rebook / continue).
+ */
+export function getFurthestScreenPath(state: BookingState): string {
+  if (!isAddressComplete(state)) return BOOKING_SCREEN_PATHS.address;
+  if (!isPropertyComplete(state)) return BOOKING_SCREEN_PATHS.property;
+  if (!isDetailsComplete(state)) return BOOKING_SCREEN_PATHS.details;
+  if (!isServiceComplete(state)) return BOOKING_SCREEN_PATHS.service;
+  if (!isExtrasComplete(state)) return BOOKING_SCREEN_PATHS.addons;
+  if (!isDateComplete(state)) return BOOKING_SCREEN_PATHS.date;
+  if (!isTimeComplete(state)) return BOOKING_SCREEN_PATHS.time;
+  if (!isAccessComplete()) return BOOKING_SCREEN_PATHS.access;
+  if (!isReviewReady(state)) return BOOKING_SCREEN_PATHS.review;
+  return BOOKING_SCREEN_PATHS.payment;
+}
+
 export function isBookingFlowPathname(pathname: string): boolean {
-  return (
-    pathname === "/book" ||
-    pathname.startsWith("/book/") ||
-    pathname.startsWith("/booking/")
-  );
+  // Post-booking `/bookings/*` uses the customer shell — not the question funnel.
+  return pathname === "/book" || pathname.startsWith("/book/");
 }

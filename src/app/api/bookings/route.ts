@@ -1,13 +1,8 @@
 import { getSession } from "@/lib/auth/session";
 import { createBookingAccessToken } from "@/lib/bookings/access-token";
 import { insertBooking } from "@/lib/bookings/repository";
+import { assertPriceMatch } from "@/lib/pricing/calculateQuote";
 import {
-  calculateBookingPrice,
-  assertPriceMatch,
-  withServerDiscount,
-} from "@/lib/pricing/calculateQuote";
-import {
-  validatePromoCode,
   PromoValidationError,
   recordCouponRedemption,
 } from "@/lib/pricing/promos";
@@ -16,6 +11,7 @@ import {
   loadQuoteById,
   markQuoteConsumed,
 } from "@/lib/pricing/quotes";
+import { resolveServerPricing } from "@/lib/pricing/resolve";
 import { jsonError, jsonSuccess } from "@/lib/api/response";
 import { checkRateLimit, clientIpFromRequest } from "@/lib/api/rate-limit";
 import { hasAdminEnv } from "@/lib/supabase/admin";
@@ -23,8 +19,11 @@ import { createBookingRequestSchema } from "@/lib/validations/booking-flow";
 
 export async function POST(request: Request) {
   if (!hasAdminEnv()) {
+    console.error(
+      "[bookings] SUPABASE_NOT_CONFIGURED: missing NEXT_PUBLIC_SUPABASE_URL and/or SUPABASE_SERVICE_ROLE_KEY",
+    );
     return jsonError(
-      "Booking storage is not configured. Add NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY to .env.local, then run `supabase db push`.",
+      "Booking is temporarily unavailable. Please try again shortly.",
       503,
       "SUPABASE_NOT_CONFIGURED",
     );
@@ -48,18 +47,20 @@ export async function POST(request: Request) {
       return jsonError("clientTotalCents is required for price validation.", 400, "PRICE_REQUIRED");
     }
 
-    let pricing = calculateBookingPrice(parsed.data);
-    let appliedPromo: Awaited<ReturnType<typeof validatePromoCode>> = null;
+    const session = await getSession();
+    const profileId = session?.profile?.id ?? session?.user.id ?? null;
 
-    if (parsed.data.promoCode && !pricing.quoteOnly) {
-      appliedPromo = await validatePromoCode(parsed.data.promoCode, pricing.subtotalCents);
-      if (appliedPromo) {
-        pricing = {
-          ...withServerDiscount(pricing, appliedPromo.discountCents),
-          couponCode: appliedPromo.code,
-        };
-      }
-    }
+    // Server-authoritative pricing (engine when dynamic/recurring/promo; else legacy).
+    const resolved = await resolveServerPricing({
+      quote: parsed.data,
+      profileId,
+      schedule: {
+        serviceDate: parsed.data.date,
+        recurring: parsed.data.recurringFrequency ?? "one_time",
+      },
+    });
+    let pricing = resolved.pricing;
+    const appliedPromo = resolved.appliedPromo;
 
     if (parsed.data.quoteId) {
       const stored = await loadQuoteById(parsed.data.quoteId);
@@ -88,9 +89,6 @@ export async function POST(request: Request) {
 
     assertPriceMatch(body.clientTotalCents, pricing.totalCents);
 
-    const session = await getSession();
-    const profileId = session?.profile?.id ?? session?.user.id ?? null;
-
     const booking = await insertBooking(parsed.data, pricing, profileId);
 
     if (pricing.quoteId) {
@@ -104,6 +102,24 @@ export async function POST(request: Request) {
         customerId: profileId,
         discountCents: pricing.discountCents ?? 0,
       });
+    }
+
+    if (parsed.data.referralCode) {
+      try {
+        const { captureReferralAttribution } = await import("@/lib/referrals");
+        await captureReferralAttribution({
+          code: parsed.data.referralCode,
+          refereeProfileId: profileId,
+          refereeEmail: parsed.data.email,
+          bookingId: booking.id,
+        });
+      } catch (referralError) {
+        // Attribution failure must not block booking create.
+        console.info(
+          "[referral] capture skipped:",
+          referralError instanceof Error ? referralError.message : referralError,
+        );
+      }
     }
 
     const accessToken = createBookingAccessToken(booking.id);

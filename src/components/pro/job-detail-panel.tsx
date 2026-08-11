@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { JobChecklist } from "@/components/pro/job-checklist";
+import { LiveLocationSharer } from "@/components/pro/live-location-sharer";
 import { PhotoUpload } from "@/components/pro/photo-upload";
 import { StatusBadge } from "@/components/dashboard/status-badge";
 import { Button, Card, CardContent } from "@/components/ui";
@@ -158,6 +159,8 @@ export function JobDetailPanel({ job, photos }: JobDetailPanelProps) {
           {error && <p className="text-sm text-error">{error}</p>}
         </CardContent>
       </Card>
+
+      <LiveLocationSharer jobId={job.id} status={job.status} />
 
       {!isCompleted && (
         <>

@@ -13,10 +13,12 @@ import { cn } from "@/lib/utils";
 const NAV_ITEMS = [
   { href: routes.dashboard, label: "Overview", icon: HomeIcon },
   { href: routes.dashboardBookings, label: "Bookings", icon: CalendarIcon },
-  { href: routes.dashboardInvoices, label: "Invoices", icon: InvoiceIcon },
+  { href: routes.dashboardSavedPlaces, label: "Saved Places", icon: PinIcon },
   { href: routes.dashboardReceipts, label: "Receipts", icon: ReceiptIcon },
   { href: routes.dashboardFavorites, label: "Favorites", icon: HeartIcon },
-  { href: routes.dashboardSavedPlaces, label: "Saved Places", icon: PinIcon },
+  { href: routes.dashboardReferrals, label: "Referrals", icon: GiftIcon },
+  { href: routes.dashboardSupport, label: "Support", icon: SupportIcon },
+  { href: routes.dashboardInvoices, label: "Invoices", icon: InvoiceIcon },
   { href: routes.dashboardProfile, label: "Profile", icon: UserIcon },
   { href: routes.dashboardNotifications, label: "Notifications", icon: BellIcon },
 ] as const;
@@ -195,6 +197,24 @@ function HeartIcon({ className }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" aria-hidden="true">
       <path d="M12 20s-7-4.5-7-9.5a4 4 0 0 1 7-2.5 4 4 0 0 1 7 2.5C19 15.5 12 20 12 20Z" stroke="currentColor" strokeWidth="1.75" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function GiftIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M12 8v13M4 12h16M5 8h14v13H5V8Z" stroke="currentColor" strokeWidth="1.75" strokeLinejoin="round" />
+      <path d="M12 8c-2-3-5-3-5-1s2 2 5 1c3 1 5 0 5-1s-3-2-5 1Z" stroke="currentColor" strokeWidth="1.75" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function SupportIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.75" />
+      <path d="M9.5 9.5a2.5 2.5 0 1 1 4.2 1.8c-.7.6-1.2 1-1.2 2.2M12 17h.01" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
     </svg>
   );
 }
