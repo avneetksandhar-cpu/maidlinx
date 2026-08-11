@@ -26,14 +26,14 @@ function Row({
   href: string;
 }) {
   return (
-    <div className="flex items-start justify-between gap-3 border-b border-border/70 py-4 last:border-0">
+    <div className="flex items-start justify-between gap-3 border-b border-[#E2E9E6] py-4 last:border-0">
       <div className="min-w-0">
-        <p className="text-xs font-medium uppercase tracking-wide text-ink-muted">{label}</p>
-        <p className="mt-1 text-sm font-medium text-ink">{value}</p>
+        <p className="text-[12px] font-medium uppercase tracking-wide text-ink-muted">{label}</p>
+        <p className="mt-1 text-[15px] font-medium leading-snug text-ink">{value}</p>
       </div>
       <Link
         href={href}
-        className="inline-flex shrink-0 items-center gap-1 text-sm font-medium text-accent"
+        className="inline-flex shrink-0 items-center gap-1 rounded-lg px-2 py-1.5 text-sm font-medium text-accent transition-colors duration-200 hover:bg-[#F1F8F5]"
       >
         <Pencil className="size-3.5" aria-hidden />
         Edit
@@ -105,8 +105,8 @@ export function ReviewScreen() {
   return (
     <BookingFlowChrome
       screenId="review"
-      title="Ready to clean?"
-      subtitle="Confirm the details, then continue to payment."
+      title="Does everything look right?"
+      subtitle="Tap Edit on any line — your answers stay saved."
       ctaLabel={
         loading
           ? "Verifying price…"
@@ -129,7 +129,7 @@ export function ReviewScreen() {
           label={address}
         />
 
-        <div className="rounded-2xl border border-border bg-surface px-4">
+        <div className="rounded-2xl border border-[#E2E9E6] bg-white px-4 shadow-soft">
           <Row label="Address" value={address} href={BOOKING_SCREEN_PATHS.address} />
           <Row label="Unit / suite" value={unitLabel} href={BOOKING_SCREEN_PATHS.details} />
           <Row
@@ -150,19 +150,19 @@ export function ReviewScreen() {
 
         {pricingError ? (
           <p
-            className="rounded-xl bg-red-50 px-4 py-3 text-center text-sm text-error"
+            className="rounded-2xl bg-red-50 px-4 py-3 text-center text-sm text-error"
             role="alert"
           >
             {pricingError}
           </p>
         ) : totalLabel ? (
-          <p className="text-center text-sm text-ink-muted">
+          <p className="text-center text-[15px] text-ink-muted">
             Estimated total{" "}
             <span className="font-semibold text-ink">{totalLabel}</span>
             {isServerVerified ? (
-              <span className="mt-1 block text-xs text-ink-subtle">Server-verified price</span>
+              <span className="mt-1 block text-xs text-ink-subtle">Price verified with MaidLinx</span>
             ) : loading ? (
-              <span className="mt-1 block text-xs text-ink-subtle">Verifying with server…</span>
+              <span className="mt-1 block text-xs text-ink-subtle">Verifying price…</span>
             ) : null}
           </p>
         ) : null}

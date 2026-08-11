@@ -40,37 +40,9 @@ function formatUpdatedAt(iso?: string): string | null {
   return `Updated ${date.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}`;
 }
 
-function staticMapUrl(params: {
-  apiKey: string;
-  cleanerLat: number;
-  cleanerLng: number;
-  customerLat?: number | null;
-  customerLng?: number | null;
-}): string {
-  const markers = [
-    `markers=color:0x0d9488%7Clabel:C%7C${params.cleanerLat},${params.cleanerLng}`,
-  ];
-  if (
-    typeof params.customerLat === "number" &&
-    typeof params.customerLng === "number" &&
-    Number.isFinite(params.customerLat) &&
-    Number.isFinite(params.customerLng)
-  ) {
-    markers.push(
-      `markers=color:0x1e3a5f%7Clabel:H%7C${params.customerLat},${params.customerLng}`,
-    );
-  }
-  return [
-    "https://maps.googleapis.com/maps/api/staticmap",
-    `?size=640x320&scale=2&maptype=roadmap`,
-    `&${markers.join("&")}`,
-    `&key=${params.apiKey}`,
-  ].join("");
-}
-
 /**
  * Customer live map while cleaner is on the way / arrived.
- * Prefers Maps JS markers; falls back to Static Maps with two pins.
+ * Prefers Maps JS markers; falls back to a premium pin card (Static Maps often 403).
  */
 export function LiveCleanerMap({
   bookingId,
@@ -211,7 +183,6 @@ export function LiveCleanerMap({
 
   if (!tracking) return null;
 
-  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY?.trim();
   const updatedLabel = formatUpdatedAt(activeLocation?.updatedAt);
   const title =
     status === "arrived"
@@ -220,24 +191,11 @@ export function LiveCleanerMap({
 
   const showJsMap =
     maps.isReady && activeLocation?.available && activeLocation.lat != null;
-  const fallbackStatic =
-    apiKey &&
-    activeLocation?.available &&
-    activeLocation.lat != null &&
-    activeLocation.lng != null
-      ? staticMapUrl({
-          apiKey,
-          cleanerLat: activeLocation.lat,
-          cleanerLng: activeLocation.lng,
-          customerLat: activeLocation.customerLat ?? customerLat,
-          customerLng: activeLocation.customerLng ?? customerLng,
-        })
-      : null;
 
   return (
     <div
       className={cn(
-        "overflow-hidden rounded-2xl border border-border bg-surface",
+        "overflow-hidden rounded-2xl border border-[#E2E9E6] bg-white",
         className,
       )}
     >
@@ -259,22 +217,16 @@ export function LiveCleanerMap({
         ) : null}
       </div>
 
-      <div className="relative mt-3 aspect-[16/9] w-full bg-surface-muted">
+      <div className="relative mt-3 aspect-[16/9] w-full bg-[#F1F8F5]">
         {showJsMap ? (
           <div ref={mapRef} className="absolute inset-0 h-full w-full" />
-        ) : fallbackStatic ? (
-          // eslint-disable-next-line @next/next/no-img-element -- Static Maps fallback
-          <img
-            src={fallbackStatic}
-            alt="Live map of your cleaner and home"
-            className="h-full w-full object-cover"
-            loading="lazy"
-            referrerPolicy="no-referrer"
-          />
         ) : (
           <div className="flex h-full flex-col items-center justify-center gap-2 px-4 text-center">
-            <MapPin className="size-6 text-accent" aria-hidden />
-            <p className="text-sm text-ink-muted">{addressLabel}</p>
+            <span className="flex size-11 items-center justify-center rounded-full bg-white shadow-soft ring-1 ring-[#E2E9E6]">
+              <MapPin className="size-5 text-accent" aria-hidden />
+            </span>
+            <p className="text-sm font-semibold text-ink">Map unavailable</p>
+            <p className="max-w-xs text-sm text-ink-muted">{addressLabel}</p>
           </div>
         )}
       </div>

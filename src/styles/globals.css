@@ -3,12 +3,12 @@
 :root {
   --maidlinx-green: #087f65;
   --maidlinx-green-dark: #056b56;
-  --maidlinx-mint: #eaf7f1;
-  --maidlinx-mint-soft: #f3faf7;
+  --maidlinx-mint: #f1f8f5;
+  --maidlinx-mint-soft: #f1f8f5;
   --maidlinx-ink: #07151b;
   --maidlinx-text: #27363b;
   --maidlinx-muted: #66757a;
-  --maidlinx-border: #dce5e1;
+  --maidlinx-border: #e2e9e6;
   --maidlinx-bg: #fafcfb;
   --white: #ffffff;
 }
@@ -22,22 +22,22 @@
   --color-ink-subtle: #8a979b;
   --color-accent: #087f65;
   --color-accent-hover: #056b56;
-  --color-accent-muted: #eaf7f1;
+  --color-accent-muted: #f1f8f5;
   --color-navy: #07151b;
   --color-navy-light: #27363b;
   --color-teal: #087f65;
-  --color-teal-muted: #eaf7f1;
-  --color-border: #dce5e1;
+  --color-teal-muted: #f1f8f5;
+  --color-border: #e2e9e6;
   --color-border-strong: #c5d2cd;
   --color-success: #087f65;
   --color-error: #dc2626;
 
   /* Legacy aliases */
-  --color-surface-muted: #f3faf7;
+  --color-surface-muted: #f1f8f5;
   --color-surface-elevated: #ffffff;
   --color-gold: #087f65;
   --color-gold-hover: #056b56;
-  --color-gold-muted: #eaf7f1;
+  --color-gold-muted: #f1f8f5;
 
   --font-sans: var(--font-dm-sans), ui-sans-serif, system-ui, sans-serif;
   --font-display: var(--font-dm-sans), ui-sans-serif, system-ui, sans-serif;
@@ -142,18 +142,20 @@
 
   .booking-step-title {
     font-family: var(--font-display);
-    font-size: 1.875rem;
-    font-weight: 600;
-    letter-spacing: -0.03em;
+    font-size: clamp(1.75rem, 4.5vw, 2.25rem);
+    font-weight: 700;
+    letter-spacing: -0.035em;
     line-height: 1.15;
     color: var(--color-ink);
+    text-wrap: balance;
   }
 
   .booking-step-subtitle {
-    margin-top: 0.5rem;
-    font-size: 1rem;
-    line-height: 1.5;
+    margin-top: 0.625rem;
+    font-size: clamp(1rem, 2.5vw, 1.125rem);
+    line-height: 1.55;
     color: var(--color-ink-muted);
+    max-width: 36rem;
   }
 
   .booking-select-card {
@@ -162,16 +164,16 @@
     align-items: center;
     justify-content: space-between;
     gap: 0.75rem;
-    border-radius: 0.75rem;
+    border-radius: 1rem;
     border: 1px solid var(--color-border);
     background-color: var(--color-surface);
     padding: 1.125rem 1.25rem;
     text-align: left;
     transition:
-      border-color 180ms ease,
-      background-color 180ms ease,
-      box-shadow 180ms ease,
-      transform 180ms ease;
+      border-color 200ms ease,
+      background-color 200ms ease,
+      box-shadow 200ms ease,
+      transform 150ms ease;
   }
 
   .booking-select-card:hover:not(:disabled) {
@@ -182,7 +184,20 @@
   .booking-select-card[data-selected="true"] {
     border-color: var(--color-accent);
     background-color: var(--color-accent-muted);
-    box-shadow: 0 0 0 1px rgb(13 148 136 / 0.15);
+    box-shadow: 0 0 0 1px rgb(8 127 101 / 0.18);
+  }
+
+  .booking-shell-enter {
+    animation: fadeIn 220ms ease both;
+  }
+
+  .booking-cta-btn {
+    min-height: 56px;
+    box-shadow: 0 8px 20px rgb(8 127 101 / 0.22);
+  }
+
+  .booking-cta-btn:disabled {
+    box-shadow: none;
   }
 
   .booking-input-lg {
@@ -221,16 +236,17 @@
   }
 
   .booking-progress-track {
-    height: 2px;
+    height: 3px;
     width: 100%;
     overflow: hidden;
-    background-color: var(--color-border);
+    background-color: rgb(226 233 230 / 0.9);
   }
 
   .booking-progress-fill {
     height: 100%;
     background-color: var(--color-accent);
     transition: width 220ms ease;
+    border-radius: 0 2px 2px 0;
   }
 
   @keyframes fadeIn {

@@ -4,7 +4,6 @@ import { MotionReveal } from "@/components/motion/motion-reveal";
 import { BookingPaymentForm } from "@/components/booking/booking-payment-form";
 import { calculateDepositCents, getDepositPercent } from "@/lib/payments/deposit";
 import type { StoredBooking } from "@/lib/bookings/repository";
-import { Heading, Text } from "@/components/ui";
 import { formatCurrency } from "@/lib/utils";
 import { trackBookingEvent } from "@/lib/analytics/booking";
 import { useEffect } from "react";
@@ -27,14 +26,15 @@ export function CheckoutStep({ booking, accessToken, onSuccess }: CheckoutStepPr
 
   return (
     <MotionReveal>
-      <Heading as="h2" className="text-2xl tracking-tight">
-        Secure checkout
-      </Heading>
-      <Text muted className="mt-2">
-        Pay a {getDepositPercent()}% deposit now. The remaining balance is due after your clean.
-      </Text>
+      <div className="space-y-2 rounded-2xl border border-[#E2E9E6] bg-[#F1F8F5] px-4 py-3.5 text-[14px] leading-relaxed">
+        <p className="font-semibold text-ink">Pay securely with Stripe</p>
+        <p className="text-ink-muted">
+          MaidLinx never stores your card number. You pay a {getDepositPercent()}% deposit now;
+          the remaining balance is due after your clean.
+        </p>
+      </div>
 
-      <div className="mt-5 space-y-2 rounded-2xl border border-border bg-surface-muted/50 p-4 text-sm">
+      <div className="mt-5 space-y-2 rounded-2xl border border-[#E2E9E6] bg-white p-4 text-[15px] shadow-soft">
         <div className="flex justify-between gap-4">
           <span className="text-ink-muted">Booking total</span>
           <span className="font-semibold tabular-nums">
@@ -48,34 +48,15 @@ export function CheckoutStep({ booking, accessToken, onSuccess }: CheckoutStepPr
           </span>
         </div>
         <p className="pt-1 text-xs text-ink-subtle">
-          Reference #{booking.id.slice(0, 8).toUpperCase()}
+          Booking #{booking.id.slice(0, 8).toUpperCase()}
         </p>
       </div>
 
-      {/* Wallet pay UI scaffold — Stripe Payment Request Button can wire here later */}
-      <div className="mt-5 grid gap-2 sm:grid-cols-2" aria-hidden>
-        <button
-          type="button"
-          disabled
-          className="flex h-12 items-center justify-center rounded-xl bg-ink text-sm font-medium text-white opacity-40"
-          title="Apple Pay coming soon"
-        >
-          Apple Pay
-        </button>
-        <button
-          type="button"
-          disabled
-          className="flex h-12 items-center justify-center rounded-xl border border-border bg-surface text-sm font-medium text-ink opacity-40"
-          title="Google Pay coming soon"
-        >
-          Google Pay
-        </button>
-      </div>
-      <p className="mt-2 text-center text-xs text-ink-subtle">
-        Apple Pay &amp; Google Pay coming soon — card checkout below.
+      <p className="mt-5 text-center text-xs text-ink-subtle">
+        Apple Pay &amp; Google Pay coming soon — use card checkout below.
       </p>
 
-      <div className="mt-6">
+      <div className="mt-4">
         <BookingPaymentForm
           bookingId={booking.id}
           accessToken={accessToken}

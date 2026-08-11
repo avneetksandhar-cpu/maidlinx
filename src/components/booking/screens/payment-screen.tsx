@@ -263,7 +263,7 @@ function PaymentScreenInner() {
       <BookingFlowChrome
         screenId="payment"
         title="Secure payment"
-        subtitle="Guest checkout — no account required."
+        subtitle="Pay your deposit with Stripe. No account required."
         hideCta
       >
         <CheckoutStep
@@ -288,8 +288,8 @@ function PaymentScreenInner() {
   return (
     <BookingFlowChrome
       screenId="payment"
-      title="Checkout"
-      subtitle="Guest checkout is fine — no account required."
+      title="Almost there"
+      subtitle="Guest checkout is fine — no account needed."
       ctaLabel={bookLabel}
       ctaDisabled={busy || !pricing || !isServerVerified}
       ctaLoading={submitting}
@@ -297,10 +297,18 @@ function PaymentScreenInner() {
     >
       <div className="space-y-8">
         {globalError ? (
-          <p className="rounded-xl bg-red-50 px-4 py-3 text-sm text-error" role="alert">
+          <p className="rounded-2xl bg-red-50 px-4 py-3 text-sm text-error" role="alert">
             {globalError}
           </p>
         ) : null}
+
+        <div className="rounded-2xl border border-[#E2E9E6] bg-[#F1F8F5] px-4 py-3.5 text-[14px] leading-relaxed text-ink">
+          <p className="font-semibold text-ink">Secure checkout</p>
+          <p className="mt-1 text-ink-muted">
+            Card payments are processed by Stripe. MaidLinx never stores your card number.
+            You pay a deposit now; the remaining balance is due after your clean.
+          </p>
+        </div>
 
         <PriceReviewStep
           pricing={pricing}

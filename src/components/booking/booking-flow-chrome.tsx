@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
 import { SiteLogo } from "@/components/brand/site-logo";
 import { Button } from "@/components/ui";
-import { BookingFlowSummary } from "@/components/booking/booking-flow-summary";
 import {
   BOOKING_SCREENS,
   BOOKING_SCREEN_PATHS,
@@ -44,18 +43,27 @@ export function BookingProgressBar({
 }) {
   const current = getBookingScreenIndex(currentId);
   const total = BOOKING_SCREENS.length;
-  const pct = Math.round(((current + 1) / total) * 100);
+  const step = current + 1;
+  const pct = Math.round((step / total) * 100);
 
   return (
-    <div
-      className={cn("booking-progress-track", className)}
-      role="progressbar"
-      aria-valuenow={current + 1}
-      aria-valuemin={1}
-      aria-valuemax={total}
-      aria-label="Booking progress"
-    >
-      <div className="booking-progress-fill" style={{ width: `${pct}%` }} />
+    <div className={cn("booking-progress", className)}>
+      <div className="mx-auto flex w-full max-w-[680px] items-center justify-between gap-3 px-4 pb-2 pt-1">
+        <p className="text-[13px] font-medium tracking-wide text-ink-muted">
+          Step {step} of {total}
+        </p>
+        <p className="text-[12px] text-ink-subtle">{BOOKING_SCREENS[current]?.shortLabel}</p>
+      </div>
+      <div
+        className="booking-progress-track"
+        role="progressbar"
+        aria-valuenow={step}
+        aria-valuemin={1}
+        aria-valuemax={total}
+        aria-label={`Booking progress, step ${step} of ${total}`}
+      >
+        <div className="booking-progress-fill" style={{ width: `${pct}%` }} />
+      </div>
     </div>
   );
 }
@@ -71,7 +79,12 @@ export function BookingProgressDots({
   return <BookingProgressBar currentId={currentId} className={className} />;
 }
 
-export function BookingFlowChrome({
+/**
+ * One booking shell for every funnel step.
+ * Desktop + mobile: logo/Help, Step X of Y + bar, centered ~680px content,
+ * sticky bottom Estimated total + Continue.
+ */
+export function BookingShell({
   screenId,
   title,
   subtitle,
@@ -102,17 +115,6 @@ export function BookingFlowChrome({
       ? formatCurrency(pricing.totalCents, pricing.currency)
       : null;
 
-  const priceHint = estimatedTotal ? (
-    <div className="flex items-center justify-between gap-3 text-sm">
-      <span className="text-ink-muted">Estimated total</span>
-      <span className="font-semibold tabular-nums text-ink">
-        {priceLoading ? "Updating…" : estimatedTotal}
-      </span>
-    </div>
-  ) : null;
-
-  const mergedFooterHint = footerHint ?? priceHint;
-
   const handleBack = () => {
     if (prev) {
       router.push(BOOKING_SCREEN_PATHS[prev]);
@@ -121,24 +123,26 @@ export function BookingFlowChrome({
     router.push(routes.home);
   };
 
+  const showSticky = !hideCta && Boolean(onContinue);
+
   return (
-    <div className={cn("min-h-dvh bg-background", className)}>
-      <header className="sticky top-0 z-50 border-b border-border bg-surface/95 backdrop-blur-sm">
-        <div className="mx-auto flex h-14 w-full max-w-6xl items-center justify-between gap-3 px-4">
-          <div className="flex items-center gap-2">
+    <div className={cn("booking-shell min-h-dvh bg-[#FAFCFB]", className)}>
+      <header className="sticky top-0 z-50 border-b border-[#E2E9E6] bg-[#FAFCFB]/95 backdrop-blur-md">
+        <div className="mx-auto flex h-14 w-full max-w-[680px] items-center justify-between gap-3 px-4">
+          <div className="flex min-w-0 items-center gap-1.5">
             <button
               type="button"
               onClick={handleBack}
-              className="inline-flex size-9 items-center justify-center rounded-lg text-ink transition-colors duration-200 hover:bg-surface-muted"
+              className="inline-flex size-10 items-center justify-center rounded-xl text-ink transition-colors duration-200 hover:bg-[#F1F8F5] md:size-9"
               aria-label={prev ? "Go back" : "Back to home"}
             >
-              <ChevronLeft className="size-5" strokeWidth={2} aria-hidden />
+              <ChevronLeft className="size-5" strokeWidth={2.25} aria-hidden />
             </button>
             <SiteLogo variant="mark" href={routes.home} className="shrink-0" />
           </div>
           <a
             href={siteConfig.links.support}
-            className="rounded-lg px-3 py-2 text-sm font-medium text-ink-muted transition-colors duration-200 hover:text-ink"
+            className="rounded-xl px-3 py-2 text-sm font-medium text-ink-muted transition-colors duration-200 hover:bg-[#F1F8F5] hover:text-ink"
           >
             Help
           </a>
@@ -146,47 +150,43 @@ export function BookingFlowChrome({
         <BookingProgressBar currentId={screenId} />
       </header>
 
-      <div className="mx-auto grid w-full max-w-6xl gap-8 px-4 pt-6 pb-28 lg:grid-cols-[minmax(0,1fr)_20rem] lg:gap-12 lg:pt-10 lg:pb-16">
-        <div className="mx-auto w-full max-w-xl lg:mx-0 lg:max-w-none">
-          <div className="mb-8 animate-[fadeIn_0.25s_ease]">
-            <h1 className="booking-step-title">{title}</h1>
-            {subtitle ? <p className="booking-step-subtitle">{subtitle}</p> : null}
-          </div>
-          <div className="animate-[fadeIn_0.3s_ease]">{children}</div>
+      <main
+        className={cn(
+          "mx-auto w-full max-w-[680px] px-4 pt-7 md:pt-10",
+          showSticky ? "pb-[calc(7.5rem+env(safe-area-inset-bottom))]" : "pb-16",
+        )}
+      >
+        <div className="booking-shell-enter mb-7 md:mb-9">
+          <h1 className="booking-step-title">{title}</h1>
+          {subtitle ? <p className="booking-step-subtitle">{subtitle}</p> : null}
         </div>
-
-        <div className="hidden lg:block">
-          <div className="sticky top-20">
-            <BookingFlowSummary
-              footerHint={mergedFooterHint}
-              estimatedTotal={estimatedTotal}
-              priceLoading={priceLoading}
-            />
-            {!hideCta && onContinue ? (
-              <Button
-                type="button"
-                variant="accent"
-                size="lg"
-                className="mt-4 h-12 w-full rounded-lg text-base font-semibold"
-                disabled={ctaDisabled || ctaLoading}
-                onClick={onContinue}
-              >
-                {ctaLoading ? "Please wait…" : ctaLabel}
-              </Button>
-            ) : null}
-          </div>
+        <div className="booking-shell-enter" style={{ animationDelay: "40ms" }}>
+          {children}
         </div>
-      </div>
+      </main>
 
-      {!hideCta && onContinue ? (
-        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-surface/95 px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 backdrop-blur-md lg:hidden">
-          <div className="mx-auto w-full max-w-lg space-y-2">
-            {mergedFooterHint}
+      {showSticky ? (
+        <div className="booking-sticky-footer fixed inset-x-0 bottom-0 z-40 border-t border-[#E2E9E6] bg-white/95 backdrop-blur-md">
+          <div className="mx-auto w-full max-w-[680px] space-y-2.5 px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+            {footerHint ??
+              (estimatedTotal ? (
+                <div className="flex items-center justify-between gap-3 text-[15px]">
+                  <span className="text-ink-muted">Estimated total</span>
+                  <span className="font-semibold tabular-nums text-ink">
+                    {priceLoading ? "Updating…" : estimatedTotal}
+                  </span>
+                </div>
+              ) : (
+                <div className="flex items-center justify-between gap-3 text-[15px]">
+                  <span className="text-ink-muted">Estimated total</span>
+                  <span className="font-medium tabular-nums text-ink-subtle">—</span>
+                </div>
+              ))}
             <Button
               type="button"
               variant="accent"
               size="lg"
-              className="h-12 w-full rounded-lg text-base font-semibold"
+              className="booking-cta-btn h-14 w-full rounded-xl text-base font-semibold"
               disabled={ctaDisabled || ctaLoading}
               onClick={onContinue}
             >
@@ -197,4 +197,9 @@ export function BookingFlowChrome({
       ) : null}
     </div>
   );
+}
+
+/** Alias — BookingShell is the canonical name. */
+export function BookingFlowChrome(props: BookingFlowChromeProps) {
+  return <BookingShell {...props} />;
 }

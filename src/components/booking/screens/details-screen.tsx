@@ -66,8 +66,8 @@ export function DetailsScreen() {
   return (
     <BookingFlowChrome
       screenId="details"
-      title="A few details"
-      subtitle="Helps us price accurately for your space."
+      title="A few details about the space"
+      subtitle="Helps us price accurately — you can edit these later."
       ctaLabel="Continue"
       onContinue={handleContinue}
     >
