@@ -10,6 +10,8 @@ import {
   structuredToBookingAddress,
 } from "@/lib/addresses/map";
 import {
+  ensureGoogleMapsLoaded,
+  geocodeFailureReason,
   geolocationErrorReason,
   LOCATION_FINDING_MESSAGE,
   locationFailureMessage,
@@ -544,8 +546,9 @@ export function AddressAutocomplete({
       return;
     }
 
-    if (!window.google?.maps || !isReady) {
-      setLocationError(locationFailureMessage("maps_unavailable"));
+    if (!apiKey) {
+      // No key configured — reverse geocode cannot run; don't pretend it's "almost ready".
+      setLocationError(locationFailureMessage("maps_denied"));
       return;
     }
 
@@ -553,18 +556,42 @@ export function AddressAutocomplete({
     setLocating(true);
     setOpen(false);
 
+    // Wait for script/Geocoder instead of immediately showing "isn't ready yet".
+    const mapsLoad = await ensureGoogleMapsLoaded();
+    if (mapsLoad !== "ready") {
+      finishLocating();
+      if (isDev()) {
+        console.warn("[address] Google Maps Geocoder not ready after wait", mapsLoad, maps.status);
+      }
+      // Auth/billing failures often leave google.maps present but unusable — not a transient race.
+      const reason =
+        mapsLoad === "unavailable" || maps.status === "error" ? "maps_denied" : "maps_unavailable";
+      setLocationError(locationFailureMessage(reason));
+      return;
+    }
+
+    // Provider marked error (e.g. gm_authFailure) but Geocoder constructor exists — still try;
+    // REQUEST_DENIED maps to a clear non-retry-loop message below.
+
     navigator.geolocation.getCurrentPosition(
       (position) => {
         const latLng = {
           lat: position.coords.latitude,
           lng: position.coords.longitude,
         };
+
+        if (typeof google.maps.Geocoder !== "function") {
+          finishLocating();
+          setLocationError(locationFailureMessage("maps_unavailable"));
+          return;
+        }
+
         const geocoder = new google.maps.Geocoder();
         geocoder.geocode({ location: latLng }, (results, geocodeStatus) => {
           finishLocating();
           if (geocodeStatus !== "OK" || !results?.[0]) {
             if (isDev()) console.warn("[address] Reverse geocode failed", geocodeStatus);
-            setLocationError(locationFailureMessage("geocode_failed"));
+            setLocationError(locationFailureMessage(geocodeFailureReason(geocodeStatus)));
             return;
           }
           const parsed = parsePlace(results[0], valueRef.current.line2);
@@ -606,7 +633,7 @@ export function AddressAutocomplete({
       },
       { enableHighAccuracy: false, timeout: 10_000, maximumAge: 60_000 },
     );
-  }, [finishLocating, isReady, selectStructured]);
+  }, [apiKey, finishLocating, maps.status, selectStructured]);
 
   const onLine1Focus = () => {
     setOpen(true);
