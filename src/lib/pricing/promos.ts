@@ -40,6 +40,8 @@ function mapCoupon(row: Record<string, unknown>): Coupon {
     discountValue: Number(row.discount_value),
     minOrderCents: Number(row.min_order_cents),
     maxUses: row.max_uses != null ? Number(row.max_uses) : null,
+    maxUsesPerCustomer:
+      row.max_uses_per_customer != null ? Number(row.max_uses_per_customer) : null,
     usedCount: Number(row.used_count ?? 0),
     validFrom: row.valid_from ? String(row.valid_from) : null,
     validUntil: row.valid_until ? String(row.valid_until) : null,
@@ -96,6 +98,7 @@ export interface AppliedPromo {
 export async function validatePromoCode(
   code: string | null | undefined,
   subtotalCents: number,
+  customerId?: string | null,
 ): Promise<AppliedPromo | null> {
   if (!code?.trim()) return null;
 
@@ -105,6 +108,19 @@ export async function validatePromoCode(
   }
 
   assertCouponCurrentlyValid(coupon);
+
+  if (coupon.maxUsesPerCustomer != null && customerId && hasAdminEnv()) {
+    const supabase = createAdminClient();
+    const { count, error } = await supabase
+      .from("coupon_redemptions")
+      .select("*", { count: "exact", head: true })
+      .eq("coupon_id", coupon.id)
+      .eq("customer_id", customerId);
+    if (!error && (count ?? 0) >= coupon.maxUsesPerCustomer) {
+      throw new PromoValidationError("You have already used this promo the maximum times.");
+    }
+  }
+
   const discountCents = computeDiscountCents(coupon, subtotalCents);
 
   return {
