@@ -1,13 +1,8 @@
 import { getSession } from "@/lib/auth/session";
 import { createBookingAccessToken } from "@/lib/bookings/access-token";
 import { insertBooking } from "@/lib/bookings/repository";
+import { assertPriceMatch } from "@/lib/pricing/calculateQuote";
 import {
-  calculateBookingPrice,
-  assertPriceMatch,
-  withServerDiscount,
-} from "@/lib/pricing/calculateQuote";
-import {
-  validatePromoCode,
   PromoValidationError,
   recordCouponRedemption,
 } from "@/lib/pricing/promos";
@@ -16,6 +11,7 @@ import {
   loadQuoteById,
   markQuoteConsumed,
 } from "@/lib/pricing/quotes";
+import { resolveServerPricing } from "@/lib/pricing/resolve";
 import { jsonError, jsonSuccess } from "@/lib/api/response";
 import { checkRateLimit, clientIpFromRequest } from "@/lib/api/rate-limit";
 import { hasAdminEnv } from "@/lib/supabase/admin";
@@ -54,22 +50,17 @@ export async function POST(request: Request) {
     const session = await getSession();
     const profileId = session?.profile?.id ?? session?.user.id ?? null;
 
-    let pricing = calculateBookingPrice(parsed.data);
-    let appliedPromo: Awaited<ReturnType<typeof validatePromoCode>> = null;
-
-    if (parsed.data.promoCode && !pricing.quoteOnly) {
-      appliedPromo = await validatePromoCode(
-        parsed.data.promoCode,
-        pricing.subtotalCents,
-        profileId,
-      );
-      if (appliedPromo) {
-        pricing = {
-          ...withServerDiscount(pricing, appliedPromo.discountCents),
-          couponCode: appliedPromo.code,
-        };
-      }
-    }
+    // Server-authoritative pricing (engine when dynamic/recurring/promo; else legacy).
+    const resolved = await resolveServerPricing({
+      quote: parsed.data,
+      profileId,
+      schedule: {
+        serviceDate: parsed.data.date,
+        recurring: parsed.data.recurringFrequency ?? "one_time",
+      },
+    });
+    let pricing = resolved.pricing;
+    const appliedPromo = resolved.appliedPromo;
 
     if (parsed.data.quoteId) {
       const stored = await loadQuoteById(parsed.data.quoteId);
