@@ -11,7 +11,7 @@ import {
 describe("locationFailureMessage", () => {
   it("uses exact permission-denied customer copy", () => {
     expect(locationFailureMessage("permission_denied")).toBe(
-      "Location is turned off. Allow location access or enter your address.",
+      "Location is blocked for this site. Reset location permission in your browser settings, or enter your address.",
     );
   });
 
