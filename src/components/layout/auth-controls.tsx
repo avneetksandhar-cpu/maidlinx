@@ -9,7 +9,7 @@ export function AuthControls() {
     <>
       <Link
         href={routes.signIn}
-        className="px-2 text-sm font-medium text-ink-muted transition-colors duration-200 hover:text-ink"
+        className="inline-flex h-10 items-center justify-center rounded-[12px] border border-[var(--maidlinx-border)] bg-white px-4 text-sm font-semibold text-[var(--maidlinx-text)] transition-colors hover:border-[var(--maidlinx-green)]/40 hover:text-[var(--maidlinx-green)]"
       >
         Log in
       </Link>
@@ -17,7 +17,7 @@ export function AuthControls() {
         <Button
           variant="accent"
           size="sm"
-          className="h-9 rounded-lg px-4 text-sm font-semibold"
+          className="h-10 rounded-[12px] bg-[var(--maidlinx-green)] px-4 text-sm font-semibold hover:bg-[var(--maidlinx-green-dark)]"
         >
           Get started
         </Button>

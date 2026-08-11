@@ -61,6 +61,7 @@ describe("promo server validation", () => {
     discountValue: 10,
     minOrderCents: 10000,
     maxUses: 5,
+    maxUsesPerCustomer: null,
     usedCount: 1,
     validFrom: null,
     validUntil: null,
