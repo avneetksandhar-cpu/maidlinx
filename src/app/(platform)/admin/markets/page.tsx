@@ -13,7 +13,7 @@ async function MarketsContent() {
     <>
       <AdminHeader
         title="Markets"
-        description="Toronto / GTA (CAD), Florida / South Florida, New York, California (USD). Geo resolution uses markets + zones — not hardcoded city checks."
+        description="Active: Toronto / GTA (CAD), South Florida (USD). Coming soon (inactive): New York, California. Geo uses markets + zones — not hardcoded city checks."
       />
       <div className="overflow-hidden rounded-xl border border-border bg-surface">
         <table className="min-w-full text-left text-sm">

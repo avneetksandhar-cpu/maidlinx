@@ -23,7 +23,7 @@ async function OpsDashboard() {
     <>
       <AdminHeader
         title="Operations Command Center"
-        description="Today across Toronto / GTA, Florida, New York, and California — assignments, fulfillment, and issues."
+        description="Today across active markets (Toronto / GTA and South Florida). New York and California are configured but not launched."
         badge="TODAY"
       />
 

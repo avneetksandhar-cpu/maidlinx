@@ -631,6 +631,25 @@ export async function transitionJobStatus(
     metadata: { fromStatus, toStatus: normalizedTo },
   });
 
+  // Privacy: drop live GPS when leaving en-route / arrived.
+  try {
+    const { clearLiveLocationIfNeeded } = await import("@/lib/location/live-location");
+    await clearLiveLocationIfNeeded(jobId, normalizedTo);
+  } catch {
+    // Non-fatal — status transition already succeeded.
+  }
+
+  if (normalizedTo === "completed") {
+    try {
+      const { recordPendingPayoutForCompletedBooking } = await import(
+        "@/lib/payments/payouts"
+      );
+      await recordPendingPayoutForCompletedBooking(jobId);
+    } catch (payoutError) {
+      console.error("[jobs] pending payout record failed:", payoutError);
+    }
+  }
+
   if (isClaim) {
     if (acceptedCleanerId) {
       await recordCleanerAssignment({
