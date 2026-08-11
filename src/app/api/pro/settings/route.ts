@@ -7,7 +7,7 @@ export async function GET() {
   try {
     const { profile } = await requireProfessionalSession();
     return jsonSuccess({ profile });
-  } catch (error) {
+  } catch {
     return jsonError("Authentication required.", 401);
   }
 }

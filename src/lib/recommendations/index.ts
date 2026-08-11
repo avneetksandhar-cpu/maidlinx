@@ -23,6 +23,7 @@ export interface RecommendationInput {
 /**
  * TODO: Mine booking history. Suggestions only — never auto-charge.
  */
-export function recommendForCustomer(_input: RecommendationInput): Recommendation[] {
+export function recommendForCustomer(input: RecommendationInput): Recommendation[] {
+  void input;
   throw new Error("TODO: src/lib/recommendations — recommendForCustomer not implemented");
 }

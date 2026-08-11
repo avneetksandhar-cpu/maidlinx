@@ -1,6 +1,5 @@
 "use client";
 
-import { useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
@@ -13,10 +12,8 @@ import {
   getPreviousScreen,
   type BookingScreenId,
 } from "@/lib/bookings/booking-routes";
-import { buildQuoteInput } from "@/lib/bookings/booking-helpers";
 import { useBooking } from "@/components/booking/booking-provider";
-import { useBookingPricing } from "@/hooks/use-booking-pricing";
-import { cn, formatCurrency } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import { routes, siteConfig } from "@/config/site";
 
 interface BookingFlowChromeProps {

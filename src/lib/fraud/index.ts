@@ -30,6 +30,7 @@ export interface RiskAssessment {
 /**
  * TODO: Rules engine + admin review queue. Do not hard-block checkout until product-ready.
  */
-export function assessRisk(_input: RiskAssessmentInput): RiskAssessment {
+export function assessRisk(input: RiskAssessmentInput): RiskAssessment {
+  void input;
   throw new Error("TODO: src/lib/fraud — assessRisk not implemented");
 }

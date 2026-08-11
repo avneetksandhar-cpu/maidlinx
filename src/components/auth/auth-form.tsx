@@ -30,7 +30,6 @@ export function AuthForm({ mode }: AuthFormProps) {
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const title = mode === "sign-in" ? "Sign in" : "Create your account";
   const submitLabel = mode === "sign-in" ? "Sign in" : "Create account";
   const alternateHref = mode === "sign-in" ? routes.signUp : routes.signIn;
   const alternateLabel =

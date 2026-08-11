@@ -8,7 +8,7 @@ export async function GET() {
     const { profile } = await requireProfessionalSession();
     const slots = await getAvailability(profile.id);
     return jsonSuccess({ slots });
-  } catch (error) {
+  } catch {
     return jsonError("Authentication required.", 401);
   }
 }

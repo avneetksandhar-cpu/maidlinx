@@ -128,7 +128,7 @@ export function BookingsTable({ bookings }: { bookings: AdminBooking[] }) {
       />
 
       <BookingDetailPanel
-        bookingId={selectedId}
+        bookingId={activeBookingId}
         onClose={() => {
           setSelectedId(null);
           if (searchParams?.get("booking")) {

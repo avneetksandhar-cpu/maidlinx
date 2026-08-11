@@ -12,7 +12,7 @@ export async function GET() {
     const { profile } = await requireCustomerSession();
     const notifications = await getNotificationPreferences(profile.id);
     return jsonSuccess({ profile, notifications });
-  } catch (error) {
+  } catch {
     return jsonError("Authentication required.", 401);
   }
 }

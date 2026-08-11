@@ -196,7 +196,7 @@ async function loadMatchCleaners(): Promise<MatchCleaner[]> {
       .eq("is_active", true)
       .limit(200);
 
-    if (fallback.error) throw new Error(error.message);
+    if (fallback.error) throw new Error(fallback.error.message);
     rows = (fallback.data ?? []).map((row) => {
       const record = row as Record<string, unknown>;
       return {

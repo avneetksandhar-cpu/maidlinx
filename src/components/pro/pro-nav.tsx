@@ -18,7 +18,9 @@ function isActive(pathname: string, item: (typeof NAV_ITEMS)[number]): boolean {
   if ("exact" in item && item.exact) {
     return pathname === "/cleaner" || pathname === "/pro";
   }
-  return pathname.startsWith(item.match);
+  // /pro/* mirrors /cleaner/*; highlight either prefix.
+  const proMatch = item.match.replace(/^\/cleaner/, "/pro");
+  return pathname.startsWith(item.match) || pathname.startsWith(proMatch);
 }
 
 export function ProNav() {

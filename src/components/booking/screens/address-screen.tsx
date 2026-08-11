@@ -106,7 +106,8 @@ export function AddressScreen() {
 
         <SavedPlaceChips
           onSelect={(selection) => {
-            const { source: _source, ...address } = selection;
+            const { source, ...address } = selection;
+            void source;
             applyAddress(address, true);
           }}
         />

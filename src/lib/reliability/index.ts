@@ -24,6 +24,7 @@ export interface ReliabilityScore {
 /**
  * TODO: Aggregate from bookings, reviews, disputes. Until then, matching may use raw rating fields.
  */
-export function computeReliabilityScore(_cleanerId: string): ReliabilityScore {
+export function computeReliabilityScore(cleanerId: string): ReliabilityScore {
+  void cleanerId;
   throw new Error("TODO: src/lib/reliability — computeReliabilityScore not implemented");
 }

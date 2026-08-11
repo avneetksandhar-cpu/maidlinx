@@ -20,6 +20,7 @@ export interface RepeatMatchBoost {
 /**
  * TODO: Join favorites + completed history. Matching v1 may inline a simpler preference factor.
  */
-export function getRepeatMatchBoosts(_input: RepeatMatchInput): RepeatMatchBoost[] {
+export function getRepeatMatchBoosts(input: RepeatMatchInput): RepeatMatchBoost[] {
+  void input;
   throw new Error("TODO: src/lib/repeat-match — getRepeatMatchBoosts not implemented");
 }
