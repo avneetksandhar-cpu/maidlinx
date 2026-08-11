@@ -62,6 +62,8 @@ export const routes = {
   dashboardProfile: "/dashboard/profile",
   dashboardSavedPlaces: "/dashboard/saved-places",
   dashboardNotifications: "/dashboard/notifications",
+  dashboardSupport: "/dashboard/support",
+  dashboardReferrals: "/dashboard/referrals",
   proHome: "/pro/home",
   proDashboard: "/pro",
   proJobs: "/pro/jobs",

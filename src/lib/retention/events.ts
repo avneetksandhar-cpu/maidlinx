@@ -89,7 +89,7 @@ export async function enqueueRetentionEvent(input: {
     status: "pending",
     scheduled_for: (input.scheduledFor ?? new Date()).toISOString(),
     metadata: input.metadata ?? {},
-  });
+  } as never);
 
   if (error) {
     if (/retention_events|does not exist|schema cache/i.test(error.message)) {

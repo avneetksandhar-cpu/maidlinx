@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { DashboardBooking } from "@/lib/dashboard/bookings";
 import { LiveStatusCard } from "@/components/post-booking/live-status-card";
 import { UpcomingBookingCard } from "@/components/post-booking/upcoming-booking-card";
+import { ContinueBookingBanner } from "@/components/booking/continue-booking-banner";
 import { Button } from "@/components/ui";
 import { routes } from "@/config/site";
 import { ACTIVE_JOB_STATUSES, isPaidBookingStatus } from "@/lib/bookings/status";
@@ -36,6 +37,8 @@ export function CustomerHomeDashboard({
             Book a clean in minutes — we’ll confirm and assign your MaidLinx Pro.
           </p>
         </header>
+
+        <ContinueBookingBanner />
 
         <div className="flex items-center gap-3 overflow-hidden rounded-2xl bg-[var(--maidlinx-mint)] p-4">
           <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-white text-[var(--maidlinx-green)]">

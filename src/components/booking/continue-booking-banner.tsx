@@ -1,17 +1,18 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { startTransition, useEffect, useState } from "react";
 import Link from "next/link";
-import { BOOKING_STATE_STORAGE_KEY } from "@/lib/bookings/booking-state";
+import {
+  BOOKING_STATE_STORAGE_KEY,
+  type BookingState,
+} from "@/lib/bookings/booking-state";
 import { BOOKING_SCREEN_PATHS, getFurthestScreenPath } from "@/lib/bookings/booking-routes";
-import { routes } from "@/config/site";
 import { Button } from "@/components/ui";
 
 function hasMeaningfulDraft(raw: string | null): boolean {
   if (!raw) return false;
   try {
     const state = JSON.parse(raw) as Record<string, unknown>;
-    // Never treat payment-only drafts as recoverable payment data.
     return Boolean(state.line1 || state.serviceType || state.propertyType);
   } catch {
     return false;
@@ -29,11 +30,11 @@ export function ContinueBookingBanner() {
     try {
       const raw = sessionStorage.getItem(BOOKING_STATE_STORAGE_KEY);
       if (!hasMeaningfulDraft(raw)) return;
-      const state = JSON.parse(raw!) as Parameters<typeof getFurthestScreenPath>[0];
-      const path = getFurthestScreenPath(state) ?? BOOKING_SCREEN_PATHS.address;
-      setHref(path);
+      const state = JSON.parse(raw!) as BookingState;
+      const next = getFurthestScreenPath(state) ?? BOOKING_SCREEN_PATHS.address;
+      startTransition(() => setHref(next));
     } catch {
-      setHref(null);
+      startTransition(() => setHref(null));
     }
   }, []);
 
@@ -51,22 +52,21 @@ export function ContinueBookingBanner() {
             Continue booking
           </Button>
         </Link>
-        <Link href={routes.book}>
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={() => {
-              try {
-                sessionStorage.removeItem(BOOKING_STATE_STORAGE_KEY);
-              } catch {
-                // ignore
-              }
-              setHref(null);
-            }}
-          >
-            Start fresh
-          </Button>
-        </Link>
+        <Button
+          size="sm"
+          variant="ghost"
+          type="button"
+          onClick={() => {
+            try {
+              sessionStorage.removeItem(BOOKING_STATE_STORAGE_KEY);
+            } catch {
+              // ignore
+            }
+            setHref(null);
+          }}
+        >
+          Start fresh
+        </Button>
       </div>
     </div>
   );

@@ -48,11 +48,18 @@ export async function POST(request: Request) {
       return jsonError("clientTotalCents is required for price validation.", 400, "PRICE_REQUIRED");
     }
 
+    const session = await getSession();
+    const profileId = session?.profile?.id ?? session?.user.id ?? null;
+
     let pricing = calculateBookingPrice(parsed.data);
     let appliedPromo: Awaited<ReturnType<typeof validatePromoCode>> = null;
 
     if (parsed.data.promoCode && !pricing.quoteOnly) {
-      appliedPromo = await validatePromoCode(parsed.data.promoCode, pricing.subtotalCents);
+      appliedPromo = await validatePromoCode(
+        parsed.data.promoCode,
+        pricing.subtotalCents,
+        profileId,
+      );
       if (appliedPromo) {
         pricing = {
           ...withServerDiscount(pricing, appliedPromo.discountCents),
@@ -88,9 +95,6 @@ export async function POST(request: Request) {
 
     assertPriceMatch(body.clientTotalCents, pricing.totalCents);
 
-    const session = await getSession();
-    const profileId = session?.profile?.id ?? session?.user.id ?? null;
-
     const booking = await insertBooking(parsed.data, pricing, profileId);
 
     if (pricing.quoteId) {
@@ -104,6 +108,24 @@ export async function POST(request: Request) {
         customerId: profileId,
         discountCents: pricing.discountCents ?? 0,
       });
+    }
+
+    if (parsed.data.referralCode) {
+      try {
+        const { captureReferralAttribution } = await import("@/lib/referrals");
+        await captureReferralAttribution({
+          code: parsed.data.referralCode,
+          refereeProfileId: profileId,
+          refereeEmail: parsed.data.email,
+          bookingId: booking.id,
+        });
+      } catch (referralError) {
+        // Attribution failure must not block booking create.
+        console.info(
+          "[referral] capture skipped:",
+          referralError instanceof Error ? referralError.message : referralError,
+        );
+      }
     }
 
     const accessToken = createBookingAccessToken(booking.id);

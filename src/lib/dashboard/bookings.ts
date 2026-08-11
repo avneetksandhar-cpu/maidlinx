@@ -86,8 +86,8 @@ function mapBooking(row: Record<string, unknown>): DashboardBooking {
     squareFootage: row.square_footage != null ? Number(row.square_footage) : null,
     extras,
     propertyType: answers.propertyType ? String(answers.propertyType) : null,
-    preferredCleanerId: row.preferred_cleaner_id
-      ? String(row.preferred_cleaner_id)
+    preferredCleanerId: row.preferred_professional_id
+      ? String(row.preferred_professional_id)
       : null,
   };
 }

@@ -6,6 +6,8 @@ import { useRouter } from "next/navigation";
 import { Pencil } from "lucide-react";
 import { BookingFlowChrome } from "@/components/booking/booking-flow-chrome";
 import { BookingMapPreview } from "@/components/booking/booking-map-preview";
+import { PromoCodeField } from "@/components/booking/promo-code-field";
+import { RecurringFrequencyPicker } from "@/components/booking/recurring-frequency-picker";
 import { useBookingGuard } from "@/components/booking/use-booking-guard";
 import { BOOKING_SCREEN_PATHS } from "@/lib/bookings/booking-routes";
 import { buildQuoteInput } from "@/lib/bookings/booking-helpers";
@@ -15,6 +17,7 @@ import { getBookingServiceLabel, BOOKING_EXTRAS } from "@/lib/bookings/constants
 import { formatCurrency } from "@/lib/utils";
 import { useBooking } from "@/components/booking/booking-provider";
 import { trackFunnelStep } from "@/lib/analytics/booking-funnel";
+import type { RecurringFrequencyId } from "@/lib/recurring/frequencies";
 
 function Row({
   label,
@@ -94,6 +97,9 @@ export function ReviewScreen() {
     .join(" · ");
   const accessLabel = state.accessNotes?.trim() || "None added";
   const unitLabel = state.line2?.trim() || "None";
+  const preferLabel = state.preferredCleanerName
+    ? `${state.preferredCleanerName} (if available — not guaranteed)`
+    : null;
 
   const totalLabel =
     pricing && !pricing.quoteOnly
@@ -146,7 +152,22 @@ export function ReviewScreen() {
           <Row label="Service" value={serviceLabel} href={BOOKING_SCREEN_PATHS.service} />
           <Row label="Add-ons" value={extrasLabel} href={BOOKING_SCREEN_PATHS.addons} />
           <Row label="When" value={whenLabel || "—"} href={BOOKING_SCREEN_PATHS.date} />
+          {preferLabel ? (
+            <div className="border-b border-[#E2E9E6] py-4 last:border-0">
+              <p className="text-[12px] font-medium uppercase tracking-wide text-ink-muted">
+                Preferred Pro
+              </p>
+              <p className="mt-1 text-[15px] font-medium leading-snug text-ink">{preferLabel}</p>
+            </div>
+          ) : null}
         </div>
+
+        <RecurringFrequencyPicker
+          value={(state.recurringFrequency as RecurringFrequencyId) ?? "one_time"}
+          onChange={(recurringFrequency) => updateState({ recurringFrequency })}
+        />
+
+        <PromoCodeField />
 
         {pricingError ? (
           <p

@@ -48,6 +48,7 @@ export function buildQuoteInput(
     notes: state.notes,
     accessNotes: state.accessNotes,
     schedulePreset: state.schedulePreset,
+    promoCode: state.promoCode,
   };
 }
 
@@ -77,7 +78,15 @@ export function buildCreateBookingRequest(state: BookingState): CreateBookingReq
       notes: mergeNotes(state),
     });
 
-  return parsed.success ? parsed.data : null;
+  if (!parsed.success) return null;
+
+  return {
+    ...parsed.data,
+    promoCode: state.promoCode,
+    preferredCleanerId: state.preferredCleanerId,
+    recurringFrequency: state.recurringFrequency,
+    rebookSourceBookingId: state.rebookSourceBookingId,
+  };
 }
 
 export function validateDetailsState(state: BookingState): {

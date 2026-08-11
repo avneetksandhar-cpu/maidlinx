@@ -313,7 +313,9 @@ export async function insertBooking(
       address_longitude: input.longitude ?? null,
       google_place_id: input.googlePlaceId ?? null,
       pricing_snapshot: pricing as unknown as import("@/types/database.types").Json,
-    })
+      preferred_professional_id: input.preferredCleanerId ?? null,
+      recurring_preference: input.recurringFrequency ?? null,
+    } as never)
     .select("*")
     .single();
 
@@ -326,10 +328,12 @@ export async function insertBooking(
         .maybeSingle();
       if (existing) return mapRow(existing as Record<string, unknown>);
     }
-    // Columns from 00017 may be absent until migration is applied.
+    // Columns from 00017 / 00023 may be absent until migration is applied.
     if (
       error &&
-      /coupon_code|quote_id|idempotency_key|schema cache|column/i.test(error.message)
+      /coupon_code|quote_id|idempotency_key|preferred_professional|recurring_preference|schema cache|column/i.test(
+        error.message,
+      )
     ) {
       const { data: retry, error: retryError } = await supabase
         .from("bookings")

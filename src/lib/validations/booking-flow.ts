@@ -127,6 +127,14 @@ export const createBookingRequestSchema = bookingQuoteSchema
     quoteId: z.string().uuid().optional(),
     /** Client idempotency key — prevents duplicate pending bookings on retry. */
     idempotencyKey: z.string().trim().min(8).max(128).optional(),
+    /** Soft preferred pro — never a guarantee. */
+    preferredCleanerId: z.string().uuid().optional(),
+    /** Cadence preference only — no Stripe auto-charge. */
+    recurringFrequency: z.enum(["one_time", "weekly", "biweekly", "monthly"]).optional(),
+    /** Referral capture only — credits not live. */
+    referralCode: z.string().trim().max(32).optional(),
+    /** Analytics: completed booking this rebook came from (never reused as id). */
+    rebookSourceBookingId: z.string().uuid().optional(),
   });
 
 export type Step1Address = z.infer<typeof step1AddressSchema>;

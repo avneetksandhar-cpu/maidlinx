@@ -26,10 +26,16 @@ function BookEntryInner() {
       return;
     }
 
+    const qs = searchParams?.toString() ?? "";
+    // Rebook: prefill is applied — jump to date so customer only picks schedule.
+    if (searchParams?.get("rebook") === "1" && state.line1 && state.serviceType) {
+      router.replace(qs ? `${BOOKING_SCREEN_PATHS.date}?${qs}` : BOOKING_SCREEN_PATHS.date);
+      return;
+    }
+
     // Preserve query prefill (rebook, service=…) already handled by useBookingState.
     const usual = readUsualClean();
     const hasUsual = Boolean(usual?.line1 && usual.serviceType);
-    const qs = searchParams?.toString() ?? "";
     const target = getBookingEntryPath({ hasUsualClean: hasUsual });
 
     // If draft already has a completed address, skip straight to property.
@@ -41,7 +47,7 @@ function BookEntryInner() {
     }
 
     router.replace(qs ? `${target}?${qs}` : target);
-  }, [hydrated, router, searchParams, state.line1, state.inServiceArea, state.marketId]);
+  }, [hydrated, router, searchParams, state.line1, state.inServiceArea, state.marketId, state.serviceType]);
 
   return (
     <div className="flex min-h-[40dvh] items-center justify-center text-sm text-ink-muted">

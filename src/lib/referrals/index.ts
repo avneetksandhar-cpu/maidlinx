@@ -65,7 +65,7 @@ export async function ensureReferralCode(
         get_cents: getCents,
         is_active: true,
         credits_live: false,
-      })
+      } as never)
       .select("*")
       .single();
 
@@ -154,7 +154,7 @@ export async function captureReferralAttribution(input: {
     referee_email: input.refereeEmail?.trim().toLowerCase() ?? null,
     booking_id: input.bookingId ?? null,
     status: "captured",
-  });
+  } as never);
 
   if (insertError) {
     if (/unique|duplicate/i.test(insertError.message)) {

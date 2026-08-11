@@ -17,20 +17,20 @@ alter table public.coupons
 -- ---------------------------------------------------------------------------
 
 alter table public.bookings
-  add column if not exists preferred_cleaner_id uuid
-    references public.cleaners(id) on delete set null,
+  add column if not exists preferred_professional_id uuid
+    references public.users(id) on delete set null,
   add column if not exists recurring_preference text
     check (
       recurring_preference is null
       or recurring_preference in ('one_time', 'weekly', 'biweekly', 'monthly')
     );
 
-create index if not exists bookings_preferred_cleaner_idx
-  on public.bookings (preferred_cleaner_id)
-  where preferred_cleaner_id is not null;
+create index if not exists bookings_preferred_professional_idx
+  on public.bookings (preferred_professional_id)
+  where preferred_professional_id is not null;
 
-comment on column public.bookings.preferred_cleaner_id is
-  'Soft preference only — never a guarantee of assignment.';
+comment on column public.bookings.preferred_professional_id is
+  'Soft preference (profile id) only — never a guarantee of assignment.';
 comment on column public.bookings.recurring_preference is
   'Customer cadence preference. Auto-charge / occurrence generation is NOT implemented.';
 
