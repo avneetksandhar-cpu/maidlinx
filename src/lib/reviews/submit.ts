@@ -118,6 +118,48 @@ export async function submitBookingReview(input: SubmitReviewInput): Promise<{ i
   return { id: String(created.id) };
 }
 
+export async function getBookingReviewForCustomer(input: {
+  bookingId: string;
+  reviewerId: string;
+  reviewerEmail: string;
+}): Promise<{ id: string; rating: number; comment: string | null } | null> {
+  if (!hasAdminEnv()) throw new Error("Database is not configured.");
+
+  const supabase = createAdminClient();
+  const { data: booking, error } = await supabase
+    .from("bookings")
+    .select("id, customer_id, customer_email")
+    .eq("id", input.bookingId)
+    .maybeSingle();
+
+  if (error) throw new Error(error.message);
+  if (!booking) throw new ReviewAuthzError("Booking not found.");
+
+  const row = booking as Record<string, unknown>;
+  const ownerMatch = row.customer_id && String(row.customer_id) === input.reviewerId;
+  const emailMatch =
+    row.customer_email &&
+    String(row.customer_email).toLowerCase() === input.reviewerEmail.toLowerCase();
+  if (!ownerMatch && !emailMatch) {
+    throw new ReviewAuthzError("You do not have access to this booking.");
+  }
+
+  const { data: review, error: reviewError } = await supabase
+    .from("reviews")
+    .select("id, rating, comment")
+    .eq("booking_id", input.bookingId)
+    .maybeSingle();
+
+  if (reviewError) throw new Error(reviewError.message);
+  if (!review) return null;
+
+  return {
+    id: String(review.id),
+    rating: Number(review.rating),
+    comment: review.comment ? String(review.comment) : null,
+  };
+}
+
 /** Pure authz helper for tests. */
 export function canSubmitReview(input: {
   bookingStatus: string;

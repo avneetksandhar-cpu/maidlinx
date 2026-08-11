@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { BookingReviewCard } from "@/components/post-booking/booking-review-card";
 import { LiveStatusCard } from "@/components/post-booking/live-status-card";
 import { UpcomingBookingCard } from "@/components/post-booking/upcoming-booking-card";
 import { useCustomerBookingLive } from "@/hooks/use-customer-booking-live";
@@ -129,6 +130,9 @@ export function PostBookingDashboard({
         </div>
 
         <LiveStatusCard booking={booking} accessToken={accessToken} />
+        {booking.status === "completed" ? (
+          <BookingReviewCard bookingId={booking.id} />
+        ) : null}
       </div>
 
       <div className="space-y-6">

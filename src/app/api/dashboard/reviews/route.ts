@@ -1,7 +1,11 @@
 import { jsonError, jsonSuccess } from "@/lib/api/response";
 import { checkRateLimit, clientIpFromRequest } from "@/lib/api/rate-limit";
 import { requireCustomerSession } from "@/lib/dashboard/session";
-import { ReviewAuthzError, submitBookingReview } from "@/lib/reviews/submit";
+import {
+  ReviewAuthzError,
+  getBookingReviewForCustomer,
+  submitBookingReview,
+} from "@/lib/reviews/submit";
 import { z } from "zod";
 
 const submitReviewSchema = z.object({
@@ -9,6 +13,31 @@ const submitReviewSchema = z.object({
   rating: z.number().int().min(1).max(5),
   comment: z.string().trim().max(2000).optional(),
 });
+
+export async function GET(request: Request) {
+  try {
+    const { profile, email } = await requireCustomerSession();
+    const bookingId = new URL(request.url).searchParams.get("bookingId");
+    if (!bookingId || !z.string().uuid().safeParse(bookingId).success) {
+      return jsonError("bookingId is required.", 400);
+    }
+
+    const review = await getBookingReviewForCustomer({
+      bookingId,
+      reviewerId: profile.id,
+      reviewerEmail: email,
+    });
+
+    return jsonSuccess({ review });
+  } catch (error) {
+    if (error instanceof ReviewAuthzError) {
+      return jsonError(error.message, 403, "REVIEW_FORBIDDEN");
+    }
+    const message = error instanceof Error ? error.message : "Unable to load review.";
+    const status = message.includes("Authentication") ? 401 : 400;
+    return jsonError(message, status);
+  }
+}
 
 export async function POST(request: Request) {
   const ip = clientIpFromRequest(request);

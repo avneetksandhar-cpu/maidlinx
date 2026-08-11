@@ -15,7 +15,7 @@ Statuses: **PASS** · **PARTIAL** · **FAIL** · **MISSING** · **NEEDS USER ACT
 
 | # | Item | Status | Evidence / note |
 |---|------|--------|-----------------|
-| 1 | Booking flow end-to-end | FAIL | Local create blocked: no service role → `503 SUPABASE_NOT_CONFIGURED` |
+| 1 | Booking flow end-to-end | FAIL | Local create blocked: no service role → `503 SUPABASE_NOT_CONFIGURED`. See `company/END_TO_END_TEST.md` |
 | 2 | Maps autocomplete | NEEDS USER ACTION | `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` **SET**; Places may need Google Cloud **billing** (manual entry works) |
 | 3 | Location capture / service area | PARTIAL | Geolocation + manual fallback in code; markets via `src/config/markets` |
 | 4 | Supabase booking storage | NEEDS USER ACTION | Remote schema ready (markets 2 / zones 6 / bookings 1); **local `SUPABASE_SERVICE_ROLE_KEY` EMPTY** |
