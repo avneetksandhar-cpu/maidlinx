@@ -39,17 +39,25 @@ function isUniqueViolation(message: string): boolean {
 async function getCleanerByProfileId(profileId: string): Promise<{
   id: string;
   userId: string;
+  isActive: boolean;
+  approved: boolean;
 } | null> {
   const supabase = createAdminClient();
   const { data, error } = await supabase
     .from("cleaners")
-    .select("id, user_id")
+    .select("id, user_id, is_active, approved")
     .eq("user_id", profileId)
     .maybeSingle();
 
   if (error) throw new Error(error.message);
   if (!data) return null;
-  return { id: String(data.id), userId: String(data.user_id) };
+  const row = data as Record<string, unknown>;
+  return {
+    id: String(row.id),
+    userId: String(row.user_id),
+    isActive: row.is_active !== false,
+    approved: Boolean(row.approved),
+  };
 }
 
 async function getCleanerById(cleanerId: string): Promise<{
@@ -319,6 +327,9 @@ export async function adminAssignCleaner(input: {
 
   const cleaner = await getCleanerByProfileId(input.professionalProfileId);
   if (!cleaner) throw new Error("Cleaner not found for the selected user.");
+  if (!cleaner.approved || !cleaner.isActive) {
+    throw new Error("Only approved, active cleaners can be assigned.");
+  }
 
   const { data: booking, error: bookingError } = await supabase
     .from("bookings")
