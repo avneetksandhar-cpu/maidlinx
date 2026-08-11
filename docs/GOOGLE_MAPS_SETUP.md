@@ -16,7 +16,7 @@ In **APIs & Services → Library**, enable:
 
 - **Places API**
 - **Maps JavaScript API**
-- **Geocoding API** (required for **Use current location** reverse lookup)
+- **Geocoding API** (required for **Use my current location** reverse lookup)
 
 ## 3. Create an API key
 
@@ -62,7 +62,7 @@ If suggestions fail: confirm Places + Maps JavaScript API are enabled, billing i
 ## 6b. Test current location
 
 1. Open [http://localhost:3001/book/address](http://localhost:3001/book/address) (or the homepage address field).
-2. Click **Use current location** (also listed under Quick picks when the field is focused and empty).
+2. Click **Use my current location** (also listed under Quick picks when the field is focused and empty).
 3. Allow location when the browser prompts you.
 4. Confirm street / city / region / postal fill in, and booking state keeps lat/lng.
 

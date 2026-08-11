@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useId, useRef, useState } from "react";
-import { LocateFixed } from "lucide-react";
+import { Loader2, LocateFixed } from "lucide-react";
 import { useGoogleMaps } from "@/components/booking/google-maps-context";
 import { Button, Input, Label } from "@/components/ui";
 import {
@@ -11,7 +11,9 @@ import {
 } from "@/lib/addresses/map";
 import {
   geolocationErrorReason,
+  LOCATION_FINDING_MESSAGE,
   locationFailureMessage,
+  queryGeolocationPermission,
 } from "@/lib/addresses/geolocation";
 import type { SavedAddress, StructuredAddress } from "@/lib/addresses/types";
 import type { Step1Address } from "@/lib/validations/booking-flow";
@@ -221,6 +223,8 @@ export function AddressAutocomplete({
   const [startedTracked, setStartedTracked] = useState(false);
   const [locating, setLocating] = useState(false);
   const [locationError, setLocationError] = useState<string | null>(null);
+  const locatingRef = useRef(false);
+  const permissionDeniedRef = useRef(false);
   const onAddressSelectedRef = useRef(onAddressSelected);
 
   useEffect(() => {
@@ -512,11 +516,31 @@ export function AddressAutocomplete({
     address,
   }));
 
-  const locateCurrent = useCallback(() => {
+  const finishLocating = useCallback(() => {
+    locatingRef.current = false;
+    setLocating(false);
+  }, []);
+
+  const locateCurrent = useCallback(async () => {
+    // Single in-flight request — avoids spam-clicks re-prompting the browser.
+    if (locatingRef.current) return;
+
     setLocationError(null);
 
     if (typeof navigator === "undefined" || !navigator.geolocation) {
       setLocationError(locationFailureMessage("unsupported"));
+      return;
+    }
+
+    if (permissionDeniedRef.current) {
+      setLocationError(locationFailureMessage("permission_denied"));
+      return;
+    }
+
+    const permission = await queryGeolocationPermission();
+    if (permission === "denied") {
+      permissionDeniedRef.current = true;
+      setLocationError(locationFailureMessage("permission_denied"));
       return;
     }
 
@@ -525,6 +549,7 @@ export function AddressAutocomplete({
       return;
     }
 
+    locatingRef.current = true;
     setLocating(true);
     setOpen(false);
 
@@ -536,7 +561,7 @@ export function AddressAutocomplete({
         };
         const geocoder = new google.maps.Geocoder();
         geocoder.geocode({ location: latLng }, (results, geocodeStatus) => {
-          setLocating(false);
+          finishLocating();
           if (geocodeStatus !== "OK" || !results?.[0]) {
             if (isDev()) console.warn("[address] Reverse geocode failed", geocodeStatus);
             setLocationError(locationFailureMessage("geocode_failed"));
@@ -548,9 +573,13 @@ export function AddressAutocomplete({
             return;
           }
           // Prefer GPS coordinates; keep reverse-geocoded placeId / fields.
+          // Customers see the formatted street address — never raw lat/lng.
+          const displayAddress =
+            parsed.formattedAddress?.trim() ||
+            [parsed.line1, parsed.city, parsed.state].filter(Boolean).join(", ");
           selectStructured(
             {
-              formattedAddress: parsed.formattedAddress,
+              formattedAddress: displayAddress,
               addressLine1: parsed.line1 ?? "",
               unit: parsed.line2,
               city: parsed.city ?? "",
@@ -567,13 +596,17 @@ export function AddressAutocomplete({
         });
       },
       (error) => {
-        setLocating(false);
-        if (isDev()) console.warn("[address] Geolocation denied/failed", error.message);
-        setLocationError(locationFailureMessage(geolocationErrorReason(error)));
+        finishLocating();
+        const reason = geolocationErrorReason(error);
+        if (reason === "permission_denied") {
+          permissionDeniedRef.current = true;
+        }
+        if (isDev()) console.warn("[address] Geolocation denied/failed", error.code);
+        setLocationError(locationFailureMessage(reason));
       },
       { enableHighAccuracy: false, timeout: 10_000, maximumAge: 60_000 },
     );
-  }, [isReady, selectStructured]);
+  }, [finishLocating, isReady, selectStructured]);
 
   const onLine1Focus = () => {
     setOpen(true);
@@ -690,8 +723,9 @@ export function AddressAutocomplete({
             activeIndex >= 0 ? `${listboxId}-option-${activeIndex}` : undefined
           }
           invalid={Boolean(errors?.line1)}
-          placeholder={locating ? "Finding your location…" : placeholder}
+          placeholder={locating ? LOCATION_FINDING_MESSAGE : placeholder}
           autoComplete="off"
+          aria-busy={locating || undefined}
           className={cn(
             "rounded-xl border-border transition-shadow duration-200 focus-visible:border-accent focus-visible:ring-accent/35",
             isHero
@@ -707,8 +741,9 @@ export function AddressAutocomplete({
         <div className={cn("mt-2 flex flex-wrap items-center gap-x-3 gap-y-1", isHero && "mt-2.5")}>
           <button
             type="button"
-            onClick={() => locateCurrent()}
+            onClick={() => void locateCurrent()}
             disabled={locating}
+            aria-busy={locating || undefined}
             className={cn(
               "inline-flex items-center gap-1.5 text-sm font-medium transition-colors duration-150",
               locating
@@ -716,13 +751,21 @@ export function AddressAutocomplete({
                 : "text-accent underline-offset-2 hover:underline",
             )}
           >
-            <LocateFixed className={cn("size-3.5 shrink-0", locating && "animate-pulse")} aria-hidden />
-            {locating ? "Finding your location…" : "Use current location"}
+            {locating ? (
+              <Loader2 className="size-3.5 shrink-0 animate-spin" aria-hidden />
+            ) : (
+              <LocateFixed className="size-3.5 shrink-0" aria-hidden />
+            )}
+            {locating ? LOCATION_FINDING_MESSAGE : "Use my current location"}
           </button>
         </div>
         {locationError ? (
-          <p className="mt-2 text-sm text-ink-muted" role="status">
+          <p className="mt-2 text-sm text-ink-muted" role="status" aria-live="polite">
             {locationError}
+          </p>
+        ) : locating ? (
+          <p className="sr-only" role="status" aria-live="polite">
+            {LOCATION_FINDING_MESSAGE}
           </p>
         ) : null}
 
@@ -746,6 +789,7 @@ export function AddressAutocomplete({
                           type="button"
                           id={`${listboxId}-option-${index}`}
                           disabled={locating}
+                          aria-busy={locating || undefined}
                           className={cn(
                             "flex w-full items-center gap-3 px-4 py-3 text-left transition-colors duration-150",
                             index === activeIndex ? "bg-accent-muted" : "hover:bg-surface-muted",
@@ -753,11 +797,15 @@ export function AddressAutocomplete({
                           )}
                           onMouseEnter={() => setActiveIndex(index)}
                           onMouseDown={(event) => event.preventDefault()}
-                          onClick={() => locateCurrent()}
+                          onClick={() => void locateCurrent()}
                         >
-                          <LocateFixed className="size-4 shrink-0 text-accent" aria-hidden />
+                          {locating ? (
+                            <Loader2 className="size-4 shrink-0 animate-spin text-accent" aria-hidden />
+                          ) : (
+                            <LocateFixed className="size-4 shrink-0 text-accent" aria-hidden />
+                          )}
                           <span className="text-sm font-medium text-accent">
-                            {locating ? "Finding your location…" : "Use current location"}
+                            {locating ? LOCATION_FINDING_MESSAGE : "Use my current location"}
                           </span>
                         </button>
                       </li>
