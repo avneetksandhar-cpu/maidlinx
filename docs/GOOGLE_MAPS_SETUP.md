@@ -6,9 +6,10 @@ Optional but recommended: enables address autocomplete on `/book/address`. Witho
 
 1. Open [Google Cloud Console](https://console.cloud.google.com/).
 2. Use project **`maidlinx-505202`** (Maps key + APIs live here as of 2026-08-10). Prefer this over legacy `maidlinx` (Firebase residue, no Maps setup).
-3. **Billing must be enabled** on that project — Places returns `BillingNotEnabledMapError` / `REQUEST_DENIED` until it is.  
+3. **STOP — Billing must be enabled by you in Google Cloud** (agents cannot create billing / accept Google’s legal terms).  
+   Until billing is on, Places returns `BillingNotEnabledMapError` / `REQUEST_DENIED` and autocomplete + reverse geocode stay blocked (manual address entry still works).  
    Enable here: [Billing for maidlinx-505202](https://console.cloud.google.com/billing/enable?project=maidlinx-505202)  
-   (Requires your Google account billing / payment method / legal acceptance — do this in Console, not in chat.)
+   Then confirm APIs below are enabled and the key’s HTTP referrers include `http://localhost:3001/*` and `https://maidlinx.com/*`.
 
 ## 2. Enable APIs
 
