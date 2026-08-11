@@ -19,7 +19,7 @@ export function AuthForm({ mode }: AuthFormProps) {
   const searchParams = useSearchParams();
   const roleParam = searchParams?.get("role");
   const signupRole = roleParam === "cleaner" ? "cleaner" : "customer";
-  const defaultNext = signupRole === "cleaner" ? routes.cleanerDashboard : routes.dashboard;
+  const defaultNext = signupRole === "cleaner" ? routes.proHome : routes.account;
   const nextPath = searchParams?.get("next") ?? defaultNext;
 
   const [email, setEmail] = useState("");

@@ -350,6 +350,7 @@ async function reverseGeocodeViaPlacesNearby(
         places.find((p) =>
           (p.addressComponents ?? []).some((c) => c.types.includes("street_number")),
         ) ?? places[0];
+      if (!withStreet) continue;
 
       const parsed = parsePlacesNewAddress(withStreet, existingUnit);
       if (!parsed?.addressLine1) continue;

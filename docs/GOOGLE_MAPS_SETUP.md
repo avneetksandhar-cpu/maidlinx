@@ -15,9 +15,9 @@ Optional but recommended: enables address autocomplete on `/book/address`. Witho
 
 In **APIs & Services → Library**, enable:
 
-- **Places API**
+- **Places API (New)** — required for address autocomplete (`AutocompleteSuggestion`)
 - **Maps JavaScript API**
-- **Geocoding API** (required for **Use my current location** reverse lookup)
+- **Geocoding API** (best reverse lookup for **Use my current location**; app falls back to Places nearby if denied)
 - **Maps Static API** (map previews on access / review / confirmation; live-tracking fallback)
 
 ## 3. Create an API key

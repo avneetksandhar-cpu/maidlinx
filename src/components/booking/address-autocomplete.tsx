@@ -158,13 +158,8 @@ function predictionLocationBias(
     return { center: { lat: 26.1224, lng: -80.1373 }, radius: 90_000 };
   }
 
-  // Default: soft preference across GTA ↔ South Florida corridor.
-  return {
-    south: 25.4,
-    west: -82.9,
-    north: 44.6,
-    east: -78.8,
-  };
+  // Default: prefer GTA (primary market); FL still returned via region codes.
+  return { center: { lat: 43.6532, lng: -79.3832 }, radius: 120_000 };
 }
 
 function isDev() {
@@ -352,23 +347,22 @@ export function AddressAutocomplete({
 
           if (requestId !== predictionRequestRef.current) return;
 
-          const mapped: PlaceSuggestion[] = (suggestions ?? [])
-            .map((suggestion) => {
-              const prediction = suggestion.placePrediction;
-              if (!prediction?.placeId) return null;
-              const description =
-                prediction.text?.text?.trim() ||
-                prediction.mainText?.text?.trim() ||
-                trimmed;
-              return {
-                placeId: prediction.placeId,
-                description,
-                mainText: prediction.mainText?.text?.trim() || description,
-                secondaryText: prediction.secondaryText?.text?.trim() || undefined,
-                placePrediction: prediction,
-              } satisfies PlaceSuggestion;
-            })
-            .filter((item): item is PlaceSuggestion => Boolean(item));
+          const mapped: PlaceSuggestion[] = [];
+          for (const suggestion of suggestions ?? []) {
+            const prediction = suggestion.placePrediction;
+            if (!prediction?.placeId) continue;
+            const description =
+              prediction.text?.text?.trim() ||
+              prediction.mainText?.text?.trim() ||
+              trimmed;
+            mapped.push({
+              placeId: prediction.placeId,
+              description,
+              mainText: prediction.mainText?.text?.trim() || description,
+              secondaryText: prediction.secondaryText?.text?.trim() || undefined,
+              placePrediction: prediction,
+            });
+          }
 
           setLoadingPredictions(false);
           if (mapped.length) {

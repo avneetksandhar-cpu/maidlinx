@@ -70,10 +70,30 @@ export function getSiteUrl(): string {
   );
 }
 
-export function hasSupabaseEnv(): boolean {
-  return Boolean(
-    process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+function nonEmpty(value: string | undefined): string | undefined {
+  const trimmed = value?.trim();
+  return trimmed ? trimmed : undefined;
+}
+
+/** Public Supabase URL for browser + server clients. */
+export function getSupabaseUrl(): string | undefined {
+  return nonEmpty(process.env.NEXT_PUBLIC_SUPABASE_URL);
+}
+
+/**
+ * Publishable/anon key for browser + cookie SSR clients.
+ * Prefers legacy ANON_KEY; falls back to PUBLISHABLE_KEY if present.
+ * Never reads service_role.
+ */
+export function getSupabaseAnonKey(): string | undefined {
+  return (
+    nonEmpty(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) ??
+    nonEmpty(process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY)
   );
+}
+
+export function hasSupabaseEnv(): boolean {
+  return Boolean(getSupabaseUrl() && getSupabaseAnonKey());
 }
 
 export function hasStripeEnv(): boolean {
