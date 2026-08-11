@@ -25,10 +25,33 @@ export interface DashboardBooking {
   stripePaymentIntentId: string | null;
   createdAt: string;
   cancelledAt: string | null;
+  bedrooms: number | null;
+  bathrooms: number | null;
+  squareFootage: number | null;
+  extras: string[];
+  propertyType: string | null;
+  preferredCleanerId: string | null;
 }
 
 function mapBooking(row: Record<string, unknown>): DashboardBooking {
   const professional = row.professional as Record<string, unknown> | null;
+  const answers =
+    (row.booking_answers as Record<string, unknown> | null) ??
+    (row.service_answers as Record<string, unknown> | null) ??
+    {};
+  const extrasRaw = row.extras;
+  const extras = Array.isArray(extrasRaw)
+    ? extrasRaw.map(String)
+    : typeof extrasRaw === "string"
+      ? (() => {
+          try {
+            const parsed = JSON.parse(extrasRaw);
+            return Array.isArray(parsed) ? parsed.map(String) : [];
+          } catch {
+            return [];
+          }
+        })()
+      : [];
 
   return {
     id: String(row.id),
@@ -58,6 +81,14 @@ function mapBooking(row: Record<string, unknown>): DashboardBooking {
       : null,
     createdAt: String(row.created_at),
     cancelledAt: row.cancelled_at ? String(row.cancelled_at) : null,
+    bedrooms: row.bedrooms != null ? Number(row.bedrooms) : null,
+    bathrooms: row.bathrooms != null ? Number(row.bathrooms) : null,
+    squareFootage: row.square_footage != null ? Number(row.square_footage) : null,
+    extras,
+    propertyType: answers.propertyType ? String(answers.propertyType) : null,
+    preferredCleanerId: row.preferred_cleaner_id
+      ? String(row.preferred_cleaner_id)
+      : null,
   };
 }
 

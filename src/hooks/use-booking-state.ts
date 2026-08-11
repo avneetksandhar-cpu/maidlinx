@@ -51,6 +51,14 @@ function readPrefillFromUrl(): Partial<BookingState> | null {
     : undefined;
 
   const q = params.get("q")?.trim();
+  const isRebook = params.get("rebook") === "1";
+  const bedrooms = params.get("bedrooms");
+  const bathrooms = params.get("bathrooms");
+  const squareFootage = params.get("squareFootage");
+  const extrasRaw = params.get("extras");
+  const extras = extrasRaw
+    ? extrasRaw.split(",").map((e) => e.trim()).filter(Boolean)
+    : undefined;
 
   return {
     line1: params.get("line1") ?? (q || undefined),
@@ -61,7 +69,20 @@ function readPrefillFromUrl(): Partial<BookingState> | null {
     country: params.get("country") ?? undefined,
     serviceType,
     propertyType,
-    step: 1,
+    bedrooms: bedrooms != null ? Number(bedrooms) : undefined,
+    bathrooms: bathrooms != null ? Number(bathrooms) : undefined,
+    squareFootage: squareFootage != null ? Number(squareFootage) : undefined,
+    extras: extras as BookingState["extras"],
+    preferredCleanerId: params.get("preferredCleanerId") ?? undefined,
+    preferredCleanerName: params.get("preferredCleanerName") ?? undefined,
+    rebookSourceBookingId: params.get("sourceBookingId") ?? undefined,
+    // Always create a NEW booking — clear schedule + prior booking id.
+    date: undefined,
+    arrivalWindow: undefined,
+    schedulePreset: undefined,
+    bookingId: undefined,
+    quote: null,
+    step: isRebook ? 6 : 1,
   };
 }
 

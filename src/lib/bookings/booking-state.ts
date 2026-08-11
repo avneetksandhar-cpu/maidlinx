@@ -3,6 +3,7 @@ import type { PropertyTypeId as CatalogPropertyTypeId } from "@/config/property-
 import type { PriceBreakdown } from "@/lib/pricing/types";
 import type { BookingFormState } from "@/lib/validations/booking-flow";
 import type { ServiceAnswers } from "@/lib/services/questions";
+import type { RecurringFrequencyId } from "@/lib/recurring/frequencies";
 
 /**
  * Multi-screen booking funnel (one decision per route):
@@ -77,6 +78,15 @@ export type BookingState = Omit<BookingFormState, "propertyType"> & {
   accessNotes?: string;
   /** Prompt after successful book to remember usual clean */
   offerSaveUsual?: boolean;
+  /** Optional promo — validated server-side only. */
+  promoCode?: string;
+  /** Cadence preference — no Stripe auto-charge. */
+  recurringFrequency?: RecurringFrequencyId;
+  /** Soft “Prefer this Pro” preference (cleaner id); never a guarantee. */
+  preferredCleanerId?: string;
+  preferredCleanerName?: string;
+  /** Source completed booking for rebook analytics — never reused as booking id. */
+  rebookSourceBookingId?: string;
 };
 
 export const DEFAULT_BOOKING_STATE: BookingState = {
@@ -94,4 +104,5 @@ export const DEFAULT_BOOKING_STATE: BookingState = {
   step: 1,
   schedulePreset: undefined,
   accessNotes: "",
+  recurringFrequency: "one_time",
 };

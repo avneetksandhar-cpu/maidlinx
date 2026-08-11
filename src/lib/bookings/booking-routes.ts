@@ -254,6 +254,23 @@ export function getBookingEntryPath(options?: {
   return BOOKING_SCREEN_PATHS.address;
 }
 
+/**
+ * Furthest incomplete screen for abandoned-draft recovery.
+ * Prefers date/time when address+service are filled (rebook / continue).
+ */
+export function getFurthestScreenPath(state: BookingState): string {
+  if (!isAddressComplete(state)) return BOOKING_SCREEN_PATHS.address;
+  if (!isPropertyComplete(state)) return BOOKING_SCREEN_PATHS.property;
+  if (!isDetailsComplete(state)) return BOOKING_SCREEN_PATHS.details;
+  if (!isServiceComplete(state)) return BOOKING_SCREEN_PATHS.service;
+  if (!isExtrasComplete(state)) return BOOKING_SCREEN_PATHS.addons;
+  if (!isDateComplete(state)) return BOOKING_SCREEN_PATHS.date;
+  if (!isTimeComplete(state)) return BOOKING_SCREEN_PATHS.time;
+  if (!isAccessComplete()) return BOOKING_SCREEN_PATHS.access;
+  if (!isReviewReady(state)) return BOOKING_SCREEN_PATHS.review;
+  return BOOKING_SCREEN_PATHS.payment;
+}
+
 export function isBookingFlowPathname(pathname: string): boolean {
   // Post-booking `/bookings/*` uses the customer shell — not the question funnel.
   return pathname === "/book" || pathname.startsWith("/book/");
