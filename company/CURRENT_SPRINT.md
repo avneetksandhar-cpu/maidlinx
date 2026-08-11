@@ -2,9 +2,10 @@
 
 **Branch:** `cursor/live-location-and-booking-ux`  
 **Objective:** Core loop **BOOK → PAY → ASSIGN → CLEAN → COMPLETE → REBOOK** must PASS before any roadmap feature work.  
-**AI Booking Assistant:** Sprint 6 — do not implement now.
+**AI Booking Assistant:** Sprint 6 — do not implement now.  
+**Phase model:** Phase 0 board → Phase 1 core transaction → Phase 2 assign/lifecycle proof → later phases (AI/SEO mass/commercial) gated.
 
-**Scope lock:** This sprint stays **MVP-only**. Expanded ideas in `company/ROADMAP.md` are planning docs — do **not** implement them or interrupt sibling work proving BOOK → PAY → ASSIGN → CLEAN → COMPLETE → REBOOK.
+**Scope lock:** This sprint stays **MVP-only**. Expanded ideas in `company/ROADMAP.md` are planning docs — do **not** implement them or interrupt sibling work proving the core loop.
 
 Statuses: **PASS** · **PARTIAL** · **FAIL** · **MISSING** · **NEEDS USER ACTION**
 
@@ -14,17 +15,17 @@ Statuses: **PASS** · **PARTIAL** · **FAIL** · **MISSING** · **NEEDS USER ACT
 
 | # | Item | Status | Evidence / note |
 |---|------|--------|-----------------|
-| 1 | Booking flow end-to-end | FAIL | Local `POST /api/bookings` → `503 SUPABASE_NOT_CONFIGURED` |
-| 2 | Maps autocomplete | NEEDS USER ACTION | Key present; Places needs Google Cloud **billing** (see KNOWN_ISSUES) |
-| 3 | Location capture / service area | PARTIAL | Geolocation + manual fallback in code; service areas via `src/config/markets` |
-| 4 | Supabase booking storage | NEEDS USER ACTION | Remote schema ready (markets/zones/status); **local `SUPABASE_SERVICE_ROLE_KEY` empty** |
-| 5 | Stripe sandbox deposit + webhook | NEEDS USER ACTION | Checkout code live; **Stripe TEST keys empty** in `.env.local` |
-| 6 | Confirmation after payment | PARTIAL | UI + webhook path exist; unverified locally without Stripe |
-| 7 | Cleaner portal lifecycle | PARTIAL | Transitions coded (`on_the_way`→`arrived`→`in_progress`→`completed`); **0 cleaners** in DB |
-| 8 | Admin assign | PARTIAL | Match score + assign APIs exist; needs admin user + paid booking |
-| 9 | Mobile-usable critical path | PARTIAL | Mobile booking chrome exists; not re-verified this session |
-| 10 | Security (secrets / RLS / auth) | PARTIAL | No secrets in git; bookings RLS on; advisors flag SECURITY DEFINER views + empty-policy tables |
-| 11 | Production build | ☐ | Run after env unblocked |
+| 1 | Booking flow end-to-end | FAIL | Local create blocked: no service role → `503 SUPABASE_NOT_CONFIGURED` |
+| 2 | Maps autocomplete | NEEDS USER ACTION | `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` **SET**; Places may need Google Cloud **billing** (manual entry works) |
+| 3 | Location capture / service area | PARTIAL | Geolocation + manual fallback in code; markets via `src/config/markets` |
+| 4 | Supabase booking storage | NEEDS USER ACTION | Remote schema ready (markets 2 / zones 6 / bookings 1); **local `SUPABASE_SERVICE_ROLE_KEY` EMPTY** |
+| 5 | Stripe sandbox deposit + webhook | NEEDS USER ACTION | Checkout + webhook idempotency coded; **Stripe TEST keys EMPTY** in `.env.local` |
+| 6 | Confirmation after payment | PARTIAL | UI + webhook + confirm-payment fallback; unverified locally without Stripe |
+| 7 | Cleaner portal lifecycle | PARTIAL | Transitions coded; remote **`cleaners` = 0** |
+| 8 | Admin assign | PARTIAL | Match + assign APIs exist; needs admin user + paid booking + cleaner |
+| 9 | Mobile-usable critical path | PARTIAL | One-decision `/book/*` screens + mobile chrome; not re-verified live this session |
+| 10 | Security (secrets / RLS / auth) | PARTIAL | No secrets in git; bookings RLS on; advisor hygiene remains P1 |
+| 11 | Production build | PASS | `npm run build` OK (2026-08-11); e2e still env-blocked |
 
 ---
 
@@ -34,70 +35,70 @@ Statuses: **PASS** · **PARTIAL** · **FAIL** · **MISSING** · **NEEDS USER ACT
 
 | Feature | Status | Notes |
 |---------|--------|-------|
-| Homepage | PASS | Branded hero + book entry; preserve visual direction |
-| Google address autocomplete | NEEDS USER ACTION | Code in `address-autocomplete.tsx`; billing may block Places |
-| Current location | NEEDS USER ACTION | `getCurrentPosition` + reverse geocode; same Maps billing dependency |
-| Property selection | PASS | Property screens/cards wired |
-| Property details | PASS | Beds/baths/size + service questions |
-| Services | PASS | Catalog in `src/config/services.ts` |
-| Add-ons | PASS | Extras screens + pricing |
-| Date | PASS | Date screen / schedule selector |
+| Homepage | PASS | Branded hero + book entry |
+| Google address autocomplete | NEEDS USER ACTION | Code ready; billing may block Places |
+| Current location | NEEDS USER ACTION | `getCurrentPosition` + reverse geocode; same Maps dependency |
+| Property selection | PASS | Wired screens |
+| Property details | PASS | Beds/baths/size + questions |
+| Services | PASS | `src/config/services.ts` |
+| Add-ons | PASS | Extras + pricing |
+| Date | PASS | Date screen |
 | Time | PASS | Arrival windows |
 | Access instructions | PASS | Access screen |
 | Booking review | PASS | Review + price summary |
-| Pricing (server authority) | PASS | `calculateBookingPrice` + `assertPriceMatch` on create |
+| One decision per screen | PASS | `BOOKING_SCREENS` address→…→payment |
+| Pricing (server authority) | PASS | `calculateBookingPrice` + `assertPriceMatch` |
 | Stripe sandbox payment | NEEDS USER ACTION | Keys empty; TEST only |
-| Confirmation | PARTIAL | Confirmation UI; needs live pay |
-| Matching (customer-facing) | PARTIAL | “Finding pro” UI; dispatch is admin/manual |
-| Customer account | PARTIAL | Dashboard routes exist; needs auth session |
-| Rebooking | PARTIAL | “Book again” CTAs exist; not one-tap productized |
+| Confirmation | PARTIAL | Needs live pay |
+| Matching (customer-facing) | PARTIAL | “Finding pro” UI; dispatch admin/manual |
+| Customer account | PARTIAL | Dashboard routes; needs auth session |
+| Rebooking | PARTIAL | “Book again” CTAs; not one-tap productized |
 
 ### DATABASE
 
 | Feature | Status | Notes |
 |---------|--------|-------|
-| Supabase connection | PARTIAL | URL + anon set; **service role empty locally** |
-| Migrations | PARTIAL | Remote has marketplace statuses, markets (2), zones (6), booking columns; local numbered history ≠ remote timestamps |
-| Booking storage | PARTIAL | Remote has ≥1 paid booking; local create blocked |
-| RLS | PARTIAL | Bookings have policies; some tables RLS-on/no-policy; SECURITY DEFINER views flagged |
-| Duplicate booking protection | PARTIAL | Idempotency key column + PI reuse in checkout; needs e2e proof |
+| Supabase connection | PARTIAL | URL + anon **SET**; service role **EMPTY** locally |
+| Migrations | PARTIAL | Remote has marketplace statuses, markets/zones, booking columns |
+| Booking storage | FAIL (local) | Create requires service role; remote has 1 booking row |
+| RLS | PARTIAL | Bookings policies; some empty-policy tables; SECURITY DEFINER views flagged |
+| Duplicate booking protection | PARTIAL | Idempotency key + PI reuse + webhook claims; needs e2e proof |
 
 ### CLEANER
 
 | Feature | Status | Notes |
 |---------|--------|-------|
-| Signup | PARTIAL | `/earn` + role paths; onboarding gates |
-| Profile | PARTIAL | Portal settings/profile |
-| Onboarding | PARTIAL | Documents/capabilities stubs |
-| Availability | PARTIAL | Availability + unavailable dates APIs |
-| Jobs list | PARTIAL | `/cleaner/jobs` |
-| Job detail | PARTIAL | Detail + actions |
-| EN_ROUTE (`on_the_way`) | PARTIAL | Transition helpers present |
-| ARRIVED | PARTIAL | Transition helpers present |
-| IN_PROGRESS | PARTIAL | Transition helpers present |
-| COMPLETED | PARTIAL | Transition helpers present |
-| Earnings | PARTIAL | Earnings UI; Connect payouts stub |
+| Signup / onboarding / profile | PARTIAL | `/earn` + portal paths |
+| Availability | PARTIAL | APIs + conflict math |
+| Jobs list / detail | PARTIAL | `/cleaner/jobs` |
+| EN_ROUTE / ARRIVED / IN_PROGRESS / COMPLETED | PARTIAL | Transition helpers; **0 cleaners** remote |
+| Earnings | PARTIAL | UI; Connect payouts stub |
 
 ### ADMIN
 
 | Feature | Status | Notes |
 |---------|--------|-------|
-| Bookings | PARTIAL | Admin bookings list/detail |
-| Cleaners | PARTIAL | List + approve/reject |
-| Cleaner approval | PARTIAL | Approve flow |
+| Bookings / cleaners / approve | PARTIAL | Admin UI + APIs |
 | Cleaner assignment | PARTIAL | Ranked match + assign/offer |
-| Payment status | PARTIAL | Payments views; depends on Stripe/webhooks |
-| Operational status | PARTIAL | Queues/ops metrics; Action Required homepage incomplete |
+| Payment status | PARTIAL | Depends on Stripe/webhooks |
+| Operational status | PARTIAL | Queues incomplete vs roadmap command center |
 
 ### MOBILE / VIEWPORTS
 
 | Viewport | Status | Notes |
 |----------|--------|-------|
-| 375px | PARTIAL | Mobile footer/nav present; needs live pass |
-| 390px | PARTIAL | Same |
-| 430px | PARTIAL | Same |
-| Tablet | PARTIAL | Responsive layout assumed; not verified |
-| Desktop | PARTIAL | Primary layout works; booking loop blocked by env |
+| 375 / 390 / 430 / tablet / desktop | PARTIAL | Responsive booking path coded; live pass blocked by env |
+
+### MARKETPLACE ENGINES (see `MARKETPLACE_SYSTEMS.md`)
+
+| Engine | Status | Notes |
+|--------|--------|-------|
+| Pricing | PASS | Server authority + tests |
+| Markets / zones | PASS | Config + eligibility |
+| Duration | PASS | Estimate helpers |
+| Availability | PARTIAL | Conflicts live; slot generation later |
+| Matching / dispatch | PARTIAL | Code ready; empty supply |
+| ETA / reliability / demand / fraud | PARTIAL / stub | Not MVP blockers |
 
 ---
 
@@ -105,23 +106,23 @@ Statuses: **PASS** · **PARTIAL** · **FAIL** · **MISSING** · **NEEDS USER ACT
 
 | Step | Status |
 |------|--------|
-| Address → … → Review UI | PARTIAL (code ready) |
-| Save booking to Supabase | **FAIL locally** (service role) |
-| Stripe sandbox pay | **FAIL locally** (Stripe keys) |
-| Confirmed / awaiting_assignment | PARTIAL (remote sample paid booking exists) |
-| Admin assign | PARTIAL (0 cleaners seeded) |
+| Address → … → Review UI | PASS (code) / PARTIAL (Maps billing) |
+| Save booking to Supabase | **FAIL locally** (service role EMPTY) |
+| Stripe sandbox pay | **FAIL locally** (Stripe keys EMPTY) |
+| Confirmed / awaiting_assignment | PARTIAL (remote sample booking exists) |
+| Admin assign | PARTIAL (0 cleaners) |
 | Cleaner job ladder | PARTIAL |
 | Customer completed + Book again | PARTIAL |
 
 **Core MVP completion (verified e2e):** **~40%**  
-(Code coverage higher; local env + empty supply block proof.)
+(Code coverage ~70–80%; local env + empty supply block proof.)
 
 ---
 
 ## This sprint — in / out
 
-**In:** Unblock env → prove BOOK→PAY→ASSIGN→CLEAN→COMPLETE→REBOOK · safe schema only · no redesign  
-**Out:** All post-MVP `ROADMAP.md` items (refunds, referrals, commercial, gift, dashboards, etc.) · AI assistant · Connect live · commercial quoting · growth experiments
+**In (Phase 1):** Unblock env → prove BOOK→PAY → then assign→clean→complete→rebook · safe schema only · no redesign  
+**Out:** Post-MVP `ROADMAP.md` items · AI assistant · Connect live · commercial quoting · growth experiments / SEO mass pages
 
 ## Owners
 
@@ -131,8 +132,16 @@ Statuses: **PASS** · **PARTIAL** · **FAIL** · **MISSING** · **NEEDS USER ACT
 | Implementation | Lead Engineer |
 | Release gate | QA + Security |
 
+## Architecture pointers
+
+- `company/ARCHITECTURE.md` — system map + critical path  
+- `company/MARKETPLACE_SYSTEMS.md` — pricing / match / availability / duration  
+- `company/KNOWN_ISSUES.md` — P0 blockers  
+
 ## Notes
 
 - Sibling may touch Supabase/env — do not fight `.env.local`
 - Remote project: **Maidlinx** (`pgoyhujsfbmfshtnlbnx`) — ACTIVE_HEALTHY
+- Growth docs present under `company/growth/` (MARKET_EXPANSION, KEYWORD_MAP, SEO_ROADMAP, etc.) — leave to Growth
 - Leave unused AI draft files alone (`src/lib/booking-assistant/schema.ts`)
+- **STOP (2026-08-11):** Phase 1 cannot proceed past booking persist until human sets `SUPABASE_SERVICE_ROLE_KEY` (then Stripe TEST keys)

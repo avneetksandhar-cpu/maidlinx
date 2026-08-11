@@ -4,6 +4,18 @@
 
 **Scope rule:** Roadmap items below are **docs / planning only** until CRITICAL MVP in `CURRENT_SPRINT.md` passes. Do **not** implement roadmap features or interrupt sibling work on **BOOK → PAY → ASSIGN → CLEAN → COMPLETE → REBOOK**.
 
+**Phase alignment (execution order — do not skip):**
+
+| Phase | Focus | Gate |
+|-------|--------|------|
+| **0** | Company board + architecture (`CURRENT_SPRINT`, `KNOWN_ISSUES`, `ARCHITECTURE`, `MARKETPLACE_SYSTEMS`) | Docs accurate; env classified SET/EMPTY only |
+| **1** | Core transaction — Maps/location, one-decision booking, server pricing, Supabase persist, Stripe sandbox + webhook idempotency, no duplicate paid bookings, mobile path | BOOK → PAY proves locally |
+| **2** | Admin assign + cleaner lifecycle + rebook proof (seed supply without fake prod reviews) | ASSIGN → CLEAN → COMPLETE → REBOOK |
+| **3+** | Post-MVP ranked items below (cancel/refund, notifications, marketplace V2+, commercial, growth) | Only after CRITICAL checklist PASS |
+| **Later / gated** | AI/voice, commercial SEO mass pages, Connect live, redesign | Explicitly out until Product opens gate |
+
+Architecture maps: `company/ARCHITECTURE.md`, `company/MARKETPLACE_SYSTEMS.md`. Growth planning lives in `company/growth/` (siblings own).
+
 ## Ranking goals (in order)
 
 1. Customers book easily  
@@ -454,6 +466,10 @@ Each card: **WHY / REVENUE / OPS / COMPLEXITY / DEPENDENCIES / RISK / PRIORITY /
 ## Coordination
 
 - Status and owners for the active gate: `company/CURRENT_SPRINT.md`
-- Algorithm / matching detail: `docs/MARKETPLACE_ROADMAP.md`, `docs/MATCHING.md`
+- System map: `company/ARCHITECTURE.md`
+- Marketplace engines: `company/MARKETPLACE_SYSTEMS.md`
+- Blockers: `company/KNOWN_ISSUES.md`
+- Algorithm / matching detail: `docs/MARKETPLACE_ROADMAP.md`, `docs/MATCHING.md`, `docs/ALGORITHMS.md`
+- Growth (siblings): `company/growth/` — MARKET_EXPANSION, KEYWORD_MAP, SEO_ROADMAP, etc.
 - Metrics placeholders only (no invented numbers): `company/METRICS.md`
 - Product decisions: `company/DECISIONS.md`
