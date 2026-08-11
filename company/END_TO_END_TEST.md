@@ -111,8 +111,17 @@ Canonical post-pay status is **`awaiting_assignment`** (matching queue), not a s
 ## Code shipped this session (minimal)
 
 - Remote additive: `public.stripe_webhook_events` (+ RLS enabled)  
+- Remote additive: `public.payouts` ledger (+ unique per booking)  
 - Customer review UI on completed booking dashboard + `GET /api/dashboard/reviews`  
-- Quality: lint 0 errors, typecheck, 240 tests, build **PASS**
+- Admin assign now rejects cleaners that are not **approved + active**  
+- Job complete creates a **pending** `payouts` row (amount = booking `subtotal_cents`)  
+- Quality: lint 0 errors, typecheck, tests, build **PASS**
+
+### E2E click-through notes (when env unblocked)
+
+- Guest checkout is intentional (auth not required at pay); dashboard history needs a linked account  
+- Cleaner **Complete** requires checklist all-done + ≥1 before + ≥1 after photo (UI exists on job detail)  
+- Seed cleaner must have `approved=true` and `is_active=true` or admin assign will reject  
 
 ---
 

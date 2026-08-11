@@ -639,6 +639,17 @@ export async function transitionJobStatus(
     // Non-fatal — status transition already succeeded.
   }
 
+  if (normalizedTo === "completed") {
+    try {
+      const { recordPendingPayoutForCompletedBooking } = await import(
+        "@/lib/payments/payouts"
+      );
+      await recordPendingPayoutForCompletedBooking(jobId);
+    } catch (payoutError) {
+      console.error("[jobs] pending payout record failed:", payoutError);
+    }
+  }
+
   if (isClaim) {
     if (acceptedCleanerId) {
       await recordCleanerAssignment({
