@@ -39,7 +39,7 @@ Copy `.env.example` to `.env.local` and configure:
 | `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | Stripe publishable key |
 | `STRIPE_WEBHOOK_SECRET` | Stripe webhook signing secret |
 | `EMAIL_PROVIDER` | `log`, `resend`, or `postmark` |
-| `ADMIN_BOOTSTRAP_EMAIL` | Email promoted to admin on first login |
+| `ADMIN_BOOTSTRAP_EMAIL` | Email promoted to admin on first login (e.g. `info@maidlinx.com`) |
 | `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` | Places autocomplete (optional; manual address still works) |
 
 Never commit `.env.local` or real secrets.
