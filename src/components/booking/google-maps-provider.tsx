@@ -11,7 +11,12 @@ const rawApiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
 const apiKey = rawApiKey?.trim() ? rawApiKey.trim() : undefined;
 
 function mapsPlacesReady() {
-  return Boolean(typeof window !== "undefined" && window.google?.maps?.places);
+  return Boolean(
+    typeof window !== "undefined" &&
+      window.google?.maps?.places &&
+      typeof window.google.maps.places.AutocompleteSuggestion?.fetchAutocompleteSuggestions ===
+        "function",
+  );
 }
 
 function isDev() {
@@ -86,7 +91,7 @@ export function GoogleMapsProvider({ children }: { children: ReactNode }) {
             }
             if (isDev()) {
               console.error(
-                "[Google Maps] Script loaded but places library unavailable. Ensure Places API (legacy) is enabled for this key.",
+                "[Google Maps] Script loaded but Places AutocompleteSuggestion unavailable. Enable Places API (New) + Maps JavaScript API for this key.",
               );
             }
             setStatus("error");

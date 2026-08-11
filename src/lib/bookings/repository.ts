@@ -69,6 +69,8 @@ export interface StoredBooking {
   address_state: string | null;
   address_postal_code: string | null;
   address_country: string | null;
+  address_latitude: number | null;
+  address_longitude: number | null;
   google_place_id: string | null;
   stripe_payment_intent_id: string | null;
   notes: string | null;
@@ -114,6 +116,10 @@ function mapRow(
     address_state: row.address_state ? String(row.address_state) : null,
     address_postal_code: row.address_postal_code ? String(row.address_postal_code) : null,
     address_country: row.address_country ? String(row.address_country) : null,
+    address_latitude:
+      row.address_latitude != null ? Number(row.address_latitude) : null,
+    address_longitude:
+      row.address_longitude != null ? Number(row.address_longitude) : null,
     google_place_id: row.google_place_id ? String(row.google_place_id) : null,
     stripe_payment_intent_id: row.stripe_payment_intent_id
       ? String(row.stripe_payment_intent_id)
@@ -307,7 +313,9 @@ export async function insertBooking(
       address_longitude: input.longitude ?? null,
       google_place_id: input.googlePlaceId ?? null,
       pricing_snapshot: pricing as unknown as import("@/types/database.types").Json,
-    })
+      preferred_professional_id: input.preferredCleanerId ?? null,
+      recurring_preference: input.recurringFrequency ?? null,
+    } as never)
     .select("*")
     .single();
 
@@ -320,10 +328,12 @@ export async function insertBooking(
         .maybeSingle();
       if (existing) return mapRow(existing as Record<string, unknown>);
     }
-    // Columns from 00017 may be absent until migration is applied.
+    // Columns from 00017 / 00023 may be absent until migration is applied.
     if (
       error &&
-      /coupon_code|quote_id|idempotency_key|schema cache|column/i.test(error.message)
+      /coupon_code|quote_id|idempotency_key|preferred_professional|recurring_preference|schema cache|column/i.test(
+        error.message,
+      )
     ) {
       const { data: retry, error: retryError } = await supabase
         .from("bookings")

@@ -43,8 +43,8 @@ export function ExtrasScreen() {
   return (
     <BookingFlowChrome
       screenId="addons"
-      title="Anything extra?"
-      subtitle="Optional add-ons — skip if you don’t need any."
+      title="Any extras?"
+      subtitle="Optional add-ons — skip if you don’t need them."
       ctaLabel={totalLabel ? `Continue · ${totalLabel}` : "Continue"}
       footerHint={
         <div className="flex items-center justify-between gap-3 text-sm">

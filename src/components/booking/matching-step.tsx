@@ -51,7 +51,7 @@ export function MatchingStep({ booking, accessToken, bookingState }: MatchingSte
 
   return (
     <MotionReveal>
-      <div className="mx-auto max-w-lg text-center">
+      <div className="mx-auto max-w-[680px] text-center">
         {finding ? (
           <div className="relative mx-auto mb-8 flex size-28 items-center justify-center">
             <span
@@ -64,7 +64,7 @@ export function MatchingStep({ booking, accessToken, bookingState }: MatchingSte
               style={{ transform: `scale(${1 + (pulse % 3) * 0.02})` }}
               aria-hidden
             />
-            <span className="relative flex size-16 items-center justify-center overflow-hidden rounded-full bg-navy ring-2 ring-white/30">
+            <span className="relative flex size-16 items-center justify-center overflow-hidden rounded-full bg-[#07151B] ring-2 ring-white/30">
               <Image
                 src="/brand/maidlinx-mark.png"
                 alt={siteConfig.name}
@@ -76,28 +76,30 @@ export function MatchingStep({ booking, accessToken, bookingState }: MatchingSte
             </span>
           </div>
         ) : (
-          <div className="mx-auto mb-6 flex size-16 items-center justify-center rounded-full bg-accent-muted text-accent">
+          <div className="mx-auto mb-6 flex size-16 items-center justify-center rounded-full bg-[#F1F8F5] text-accent">
             <span className="text-2xl font-semibold">✓</span>
           </div>
         )}
 
-        <Heading as="h2" className="text-2xl tracking-tight">
-          {finding ? "Cleaning booked" : "You're all set"}
+        <Heading as="h2" className="text-[1.75rem] font-bold tracking-tight md:text-[2rem]">
+          {finding ? "You’re booked" : "You’re all set"}
         </Heading>
-        <Text muted className="mt-2">
+        <Text muted className="mt-2 text-[16px] md:text-[17px]">
           {finding
-            ? "Finding your MaidLinx Pro…"
+            ? "Finding your MaidLinx Pro for this clean…"
             : "Your cleaner has been assigned. Check your email for details."}
         </Text>
-        <p className="mt-2 text-xs text-ink-subtle">Reference #{reference}</p>
+        <p className="mt-3 inline-flex items-center rounded-full bg-[#F1F8F5] px-3.5 py-1.5 text-sm font-semibold tabular-nums text-accent">
+          Booking #{reference}
+        </p>
       </div>
 
-      <div className="mx-auto mt-8 max-w-lg">
+      <div className="mx-auto mt-8 max-w-[680px]">
         <p className="mb-3 text-sm font-medium text-ink-muted">Progress</p>
         <BookingStatusTimeline status={booking.status} />
       </div>
 
-      <dl className="mx-auto mt-8 max-w-lg space-y-3 rounded-2xl border border-border p-5 text-sm">
+      <dl className="mx-auto mt-8 max-w-[680px] space-y-3 rounded-2xl border border-[#E2E9E6] bg-white p-5 text-[15px] shadow-soft">
         <div className="flex justify-between gap-4">
           <dt className="text-ink-muted">Status</dt>
           <dd className="font-medium">{getBookingStatusLabel(booking.status)}</dd>
@@ -121,10 +123,10 @@ export function MatchingStep({ booking, accessToken, bookingState }: MatchingSte
       </dl>
 
       {bookingState && !savedUsual ? (
-        <div className="mx-auto mt-6 max-w-lg rounded-2xl bg-accent-muted/50 px-5 py-4 text-left">
+        <div className="mx-auto mt-6 max-w-[680px] rounded-2xl bg-[#F1F8F5] px-5 py-4 text-left">
           <p className="font-semibold text-ink">Save these details for next time?</p>
           <p className="mt-1 text-sm text-ink-muted">
-            We&apos;ll remember this property, service, and extras for one-tap rebooking.
+            We’ll remember this property, service, and extras for faster rebooking.
           </p>
           <div className="mt-3 flex gap-2">
             <Button type="button" variant="accent" size="sm" onClick={handleSaveUsual}>
@@ -136,19 +138,19 @@ export function MatchingStep({ booking, accessToken, bookingState }: MatchingSte
           </div>
         </div>
       ) : savedUsual ? (
-        <p className="mx-auto mt-6 max-w-lg text-center text-sm text-accent">
-          Saved — look for &ldquo;Book your usual clean&rdquo; next time.
+        <p className="mx-auto mt-6 max-w-[680px] text-center text-sm text-accent">
+          Saved — look for “Book your usual clean” next time.
         </p>
       ) : null}
 
-      <div className="mx-auto mt-8 flex max-w-lg flex-col gap-3 sm:flex-row">
-        <Link href={`/booking/${booking.id}${tokenQuery}`} className="sm:flex-1">
-          <Button variant="secondary" className="w-full">
+      <div className="mx-auto mt-8 flex max-w-[680px] flex-col gap-3 sm:flex-row">
+        <Link href={`/bookings/${booking.id}${tokenQuery}`} className="sm:flex-1">
+          <Button variant="secondary" className="h-12 w-full rounded-xl">
             View booking
           </Button>
         </Link>
         <Link href={routes.home} className="sm:flex-1">
-          <Button className="w-full" variant="accent">
+          <Button className="h-12 w-full rounded-xl" variant="accent">
             Back to home
           </Button>
         </Link>

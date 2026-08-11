@@ -44,7 +44,7 @@ async function BookingsContent() {
         ) : (
           <div className="space-y-4">
             {past.map((booking) => (
-              <BookingCard key={booking.id} booking={booking} showActions={false} />
+              <BookingCard key={booking.id} booking={booking} showActions />
             ))}
           </div>
         )}

@@ -59,7 +59,7 @@ function PaymentForm({
       const { error: submitError, paymentIntent } = await stripe.confirmPayment({
         elements,
         confirmParams: {
-          return_url: `${window.location.origin}/booking/${bookingId}${tokenQuery}`,
+          return_url: `${window.location.origin}/bookings/${bookingId}${tokenQuery}`,
         },
         redirect: "if_required",
       });
