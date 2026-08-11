@@ -144,7 +144,7 @@ export function MatchingStep({ booking, accessToken, bookingState }: MatchingSte
       ) : null}
 
       <div className="mx-auto mt-8 flex max-w-[680px] flex-col gap-3 sm:flex-row">
-        <Link href={`/booking/${booking.id}${tokenQuery}`} className="sm:flex-1">
+        <Link href={`/bookings/${booking.id}${tokenQuery}`} className="sm:flex-1">
           <Button variant="secondary" className="h-12 w-full rounded-xl">
             View booking
           </Button>

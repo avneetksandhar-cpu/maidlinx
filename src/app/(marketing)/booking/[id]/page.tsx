@@ -1,50 +1,17 @@
-import type { Metadata } from "next";
-import { notFound, redirect } from "next/navigation";
-import { BookingStatusScreen } from "@/components/booking/screens/booking-status-screen";
-import { BookingProvider } from "@/components/booking/booking-provider";
-import { GoogleMapsProvider } from "@/components/booking/google-maps-provider";
-import { BookingAccessError, assertBookingAccess } from "@/lib/bookings/access";
-import { getBookingById } from "@/lib/bookings/repository";
-import { routes } from "@/config/site";
+import { redirect } from "next/navigation";
+import { bookingStatusPath } from "@/lib/bookings/booking-routes";
 
-export const metadata: Metadata = {
-  title: "Booking status",
-  robots: { index: false, follow: false },
-};
-
-interface BookingStatusPageProps {
+interface LegacyBookingStatusPageProps {
   params: Promise<{ id: string }>;
   searchParams: Promise<{ token?: string }>;
 }
 
-export default async function BookingStatusPage({
+/** Legacy `/booking/[id]` → canonical post-booking `/bookings/[id]`. */
+export default async function LegacyBookingStatusPage({
   params,
   searchParams,
-}: BookingStatusPageProps) {
+}: LegacyBookingStatusPageProps) {
   const { id } = await params;
   const { token } = await searchParams;
-
-  let booking;
-  try {
-    booking = await getBookingById(id);
-    if (!booking) notFound();
-    await assertBookingAccess(booking, token ?? null);
-  } catch (error) {
-    if (error instanceof BookingAccessError) {
-      redirect(`${routes.signIn}?redirect=/booking/${id}`);
-    }
-    notFound();
-  }
-
-  return (
-    <GoogleMapsProvider>
-      <BookingProvider>
-        <BookingStatusScreen
-          bookingId={id}
-          accessToken={token ?? null}
-          initialBooking={booking}
-        />
-      </BookingProvider>
-    </GoogleMapsProvider>
-  );
+  redirect(bookingStatusPath(id, token));
 }

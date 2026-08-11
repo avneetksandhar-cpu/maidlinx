@@ -27,6 +27,8 @@ interface LiveCleanerMapProps {
   customerLng?: number | null;
   addressLabel: string;
   className?: string;
+  /** Hide internal title when parent already shows live status copy. */
+  showHeader?: boolean;
 }
 
 function formatUpdatedAt(iso?: string): string | null {
@@ -52,6 +54,7 @@ export function LiveCleanerMap({
   customerLng,
   addressLabel,
   className,
+  showHeader = true,
 }: LiveCleanerMapProps) {
   const maps = useGoogleMaps();
   const mapRef = useRef<HTMLDivElement>(null);
@@ -199,25 +202,38 @@ export function LiveCleanerMap({
         className,
       )}
     >
-      <div className="space-y-1 px-4 pt-4">
-        <p className="flex items-center gap-2 text-sm font-semibold text-ink">
-          <Navigation className="size-4 text-accent" aria-hidden />
-          {title}
-        </p>
-        {activeLocation?.etaMinutes != null ? (
-          <p className="text-sm font-medium text-accent">
-            ETA ~{activeLocation.etaMinutes} min
+      {showHeader ? (
+        <div className="space-y-1 px-4 pt-4">
+          <p className="flex items-center gap-2 text-sm font-semibold text-ink">
+            <Navigation className="size-4 text-accent" aria-hidden />
+            {title}
           </p>
-        ) : null}
-        {updatedLabel ? <p className="text-xs text-ink-muted">{updatedLabel}</p> : null}
-        {!activeLocation?.available ? (
-          <p className="text-sm text-ink-muted">
-            {error ?? activeLocation?.reason ?? "Waiting for live location…"}
-          </p>
-        ) : null}
-      </div>
+          {activeLocation?.etaMinutes != null ? (
+            <p className="text-sm font-medium text-accent">
+              ETA ~{activeLocation.etaMinutes} min
+            </p>
+          ) : null}
+          {updatedLabel ? <p className="text-xs text-ink-muted">{updatedLabel}</p> : null}
+          {!activeLocation?.available ? (
+            <p className="text-sm text-ink-muted">
+              {error ?? activeLocation?.reason ?? "Waiting for live location…"}
+            </p>
+          ) : null}
+        </div>
+      ) : null}
 
-      <div className="relative mt-3 aspect-[16/9] w-full bg-[#F1F8F5]">
+      {!showHeader && activeLocation?.etaMinutes != null ? (
+        <p className="px-1 pb-2 text-sm font-medium text-accent">
+          ETA ~{activeLocation.etaMinutes} min
+        </p>
+      ) : null}
+      {!showHeader && !activeLocation?.available ? (
+        <p className="px-1 pb-2 text-sm text-ink-muted">
+          {error ?? activeLocation?.reason ?? "Waiting for live location…"}
+        </p>
+      ) : null}
+
+      <div className={cn("relative aspect-[16/9] w-full bg-[#F1F8F5]", showHeader && "mt-3")}>
         {showJsMap ? (
           <div ref={mapRef} className="absolute inset-0 h-full w-full" />
         ) : (

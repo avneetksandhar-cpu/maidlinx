@@ -47,7 +47,7 @@ export function bookingPath(id: BookingScreenId, query?: Record<string, string>)
 
 export function bookingStatusPath(id: string, token?: string | null): string {
   const q = token ? `?token=${encodeURIComponent(token)}` : "";
-  return `/booking/${id}${q}`;
+  return `/bookings/${id}${q}`;
 }
 
 export function isAddressComplete(state: BookingState): boolean {
@@ -255,9 +255,6 @@ export function getBookingEntryPath(options?: {
 }
 
 export function isBookingFlowPathname(pathname: string): boolean {
-  return (
-    pathname === "/book" ||
-    pathname.startsWith("/book/") ||
-    pathname.startsWith("/booking/")
-  );
+  // Post-booking `/bookings/*` uses the customer shell — not the question funnel.
+  return pathname === "/book" || pathname.startsWith("/book/");
 }

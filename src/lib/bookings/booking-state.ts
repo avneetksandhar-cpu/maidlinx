@@ -7,7 +7,7 @@ import type { ServiceAnswers } from "@/lib/services/questions";
 /**
  * Multi-screen booking funnel (one decision per route):
  * ADDRESS → PROPERTY → DETAILS → SERVICE → ADDONS → DATE → TIME → ACCESS → REVIEW → PAYMENT
- * Post-pay matching lives at /booking/[id].
+ * Post-pay matching lives at /bookings/[id].
  *
  * Numeric ids kept for legacy BookingForm step sync; prefer BOOKING_SCREENS paths.
  */
@@ -34,7 +34,7 @@ export const BOOKING_FLOW_STEP_COUNT = BOOKING_FLOW_STEPS.length;
 
 /** @deprecated Prefer /book/payment route */
 export const BOOKING_PAYMENT_STEP = 10;
-/** @deprecated Prefer /booking/[id] route */
+/** @deprecated Prefer /bookings/[id] route */
 export const BOOKING_MATCHING_STEP = 11;
 
 export {
