@@ -60,7 +60,7 @@ export function AddressScreen() {
       screenId="address"
       title="Where should we clean?"
       subtitle="Search an address, use your current location, or choose a saved place."
-      hideCta={!state.line1 || state.inServiceArea === false}
+      hideCta={!isAddressComplete(state)}
       ctaLabel="Continue"
       ctaDisabled={!isAddressComplete(state)}
       onContinue={() => {
@@ -138,7 +138,7 @@ export function AddressScreen() {
           }}
         />
 
-        {state.line1 && state.inServiceArea === false ? (
+        {state.line1 && state.postalCode && state.inServiceArea === false ? (
           <p className="rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-950">
             We&apos;re not in your area yet.{" "}
             <a
