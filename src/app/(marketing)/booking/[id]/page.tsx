@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { BookingStatusScreen } from "@/components/booking/screens/booking-status-screen";
 import { BookingProvider } from "@/components/booking/booking-provider";
@@ -5,6 +6,11 @@ import { GoogleMapsProvider } from "@/components/booking/google-maps-provider";
 import { BookingAccessError, assertBookingAccess } from "@/lib/bookings/access";
 import { getBookingById } from "@/lib/bookings/repository";
 import { routes } from "@/config/site";
+
+export const metadata: Metadata = {
+  title: "Booking status",
+  robots: { index: false, follow: false },
+};
 
 interface BookingStatusPageProps {
   params: Promise<{ id: string }>;

@@ -1,6 +1,19 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { Container, Eyebrow, Heading, Section, Text } from "@/components/ui";
 import { routes } from "@/config/site";
+
+export const metadata: Metadata = {
+  title: "Earn as a Cleaner",
+  description:
+    "Apply to clean with MaidLinx in Toronto/GTA and South Florida. Set availability, accept jobs, and get paid for completed cleans.",
+  alternates: { canonical: "/earn" },
+  openGraph: {
+    title: "Earn as a Cleaner | MaidLinx",
+    description:
+      "Apply to clean with MaidLinx in Toronto/GTA and South Florida. Set availability, accept jobs, and get paid for completed cleans.",
+  },
+};
 
 export default function EarnPage() {
   return (

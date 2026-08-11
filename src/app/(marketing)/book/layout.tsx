@@ -1,5 +1,14 @@
+import type { Metadata } from "next";
 import { GoogleMapsProvider } from "@/components/booking/google-maps-provider";
 import { BookingProvider } from "@/components/booking/booking-provider";
+
+/** Booking funnel steps are transactional — keep them out of organic search. */
+export const metadata: Metadata = {
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 export default function BookLayout({
   children,

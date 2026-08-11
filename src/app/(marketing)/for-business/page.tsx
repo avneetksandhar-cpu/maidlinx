@@ -1,11 +1,18 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { Container, Heading, Button } from "@/components/ui";
 import { routes } from "@/config/site";
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "Business Cleaning",
   description:
-    "Book office, retail, restaurant, and commercial cleaning on demand with MaidLinx.",
+    "Book office, retail, restaurant, and commercial cleaning on demand with MaidLinx in Toronto/GTA and South Florida.",
+  alternates: { canonical: "/for-business" },
+  openGraph: {
+    title: "Business Cleaning | MaidLinx",
+    description:
+      "Book office, retail, restaurant, and commercial cleaning on demand with MaidLinx in Toronto/GTA and South Florida.",
+  },
 };
 
 export default function ForBusinessPage() {

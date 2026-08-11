@@ -2,7 +2,7 @@ export const siteConfig = {
   name: "MaidLinx",
   description:
     "Book cleaning on demand in Toronto/GTA and South Florida. Enter your address, pick a service and time, and confirm online.",
-  url: process.env.NEXT_PUBLIC_SITE_URL ?? process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000",
+  url: process.env.NEXT_PUBLIC_SITE_URL ?? process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3001",
   ogImage: "/brand/maidlinx-logo.png",
   links: {
     support: "mailto:support@maidlinx.com",
