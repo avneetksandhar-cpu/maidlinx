@@ -1,30 +1,43 @@
 @import "tailwindcss";
 
+:root {
+  --maidlinx-green: #087f65;
+  --maidlinx-green-dark: #056b56;
+  --maidlinx-mint: #eaf7f1;
+  --maidlinx-mint-soft: #f3faf7;
+  --maidlinx-ink: #07151b;
+  --maidlinx-text: #27363b;
+  --maidlinx-muted: #66757a;
+  --maidlinx-border: #dce5e1;
+  --maidlinx-bg: #fafcfb;
+  --white: #ffffff;
+}
+
 @theme {
-  /* MaidLinx — bright premium: white/off-white, near-black, turquoise accent */
-  --color-background: #fafafa;
+  /* MaidLinx — mint off-white, deep green accent */
+  --color-background: #fafcfb;
   --color-surface: #ffffff;
-  --color-ink: #111827;
-  --color-ink-muted: #6b7280;
-  --color-ink-subtle: #9ca3af;
-  --color-accent: #0d9488;
-  --color-accent-hover: #0f766e;
-  --color-accent-muted: #f0fdfa;
-  --color-navy: #111827;
-  --color-navy-light: #1f2937;
-  --color-teal: #0d9488;
-  --color-teal-muted: #ccfbf1;
-  --color-border: #e5e7eb;
-  --color-border-strong: #d1d5db;
-  --color-success: #059669;
+  --color-ink: #07151b;
+  --color-ink-muted: #66757a;
+  --color-ink-subtle: #8a979b;
+  --color-accent: #087f65;
+  --color-accent-hover: #056b56;
+  --color-accent-muted: #eaf7f1;
+  --color-navy: #07151b;
+  --color-navy-light: #27363b;
+  --color-teal: #087f65;
+  --color-teal-muted: #eaf7f1;
+  --color-border: #dce5e1;
+  --color-border-strong: #c5d2cd;
+  --color-success: #087f65;
   --color-error: #dc2626;
 
   /* Legacy aliases */
-  --color-surface-muted: #f4f5f7;
+  --color-surface-muted: #f3faf7;
   --color-surface-elevated: #ffffff;
-  --color-gold: #0d9488;
-  --color-gold-hover: #0f766e;
-  --color-gold-muted: #f0fdfa;
+  --color-gold: #087f65;
+  --color-gold-hover: #056b56;
+  --color-gold-muted: #eaf7f1;
 
   --font-sans: var(--font-dm-sans), ui-sans-serif, system-ui, sans-serif;
   --font-display: var(--font-dm-sans), ui-sans-serif, system-ui, sans-serif;
@@ -179,15 +192,27 @@
   }
 
   .booking-input-hero {
-    height: 3.75rem;
-    padding-inline: 1.25rem;
+    height: 4.125rem;
+    padding-inline: 1.25rem 2.75rem;
+    padding-left: 3rem;
     font-size: 1.125rem;
+    border-color: var(--maidlinx-border);
+    border-radius: 14px;
+    box-shadow: var(--shadow-soft);
   }
 
   @media (min-width: 640px) {
     .booking-input-hero {
-      height: 4rem;
+      height: 4.375rem;
     }
+  }
+
+  .home-hero-search .relative > .booking-input-hero {
+    position: relative;
+  }
+
+  .home-hero-search [data-hero-pin] {
+    pointer-events: none;
   }
 
   .booking-wizard-shell {

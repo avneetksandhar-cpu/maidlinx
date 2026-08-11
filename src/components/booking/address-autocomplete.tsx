@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useId, useRef, useState } from "react";
-import { Loader2, LocateFixed } from "lucide-react";
+import { Loader2, LocateFixed, MapPin, X } from "lucide-react";
 import { useGoogleMaps } from "@/components/booking/google-maps-context";
 import { Button, Input, Label } from "@/components/ui";
 import {
@@ -727,47 +727,68 @@ export function AddressAutocomplete({
         <Label htmlFor="line1" className={isHero ? "sr-only" : "text-ink-muted"} required={!isHero}>
           {label}
         </Label>
-        <Input
-          id="line1"
-          value={value.line1 ?? ""}
-          onChange={(event) => onLine1Change(event.target.value)}
-          onFocus={onLine1Focus}
-          onKeyDown={(event) => {
-            if (!showSuggestions || dropdownItems.length === 0) return;
+        <div className={cn(isHero && "relative")}>
+          {isHero ? (
+            <MapPin
+              data-hero-pin
+              className="pointer-events-none absolute top-1/2 left-4 z-[1] size-5 -translate-y-1/2 text-[var(--maidlinx-green)]"
+              strokeWidth={1.75}
+              aria-hidden
+            />
+          ) : null}
+          <Input
+            id="line1"
+            value={value.line1 ?? ""}
+            onChange={(event) => onLine1Change(event.target.value)}
+            onFocus={onLine1Focus}
+            onKeyDown={(event) => {
+              if (!showSuggestions || dropdownItems.length === 0) return;
 
-            if (event.key === "ArrowDown") {
-              event.preventDefault();
-              setActiveIndex((index) => (index + 1) % dropdownItems.length);
-            } else if (event.key === "ArrowUp") {
-              event.preventDefault();
-              setActiveIndex((index) => (index <= 0 ? dropdownItems.length - 1 : index - 1));
-            } else if (event.key === "Enter" && activeIndex >= 0) {
-              event.preventDefault();
-              const item = dropdownItems[activeIndex];
-              if (item) activateItem(item);
-            } else if (event.key === "Escape") {
-              setOpen(false);
-              setActiveIndex(-1);
+              if (event.key === "ArrowDown") {
+                event.preventDefault();
+                setActiveIndex((index) => (index + 1) % dropdownItems.length);
+              } else if (event.key === "ArrowUp") {
+                event.preventDefault();
+                setActiveIndex((index) => (index <= 0 ? dropdownItems.length - 1 : index - 1));
+              } else if (event.key === "Enter" && activeIndex >= 0) {
+                event.preventDefault();
+                const item = dropdownItems[activeIndex];
+                if (item) activateItem(item);
+              } else if (event.key === "Escape") {
+                setOpen(false);
+                setActiveIndex(-1);
+              }
+            }}
+            role="combobox"
+            aria-expanded={Boolean(showSuggestions)}
+            aria-controls={listboxId}
+            aria-autocomplete="list"
+            aria-activedescendant={
+              activeIndex >= 0 ? `${listboxId}-option-${activeIndex}` : undefined
             }
-          }}
-          role="combobox"
-          aria-expanded={Boolean(showSuggestions)}
-          aria-controls={listboxId}
-          aria-autocomplete="list"
-          aria-activedescendant={
-            activeIndex >= 0 ? `${listboxId}-option-${activeIndex}` : undefined
-          }
-          invalid={Boolean(errors?.line1)}
-          placeholder={locating ? LOCATION_FINDING_MESSAGE : placeholder}
-          autoComplete="off"
-          aria-busy={locating || undefined}
-          className={cn(
-            "rounded-xl border-border transition-shadow duration-200 focus-visible:border-accent focus-visible:ring-accent/35",
-            isHero
-              ? "booking-input-hero mt-0 border bg-white text-base shadow-soft sm:text-lg"
-              : "booking-input-lg mt-2",
-          )}
-        />
+            invalid={Boolean(errors?.line1)}
+            placeholder={locating ? LOCATION_FINDING_MESSAGE : placeholder}
+            autoComplete="off"
+            aria-busy={locating || undefined}
+            className={cn(
+              "rounded-xl border-border transition-shadow duration-200 focus-visible:border-accent focus-visible:ring-accent/35",
+              isHero
+                ? "booking-input-hero mt-0 border bg-white text-base shadow-soft sm:text-lg"
+                : "booking-input-lg mt-2",
+            )}
+          />
+          {isHero && value.line1 ? (
+            <button
+              type="button"
+              aria-label="Clear address"
+              className="absolute top-1/2 right-3 z-[1] inline-flex size-8 -translate-y-1/2 items-center justify-center rounded-full text-[var(--maidlinx-muted)] transition-colors hover:bg-[var(--maidlinx-mint-soft)] hover:text-[var(--maidlinx-ink)]"
+              onMouseDown={(event) => event.preventDefault()}
+              onClick={() => onLine1Change("")}
+            >
+              <X className="size-4" aria-hidden />
+            </button>
+          ) : null}
+        </div>
         {errors?.line1 ? <p className="mt-2 text-sm text-error">{errors.line1}</p> : null}
         {!isHero && resolvingPlace ? (
           <p className="mt-2 text-xs text-ink-subtle">Confirming address…</p>
