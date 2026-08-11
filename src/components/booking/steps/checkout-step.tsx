@@ -30,7 +30,7 @@ export function CheckoutStep({ booking, accessToken, onSuccess }: CheckoutStepPr
         <p className="font-semibold text-ink">Pay securely with Stripe</p>
         <p className="text-ink-muted">
           MaidLinx never stores your card number. You pay a {getDepositPercent()}% deposit now;
-          the remaining balance is due after your clean.
+          any remaining balance is settled with support after the job.
         </p>
       </div>
 

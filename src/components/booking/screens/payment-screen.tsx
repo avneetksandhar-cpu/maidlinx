@@ -306,7 +306,7 @@ function PaymentScreenInner() {
           <p className="font-semibold text-ink">Secure checkout</p>
           <p className="mt-1 text-ink-muted">
             Card payments are processed by Stripe. MaidLinx never stores your card number.
-            You pay a deposit now; the remaining balance is due after your clean.
+            You pay a deposit now; any remaining balance is settled with support after the job.
           </p>
         </div>
 
