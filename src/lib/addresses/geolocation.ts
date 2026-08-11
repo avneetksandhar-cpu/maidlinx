@@ -10,6 +10,11 @@ export type LocationFailureReason =
   | "timeout"
   | "unknown";
 
+export type GeolocationPermissionState = "granted" | "denied" | "prompt" | "unknown";
+
+/** Shown while the browser Geolocation API is in flight. */
+export const LOCATION_FINDING_MESSAGE = "Finding your location...";
+
 /** Customer-facing copy for current-location failures (no raw API dumps). */
 export function locationFailureMessage(reason: LocationFailureReason): string {
   switch (reason) {
@@ -18,15 +23,15 @@ export function locationFailureMessage(reason: LocationFailureReason): string {
     case "maps_unavailable":
       return "Location lookup isn’t ready yet. Try again in a moment, or enter your address.";
     case "geocode_failed":
-      return "We couldn’t find an address for your location. Enter it manually.";
+      return "We couldn't find your location. Try again or enter your address.";
     case "permission_denied":
-      return "Location access was blocked. Allow location for this site, or enter your address.";
+      return "Location is turned off. Allow location access or enter your address.";
     case "position_unavailable":
-      return "We couldn’t determine your location. Check your device settings, or enter your address.";
+      return "We couldn't find your location. Try again or enter your address.";
     case "timeout":
-      return "Finding your location took too long. Try again, or enter your address.";
+      return "Location is taking too long. Enter your address instead.";
     default:
-      return "We couldn’t use your current location. Enter your address instead.";
+      return "We couldn't find your location. Try again or enter your address.";
   }
 }
 
@@ -42,5 +47,27 @@ export function geolocationErrorReason(
       return "timeout";
     default:
       return "unknown";
+  }
+}
+
+/**
+ * Read the browser geolocation permission without triggering a prompt.
+ * Returns "unknown" when the Permissions API is unavailable (e.g. some Safari versions).
+ */
+export async function queryGeolocationPermission(): Promise<GeolocationPermissionState> {
+  if (typeof navigator === "undefined" || !navigator.geolocation) {
+    return "unknown";
+  }
+
+  try {
+    const permissions = navigator.permissions;
+    if (!permissions?.query) return "unknown";
+    const result = await permissions.query({ name: "geolocation" as PermissionName });
+    if (result.state === "granted" || result.state === "denied" || result.state === "prompt") {
+      return result.state;
+    }
+    return "unknown";
+  } catch {
+    return "unknown";
   }
 }
