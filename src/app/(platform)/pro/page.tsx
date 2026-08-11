@@ -4,13 +4,17 @@ import { OnlineToggle } from "@/components/pro/online-toggle";
 import { ProHeader } from "@/components/pro/pro-header";
 import { AssignedJobCard } from "@/components/pro/job-card";
 import { routes } from "@/config/site";
-import { canAccessProJobs, checklistProgress, requiresOnboardingRedirect } from "@/lib/cleaners/onboarding";
+import {
+  canAccessProJobs,
+  checklistProgress,
+  publicCleanerDisplayName,
+  requiresOnboardingRedirect,
+} from "@/lib/cleaners/onboarding";
 import { getCleanerOnboarding } from "@/lib/cleaners/onboarding-store";
 import { getEarningsSummary } from "@/lib/pro/dashboard/earnings";
 import { getTodaySchedule, getUpcomingJobs } from "@/lib/pro/dashboard/jobs";
 import { formatEarnings, getServiceLabel } from "@/lib/pro/dashboard/display";
 import { requireProfessionalSession } from "@/lib/pro/dashboard/session";
-import { publicCleanerDisplayName } from "@/lib/cleaners/onboarding";
 import { redirect } from "next/navigation";
 
 export const metadata = {

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Suspense } from "react";
 import { CapabilitiesForm } from "@/components/pro/capabilities-form";
+import { ConnectPayoutCard } from "@/components/pro/connect-payout-card";
 import { ProHeader } from "@/components/pro/pro-header";
 import { Card, CardContent } from "@/components/ui";
 import { routes } from "@/config/site";
@@ -28,10 +29,12 @@ async function SettingsContent() {
   ]);
 
   const links = [
+    { href: routes.cleanerOnboarding, label: "Onboarding", hint: "Application & approval status" },
+    { href: routes.cleanerDocuments, label: "Documents", hint: "ID & work docs (private)" },
     { href: routes.cleanerAvailability, label: "Availability", hint: "Weekly windows" },
     { href: routes.cleanerProfile, label: "Profile", hint: "Name, bio, radius" },
     { href: routes.cleanerRatings, label: "Ratings", hint: "Customer feedback" },
-    { href: `${routes.cleanerJobs}?tab=earnings`, label: "Earnings", hint: "Payouts & history" },
+    { href: routes.cleanerEarnings, label: "Earnings", hint: "Payouts & history" },
   ];
 
   return (
@@ -40,6 +43,8 @@ async function SettingsContent() {
         title="Settings"
         description="Manage availability, services, zones, history, and payouts."
       />
+
+      <ConnectPayoutCard initialStatus={profile.stripeConnectStatus} />
 
       <div className="mb-6 grid gap-2">
         {links.map((link) => (

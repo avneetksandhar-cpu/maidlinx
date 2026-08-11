@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, startTransition } from "react";
 import { Briefcase, Clock, Home, MapPin } from "lucide-react";
 import type { SavedAddress, StructuredAddress } from "@/lib/addresses/types";
 import { structuredToBookingAddress } from "@/lib/addresses/map";
@@ -170,11 +170,16 @@ export function SavedPlaceChips({
       });
     }
 
-    setChips(next);
+    startTransition(() => {
+      setChips(next);
+    });
   }, []);
 
   useEffect(() => {
-    void load();
+    const timer = window.setTimeout(() => {
+      void load();
+    }, 0);
+    return () => window.clearTimeout(timer);
   }, [load]);
 
   if (chips.length === 0) return null;

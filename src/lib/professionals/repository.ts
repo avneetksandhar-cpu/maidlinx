@@ -6,7 +6,7 @@ import {
   type OnboardingChecklist,
   type StripeConnectStatus,
 } from "@/lib/cleaners/onboarding";
-import type { Json, UserRole } from "@/types/database.types";
+import type { UserRole } from "@/types/database.types";
 
 export interface ProfessionalProfile {
   id: string;

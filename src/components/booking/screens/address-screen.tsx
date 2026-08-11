@@ -119,6 +119,23 @@ export function AddressScreen() {
           label="Address"
         />
 
+        <ManualAddressForm
+          value={state}
+          onChange={(patch) => applyAddress(patch)}
+          onApply={(patch) => {
+            const area = resolveServiceArea({
+              postalCode: patch.postalCode,
+              city: patch.city,
+              state: patch.state,
+              country: patch.country,
+            });
+            if (!area.inServiceArea || !patch.line1 || !patch.city || !patch.state || !patch.postalCode) {
+              return;
+            }
+            applyAddress(patch, true);
+          }}
+        />
+
         {state.line1 && state.inServiceArea === false ? (
           <p className="rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-950">
             We&apos;re not in your area yet.{" "}

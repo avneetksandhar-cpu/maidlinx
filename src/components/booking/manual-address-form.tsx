@@ -18,7 +18,7 @@ export function ManualAddressForm({
 }: {
   value: AddressPatch;
   onChange: (patch: AddressPatch) => void;
-  onApply: () => void;
+  onApply: (patch: AddressPatch) => void;
 }) {
   const [open, setOpen] = useState(false);
 
@@ -106,12 +106,17 @@ export function ManualAddressForm({
                 value.line2,
                 [value.city, value.state].filter(Boolean).join(", "),
                 value.postalCode,
-                value.country,
+                value.country ?? "CA",
               ]
                 .filter(Boolean)
                 .join(", ");
-              onChange({ formattedAddress: formatted });
-              onApply();
+              const patch: AddressPatch = {
+                ...value,
+                country: value.country ?? "CA",
+                formattedAddress: formatted,
+              };
+              onChange(patch);
+              onApply(patch);
             }}
           >
             Use this address

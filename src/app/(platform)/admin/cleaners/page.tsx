@@ -15,7 +15,7 @@ async function CleanersContent() {
     <>
       <AdminHeader
         title="Cleaners"
-        description="Verify, activate, and manage professional supply."
+        description="Approve onboarding, activate supply, and review Connect status. Approval is ops review — not a background check."
       />
 
       {!hasAdminEnv() && (
