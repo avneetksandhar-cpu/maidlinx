@@ -1,0 +1,30 @@
+---
+description: Multi-agent coordination — ownership, worktrees, review gates
+alwaysApply: true
+---
+
+# Agent coordination
+
+## Ownership
+
+- **Product / CEO** — priority, scope, sprint goals; no drive-by feature invention
+- **Lead Engineer** — integration, merges, critical infra implementation
+- **QA + Security** — review before major releases; findings over rewrites
+- **Growth / Sales / CX / Cleaner Ops / Revenue** — briefs, copy, ops plans, analysis; hand critical code to Lead Engineer
+
+## Parallel work
+
+- Do not have multiple agents edit the same files at once
+- Prefer isolated **git worktrees**, cloud agents, or `best-of-n-runner` for parallel coding
+- Integrate through Lead Engineer; resolve conflicts once
+
+## Handoffs
+
+1. Role writes brief → `company/AGENT_REPORTS/` or chat
+2. Product confirms priority if scope changes
+3. Lead Engineer implements / integrates
+4. QA + Security reviews before release
+
+## Built-in Task types only
+
+Use Cursor-supported types (`generalPurpose`, `explore`, `shell`, `best-of-n-runner`, …). Project roles live in `.cursor/agents/` — do not invent custom `subagent_type` enum values.
