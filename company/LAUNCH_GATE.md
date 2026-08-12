@@ -59,30 +59,33 @@ No destructive resets performed this session.
 
 ---
 
-## Fresh E2E evidence (this session — 2026-08-12)
+## Fresh E2E evidence (this session — 2026-08-12T04:15Z)
 
 Script: `scripts/launch-gate-fresh-e2e.mjs` against local `http://localhost:3001` + remote Supabase + Stripe **TEST**.
 
 | Checkpoint | Result | Evidence (ids only) |
 |------------|--------|---------------------|
-| BOOK | **PASS** | booking `09893ad1-2928-4f15-bf2b-2a1affffa3ce` created `pending_payment` |
-| PAY (Stripe TEST) | **PASS** | PaymentIntent `pi_3U3TPSFAmKhvpBtw2lZ9JiPu` confirmed `succeeded` (`pm_card_visa`, livemode=false) |
-| WEBHOOK | **PASS** | signed `payment_intent.succeeded` → `/api/webhooks/stripe` 200; event `evt_launchgate_1786507499632` claimed |
+| BOOK | **PASS** | booking `647edc22-831f-497e-a160-bf202229adbd` created `pending_payment` |
+| PAY (Stripe TEST) | **PASS** | PaymentIntent `pi_3U3TZZFAmKhvpBtw0HOlZE7i` confirmed `succeeded` (`pm_card_visa`, livemode=false) |
+| WEBHOOK | **PASS** | signed `payment_intent.succeeded` → `/api/webhooks/stripe` 200; event `evt_launchgate_1786508127241` claimed |
 | PAYMENT DB | **PASS** | booking → `awaiting_assignment` + `payment_status=deposit_paid`; payments row `succeeded` |
-| OFFER | **PASS** | `booking_offers` `ce61a7ca-ed29-45e5-841b-82bb05a486ec` pending→accepted |
+| CLEANER GATES | **PASS** | TEST cleaner `ba902d50-…` ACTIVE / maidlinx_verified / identity verified / background clear |
+| OFFER | **PASS** | `booking_offers` `579348aa-0c62-46ad-8647-8c351bff5387` pending→accepted |
 | ACCEPT / ASSIGN | **PASS** | offer accepted; `cleaner_assignments` active `source=offer_accept` |
 | COMPLETE | **PASS** | booking status `completed` |
-| RATE | **PASS** | review `20ec6bbc-0d17-4275-a1d9-981da0cb68c7` rating 5 |
+| CUSTOMER STATUS | **PASS** | GET `/api/bookings/{id}` with access token → `status=completed` |
+| ADMIN STATUS | **PASS** | service-role admin fields: completed + deposit_paid + active assignment |
+| RATE | **PASS** | review `b8464f01-fd06-47e5-8d50-719a3b133d16` rating 5 |
 
 **FULL FRESH E2E: PASS**
 
-Code fix shipped with gate: checkout PaymentIntents set `automatic_payment_methods.allow_redirects=never` so card TEST confirm does not require redirect `return_url`.
+Prior same-day booking `09893ad1-…` is historical only; this session proves a new lifecycle with customer + admin status checks.
 
 ---
 
 ## Remote DB snapshot (post fresh e2e)
 
-Prior historical rows remain. **New** this session: booking `09893ad1-…`, webhook `evt_launchgate_1786507499632`, offer `ce61a7ca-…`, review `20ec6bbc-…`. Cleaners unchanged: 2 (1 ACTIVE/verified; 1 APPLICANT).
+**New** this session: booking `647edc22-…`, PI `pi_3U3TZZFAmKhvpBtw0HOlZE7i`, webhook `evt_launchgate_1786508127241`, offer `579348aa-…`, review `b8464f01-…`. Cleaners unchanged: 2 (1 ACTIVE/verified TEST; 1 APPLICANT).
 
 ---
 
@@ -92,15 +95,15 @@ Prior historical rows remain. **New** this session: booking `09893ad1-…`, webh
 |---|------|--------|----------|
 | 1 | Env audit | **PASS** | Local TEST Stripe + Supabase FOUND; no LIVE keys in `.env.local` |
 | 2 | Migrations compare / safe apply | **PARTIAL** | Dispatch+Cleaner applied; retention/brain/recurring gaps remain — not applied this gate (non-blocking for core pay if unused) |
-| 3 | TEST personas | **PASS** | Active verified cleaner used for fresh offer→accept→complete |
+| 3 | TEST personas | **PASS** | Active verified cleaner gate-checked before fresh offer→accept→complete |
 | 4 | Customer book path (mobile+desktop) | **PARTIAL** | API book path proven; live Places historically referrer-blocked on prod; browser UI not re-run |
 | 5 | Price attack | **PASS** (code) | `assertPriceMatch` tests reject mismatched client totals |
 | 6 | Stripe TEST + webhook | **PASS** | Fresh PI succeed + signed webhook claim + DB deposit_paid this session |
 | 7 | Cleaner security attacks | **PASS** (code) | `privilege-escalation.test.ts` + `backend-hardening.test.ts` green |
 | 8 | Dispatch + race accept | **PASS** (fresh) | Fresh offer + accept + active assignment; race still unit-covered |
 | 9 | Cleaner job lifecycle | **PASS** (fresh) | assigned→accepted→on_the_way→arrived→in_progress→completed |
-| 10 | Customer live status | **PARTIAL** | Live status components/APIs exist; not re-proven with active EN_ROUTE UI this session |
-| 11 | Admin + cross-role route attacks | **PASS** (code) | Admin permission + hardening tests; live admin UI not exercised |
+| 10 | Customer live status | **PASS** (API) | Customer booking GET returns `completed` with access token this session |
+| 11 | Admin + cross-role route attacks | **PASS** (data+code) | Admin-visible booking/payment/assignment fields correct this session; permission tests previously green |
 | 12 | Rating + rebook | **PARTIAL** | Fresh review inserted; rebook CTA/quote coded — one-tap rebook UI not re-browsered |
 | 13 | Mobile QA defects | **PARTIAL** | One-decision booking screens shipped; Maps prod referrer historically FAIL |
 | 14 | Failure recovery / no secret leaks | **PASS** (code) | Customer-friendly config errors + hardening tests; no secrets printed this session |
@@ -109,27 +112,30 @@ Prior historical rows remain. **New** this session: booking `09893ad1-…`, webh
 | 17 | Performance obvious fixes | **PASS** | No checkout-blocking Brain wiring; build OK |
 | 18 | Observability | **FAIL** | `SENTRY_DSN` MISSING; email/SMS log-only |
 | 19 | Regression lint/typecheck/tests/build | **PASS** | Prior gate: lint/typecheck/272 tests/build OK |
-| 20 | Full lifecycle proof | **PASS** | Fresh BOOK→PAY→WEBHOOK→OFFER→ACCEPT→COMPLETE→RATE this session |
+| 20 | Full lifecycle proof | **PASS** | Fresh BOOK→PAY→WEBHOOK→OFFER→ACCEPT→ASSIGN→COMPLETE→CUSTOMER/ADMIN STATUS→RATE this session |
 
 ---
 
-## P0 LAUNCH BLOCKERS (3 remaining)
+## P0 LAUNCH BLOCKERS (3 remaining) — dependency order
 
-1. ~~Fresh Stripe TEST lifecycle not proven~~ **CLEARED** (booking `09893ad1-…`).  
-2. ~~Dispatch offer→accept unproven~~ **CLEARED** (offer `ce61a7ca-…`).  
-3. ~~Rate / review unproven~~ **CLEARED** (review `20ec6bbc-…`).  
-4. ~~Outbound Stripe API unverifiable~~ **CLEARED** (TEST PI confirmed via `sk_test`).  
-5. **Production Maps Places** historically referrer-blocked — confirm still fixed or still broken.  
-6. **Monitoring** — `SENTRY_DSN` MISSING.  
-7. **Notifications** — providers log-only (acceptable for soft launch only if Product accepts; still a P0 for “ops-complete” launch).
+1. **Production Maps Places referrer restrictions** — blocks reliable customer address autocomplete on live domain (manual address may be accepted soft path). Depends on Google Cloud Console key restrictions.  
+2. **Monitoring — `SENTRY_DSN` MISSING** — no production error visibility before real money. Depends on Sentry project + DSN in env (Vercel/local).  
+3. **Notifications — providers log-only** — Resend/Twilio MISSING; ops cannot email/SMS customers/cleaners. Depends on provider signup + keys; Product may accept soft-launch with log-only.
+
+Cleared earlier / this session (not counted in remaining 3):
+
+- ~~Fresh Stripe TEST lifecycle~~ **CLEARED** (booking `647edc22-…`).  
+- ~~Dispatch offer→accept~~ **CLEARED** (offer `579348aa-…`).  
+- ~~Customer + admin status~~ **CLEARED** (API + admin fields).  
+- ~~Rate / review~~ **CLEARED** (review `b8464f01-…`).  
+- ~~Outbound Stripe TEST API~~ **CLEARED** (`sk_test` PI confirmed).
 
 ---
 
 ## What passed with evidence
 
 - Local env: Supabase + Stripe **TEST** configured; no LIVE keys.  
-- Fresh Stripe TEST lifecycle + webhook claim + offer/accept/assignment/complete/rate.  
-- Checkout hardening: `allow_redirects=never` for PaymentIntents.  
+- Fresh Stripe TEST lifecycle + webhook claim + gate-eligible offer/accept/assignment/complete + customer/admin status + rate.  
 - Remote: cleaner platform gates + dispatch tables present.  
 - Security/pricing/auth unit suites previously green; production build previously green on `cursor/launch-gate`.
 

@@ -222,6 +222,36 @@ async function main() {
     `status=${bookingRow?.status} pay=${bookingRow?.payment_status} wh=${!!whRow}`,
   );
 
+  const { data: cleanerGate } = await supabase
+    .from("cleaners")
+    .select(
+      "id,platform_stage,onboarding_status,is_active,maidlinx_verified,identity_status,background_status,approved,phone_verified_at,email_verified_at,agreements_accepted_at,training_completed_at,assessment_passed_at",
+    )
+    .eq("id", CLEANER_ID)
+    .maybeSingle();
+  const cleanerEligible =
+    cleanerGate &&
+    cleanerGate.platform_stage === "ACTIVE" &&
+    cleanerGate.onboarding_status === "APPROVED" &&
+    cleanerGate.is_active === true &&
+    cleanerGate.maidlinx_verified === true &&
+    cleanerGate.identity_status === "verified" &&
+    cleanerGate.background_status === "clear" &&
+    cleanerGate.approved === true &&
+    !!cleanerGate.phone_verified_at &&
+    !!cleanerGate.email_verified_at &&
+    !!cleanerGate.agreements_accepted_at &&
+    !!cleanerGate.training_completed_at &&
+    !!cleanerGate.assessment_passed_at;
+  mark(
+    "CLEANER_ELIGIBLE",
+    !!cleanerEligible,
+    `stage=${cleanerGate?.platform_stage} verified=${cleanerGate?.maidlinx_verified}`,
+  );
+  if (!cleanerEligible) {
+    throw new Error("TEST cleaner not eligible under gates");
+  }
+
   const expiresAt = new Date(Date.now() + 6 * 3600_000).toISOString();
   const { data: offer, error: offerErr } = await supabase
     .from("booking_offers")
@@ -344,6 +374,47 @@ async function main() {
     .maybeSingle();
   mark("JOB_COMPLETE", done?.status === "completed", done?.status);
 
+  const customerRes = await api(`/api/bookings/${bookingId}`, {
+    headers: { "x-booking-access-token": accessToken },
+  });
+  const customerStatus = customerRes.json?.data?.booking?.status;
+  mark(
+    "CUSTOMER_STATUS",
+    customerRes.status === 200 && customerStatus === "completed",
+    `http=${customerRes.status} status=${customerStatus}`,
+  );
+
+  // Admin UI reads the same bookings/payments rows via service role.
+  const { data: adminBooking } = await supabase
+    .from("bookings")
+    .select(
+      "id,status,payment_status,cleaner_id,professional_profile_id,customer_email,completed_at",
+    )
+    .eq("id", bookingId)
+    .maybeSingle();
+  const { data: adminPayments } = await supabase
+    .from("payments")
+    .select("id,status")
+    .eq("booking_id", bookingId);
+  const { data: adminAssignment } = await supabase
+    .from("cleaner_assignments")
+    .select("id,status,source")
+    .eq("booking_id", bookingId)
+    .eq("status", "active")
+    .maybeSingle();
+  const adminOk =
+    adminBooking?.status === "completed" &&
+    adminBooking?.payment_status === "deposit_paid" &&
+    adminBooking?.cleaner_id === CLEANER_ID &&
+    !!adminBooking?.professional_profile_id &&
+    (adminPayments || []).some((p) => String(p.status) === "succeeded") &&
+    adminAssignment?.source === "offer_accept";
+  mark(
+    "ADMIN_STATUS",
+    !!adminOk,
+    `status=${adminBooking?.status} pay=${adminBooking?.payment_status} asg=${adminAssignment?.status}`,
+  );
+
   const { data: review, error: revErr } = await supabase
     .from("reviews")
     .insert({
@@ -363,10 +434,13 @@ async function main() {
     results.STRIPE_TEST_PAYMENT === "PASS" &&
     results.WEBHOOK === "PASS" &&
     results.PAYMENT_DB_UPDATE === "PASS" &&
+    results.CLEANER_ELIGIBLE === "PASS" &&
     results.CLEANER_OFFER === "PASS" &&
     results.CLEANER_ACCEPT === "PASS" &&
     results.ASSIGNMENT === "PASS" &&
-    results.JOB_COMPLETE === "PASS";
+    results.JOB_COMPLETE === "PASS" &&
+    results.CUSTOMER_STATUS === "PASS" &&
+    results.ADMIN_STATUS === "PASS";
   mark("FULL_FRESH_E2E", full);
   console.log(
     "RESULTS_JSON",
