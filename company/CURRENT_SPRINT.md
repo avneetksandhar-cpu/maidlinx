@@ -8,9 +8,10 @@
 
 | Gate | Status | Note |
 |------|--------|------|
-| Launch Gate P0 | **0 remaining** | See `LAUNCH_GATE.md` |
-| READY FOR CONTROLLED TEST LAUNCH | **YES** | Stripe TEST lifecycle proven |
+| Launch Gate P0 | **0 remaining** | Re-audit 2026-08-12T22:58Z — see `LAUNCH_GATE.md` |
+| READY FOR CONTROLLED TEST LAUNCH | **YES** | Fresh Stripe TEST lifecycle on booking `140b7aaa-…` |
 | READY FOR REAL-MONEY LAUNCH | **NO** | Stripe LIVE disabled — hard rule |
+| Production SHA | `ca3c88f` | Live `sentry=true` (apex + www) |
 | AI OS Phase 0 audit | **COMPLETE** | `company/AI_OS_PHASE0_AUDIT.md` |
 | AI OS Foundation | **COMPLETE (local)** | `company/AI_OS_FOUNDATION_REPORT.md` |
 | Owner Command vCenter | **COMPLETE (local)** | `company/AI_OS_OWNER_VCENTER_REPORT.md` |
