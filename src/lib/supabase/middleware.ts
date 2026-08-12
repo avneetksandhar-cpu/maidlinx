@@ -9,7 +9,7 @@ const CUSTOMER_PREFIXES = ["/dashboard", "/account"];
 const CLEANER_PREFIXES = ["/cleaner", "/pro"];
 const CLEANER_API_PREFIXES = ["/api/cleaner", "/api/pro"];
 const ADMIN_PREFIXES = ["/admin", "/owner"];
-const ADMIN_API_PREFIXES = ["/api/admin"];
+const ADMIN_API_PREFIXES = ["/api/admin", "/api/owner"];
 
 function matchesPrefix(pathname: string, prefixes: string[]): boolean {
   return prefixes.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));

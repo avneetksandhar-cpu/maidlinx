@@ -1362,6 +1362,143 @@ export type Database = {
         Update: Record<string, unknown>;
         Relationships: [];
       };
+      business_events: {
+        Row: {
+          id: string;
+          event_type: string;
+          entity_type: string;
+          entity_id: string;
+          idempotency_key: string;
+          actor_type: string | null;
+          actor_id: string | null;
+          source: string;
+          payload: Json;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          event_type: string;
+          entity_type: string;
+          entity_id: string;
+          idempotency_key: string;
+          actor_type?: string | null;
+          actor_id?: string | null;
+          source?: string;
+          payload?: Json;
+          created_at?: string;
+        };
+        Update: Record<string, unknown>;
+        Relationships: [];
+      };
+      ai_recommendations: {
+        Row: {
+          id: string;
+          agent_id: string;
+          recommendation_type: string;
+          permission_level: string;
+          status: string;
+          title: string;
+          summary: string | null;
+          entity_type: string | null;
+          entity_id: string | null;
+          potential_cents_estimate: number | null;
+          confidence: number | null;
+          evidence: string | null;
+          payload: Json;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: Record<string, unknown>;
+        Update: Record<string, unknown>;
+        Relationships: [];
+      };
+      ai_decisions: {
+        Row: {
+          id: string;
+          agent_id: string;
+          decision_type: string;
+          permission_level: string;
+          recommendation_id: string | null;
+          decided_by: string;
+          decided_by_profile_id: string | null;
+          outcome: string;
+          summary: string;
+          payload: Json;
+          created_at: string;
+        };
+        Insert: Record<string, unknown>;
+        Update: Record<string, unknown>;
+        Relationships: [];
+      };
+      ai_actions: {
+        Row: {
+          id: string;
+          agent_id: string;
+          action: string;
+          permission_level: string;
+          status: string;
+          decision_id: string | null;
+          approval_id: string | null;
+          entity_type: string | null;
+          entity_id: string | null;
+          summary: string;
+          simulation: boolean;
+          payload: Json;
+          error: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: Record<string, unknown>;
+        Update: Record<string, unknown>;
+        Relationships: [];
+      };
+      ai_exceptions: {
+        Row: {
+          id: string;
+          agent_id: string | null;
+          exception_type: string;
+          severity: string;
+          status: string;
+          entity_type: string | null;
+          entity_id: string | null;
+          summary: string;
+          payload: Json;
+          created_at: string;
+          resolved_at: string | null;
+        };
+        Insert: Record<string, unknown>;
+        Update: Record<string, unknown>;
+        Relationships: [];
+      };
+      ai_feature_flags: {
+        Row: {
+          key: string;
+          enabled: boolean;
+          description: string | null;
+          metadata: Json;
+          updated_by_profile_id: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          key: string;
+          enabled?: boolean;
+          description?: string | null;
+          metadata?: Json;
+          updated_by_profile_id?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          key?: string;
+          enabled?: boolean;
+          description?: string | null;
+          metadata?: Json;
+          updated_by_profile_id?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       admin_permissions: {
         Row: Record<string, unknown>;
         Insert: Record<string, unknown>;

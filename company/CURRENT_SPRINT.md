@@ -2,46 +2,50 @@
 
 **Branch:** `split/o-launch-gate` (PR #16)  
 **Date:** 2026-08-12  
-**Mode:** Post–Launch Gate P0 clear · AI executive foundation (Revenue Director V0)
+**Mode:** Post–Launch Gate P0 clear · AI OS Phase 0 COMPLETE · Foundation COMPLETE (local)
 
 ## Gates
 
 | Gate | Status | Note |
 |------|--------|------|
-| Launch Gate P0 | **0 remaining** | See `company/LAUNCH_GATE.md` |
+| Launch Gate P0 | **0 remaining** | See `LAUNCH_GATE.md` |
 | READY FOR CONTROLLED TEST LAUNCH | **YES** | Stripe TEST lifecycle proven |
 | READY FOR REAL-MONEY LAUNCH | **NO** | Stripe LIVE disabled — hard rule |
-| AI Revenue Director V0 | **IN PROGRESS → ship this session** | Internal `/owner` only |
+| AI OS Phase 0 audit | **COMPLETE** | `company/AI_OS_PHASE0_AUDIT.md` |
+| AI OS Foundation | **COMPLETE (local)** | `company/AI_OS_FOUNDATION_REPORT.md` |
+| AI Revenue Director V0 | **SHIPPED** | Reuse; do not duplicate |
+| Autonomous AI actions | **OFF** | Simulation → recommend → approval ladder |
+| Foundation prod deploy | **READY note — founder** | Apply `00029`+`00030` then smoke BOOK→PAY |
 
 ## Product conflict resolution
 
-Older board said “no scope expansion until CRITICAL MVP passes.” Launch P0s are clear. Product decision (**Accepted** in `DECISIONS.md`): AI Revenue Director V0 is approved as **next internal platform work** without weakening booking/payment/webhook/consent/Sentry. LIVE money stays **NO**.
+Older board said “no scope expansion until CRITICAL MVP passes.” Launch P0s are clear. Product decision (**Accepted** in `DECISIONS.md`): AI Revenue Director V0 shipped; Phase 0 audit mandates **Foundation before more agents**. LIVE money stays **NO**.
 
 ## This sprint — in / out
 
-**In**
-- Modular `src/ai/` + `src/lib/ai/` scaffolding
-- Permissions (GREEN/YELLOW/RED) + `ai_audit_log` migration
-- Protected `/owner` command center (admin/founder only)
-- Revenue Director V0 ranked opportunities from real data (honest gaps)
-- Board updates + agent report
+**In (done this session)**
+- Phase 0 architecture audit
+- Foundation: `business_events`, AI audit family, permissions gateway, flags, pause, `/owner` harden
+- Lint / typecheck / relevant tests green
 
-**Out**
+**Out (still)**
 - Full Ops / Retention / B2B / Growth / Chief of Staff agents
+- Abandoned recovery campaigns, autonomous dispatch, B2B CRM, CEO chat LLM, pricing experiments
 - Stripe LIVE, Connect LIVE, wallet LIVE
-- Auto customer emails/campaigns (recommend-only)
-- Mega route rewrite into customer/pro/admin folders
+- Auto customer emails/campaigns
+- Mega route rewrite / new app
 
 ## Owners
 
 | Area | Role |
 |------|------|
 | Priority / scope | Product / CEO |
-| Implementation | Lead Engineer |
+| Architecture audit + foundation | Lead Engineer / systems |
 | Launch evidence | QA + Security (prior) |
 
-## Next after this ship
+## Next
 
-1. Apply migration `00029_ai_exec_foundation` on Supabase (HUMAN if not applied).  
-2. Build **Ops Director** V0 (second wave).  
+1. **HUMAN:** Apply `00029` + `00030` on Supabase; smoke `/owner` + BOOK→PAY.  
+2. **Ops Director V0** (recommend-first) only after foundation live in a trusted env.  
 3. Keep Stripe LIVE off until explicit founder approval.  
+  

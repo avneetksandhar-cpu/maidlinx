@@ -2,6 +2,13 @@
 
 Format: date · decision · owner · rationale · status
 
+## 2026-08-12 — AI OS Phase 0 audit → Foundation only
+
+- **Decision:** Complete full architecture audit (`company/AI_OS_PHASE0_AUDIT.md`) before more agent work. Next implementation slice is **FOUNDATION only**: `business_events` emitter, extend AI audit family (`ai_recommendations` / `ai_decisions` / `ai_actions` / `ai_exceptions` atop `00029`), GREEN/YELLOW/RED enforcement hooks, AI feature flags + simulation mode, global + per-agent AI pause, harden `/owner` command center. Do **not** build Ops/Retention/B2B/Growth/CoS agents beyond placeholders, abandoned campaigns, autonomous dispatch, CEO chat LLM, or pricing autonomy. Autonomy ladder: simulation → recommend → approval → GREEN-only later. No RED autonomy. No Stripe LIVE. Extend existing `src/ai` + `src/lib/ai` + `/owner` — no new app, no customer-site redesign.
+- **Owner:** Founder + Lead Engineer / systems
+- **Rationale:** Revenue Director V0 already shipped thin scaffolding; audit shows fragmentation (events) and missing kill-switch/flags. Foundation must land before more directors to avoid parallel schemas and unsafe autonomy.
+- **Status:** Accepted
+
 ## 2026-08-12 — AI Revenue Director V0 after Launch P0 clear
 
 - **Decision:** Keep the existing MaidLinx production app. Add AI operations/revenue as modular server-side services (`src/ai/`, `src/lib/ai/`) with a protected `/owner` founder command center. **Revenue Director is the first agent** (then Ops → Retention → B2B Sales → Growth → Chief of Staff). Approve AI Revenue Director V0 as next **internal** platform work now that Launch Gate P0 = 0. Do **not** weaken booking/payment/webhook/consent/Sentry. Stripe LIVE remains disabled. Outbound messaging auto-send stays OFF (recommend-only). Never invent fake pipeline dollars as live truth — label estimates; show data gaps honestly.

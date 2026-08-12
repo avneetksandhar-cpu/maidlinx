@@ -9,7 +9,12 @@ export {
   permissionLevelForAction,
   canAutoExecute,
   requiresFounderApproval,
+  isHardBlockedAction,
+  isFoundationSafeAction,
   AI_OUTBOUND_MESSAGING_AUTO_SEND,
 } from "@/lib/ai/permissions";
 export { writeAiAuditLog, listAiAuditLog } from "@/lib/ai/audit";
 export { requireOwnerSession, requireOwnerAnalyticsAccess } from "@/lib/ai/session";
+export { assertAiActionAllowed } from "@/lib/ai/gateway";
+export { getAiPauseState, setGlobalAiPause, setAgentPaused } from "@/lib/ai/pause";
+export { listAiFeatureFlags, getAiFlag, setAiFlag } from "@/lib/ai/flags";

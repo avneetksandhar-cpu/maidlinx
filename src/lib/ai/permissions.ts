@@ -1,6 +1,8 @@
 /**
  * GREEN / YELLOW / RED permission matrix for AI executive actions.
  * Default for outbound messaging: recommend-only (not GREEN send).
+ * Autonomy ladder: simulation → recommend → approval → GREEN-only later.
+ * No RED autonomy.
  */
 
 import type { AiActionKind, AiPermissionLevel } from "@/lib/ai/types";
@@ -21,8 +23,20 @@ const ACTION_LEVELS: Record<AiActionKind, AiPermissionLevel> = {
   "bank.change": "red",
 };
 
-/** Outbound customer messaging stays OFF for auto-send in V0. */
+/** Outbound customer messaging stays OFF for auto-send in V0 / foundation. */
 export const AI_OUTBOUND_MESSAGING_AUTO_SEND = false;
+
+/** Actions that never auto-execute regardless of level helpers. */
+export const AI_HARD_BLOCKED_ACTIONS: ReadonlySet<AiActionKind> = new Set([
+  "campaign.send",
+  "pricing.change",
+  "refund.issue",
+  "payout.change",
+  "contract.sign",
+  "legal.action",
+  "safety.action",
+  "bank.change",
+]);
 
 export function permissionLevelForAction(action: AiActionKind): AiPermissionLevel {
   return ACTION_LEVELS[action];
@@ -34,6 +48,17 @@ export function canAutoExecute(level: AiPermissionLevel): boolean {
 
 export function requiresFounderApproval(level: AiPermissionLevel): boolean {
   return level === "red";
+}
+
+export function isHardBlockedAction(action: AiActionKind): boolean {
+  return AI_HARD_BLOCKED_ACTIONS.has(action);
+}
+
+/** True when action may run without founder approval in foundation (analytics/recommends). */
+export function isFoundationSafeAction(action: AiActionKind): boolean {
+  if (isHardBlockedAction(action)) return false;
+  const level = permissionLevelForAction(action);
+  return level === "green" || level === "yellow";
 }
 
 export function describePermissionLevel(level: AiPermissionLevel): string {

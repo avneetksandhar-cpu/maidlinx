@@ -13,6 +13,7 @@ import {
   AI_OUTBOUND_MESSAGING_AUTO_SEND,
   permissionLevelForAction,
 } from "@/lib/ai/permissions";
+import { assertAiActionAllowed } from "@/lib/ai/gateway";
 
 const REBOOK_DUE_DAYS_MIN = 14;
 const REBOOK_DUE_DAYS_MAX = 90;
@@ -27,18 +28,24 @@ export interface RevenueDirectorBrief {
   outboundAutoSend: boolean;
 }
 
-function emptyBrief(extraNotes: string[] = []): RevenueDirectorBrief {
-  return {
-    generatedAt: new Date().toISOString(),
-    opportunities: [],
-    gaps: [
+function emptyBrief(
+  extraNotes: string[] = [],
+  options?: { gaps?: AiDataGap[] },
+): RevenueDirectorBrief {
+  const gaps =
+    options?.gaps ??
+    ([
       {
         key: "db",
         label: "Database / service role",
         reason: "Supabase admin env not configured in this runtime.",
         howToFill: "Set NEXT_PUBLIC_SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY (server only).",
       },
-    ],
+    ] satisfies AiDataGap[]);
+  return {
+    generatedAt: new Date().toISOString(),
+    opportunities: [],
+    gaps,
     notes: [
       "Stripe LIVE remains disabled by policy.",
       "No invented metrics — empty states are honest.",
@@ -319,6 +326,29 @@ async function huntUtilization(): Promise<{
 export async function buildRevenueDirectorBrief(): Promise<RevenueDirectorBrief> {
   if (!hasAdminEnv()) {
     return emptyBrief();
+  }
+
+  const gate = await assertAiActionAllowed({
+    agentId: "revenue_director",
+    action: "brief.generate",
+  });
+  if (!gate.allowed) {
+    return emptyBrief(
+      [
+        `Revenue Director paused/blocked: ${gate.reason}`,
+        "Toggle Global AI Pause or AI_REVENUE_DIRECTOR in /owner controls.",
+      ],
+      {
+        gaps: [
+          {
+            key: "ai_pause",
+            label: "AI pause / agent disabled",
+            reason: gate.reason,
+            howToFill: "Owner command center → Controls → clear Global Pause and enable Revenue Director.",
+          },
+        ],
+      },
+    );
   }
 
   const [abandoned, rebook, utilization] = await Promise.all([

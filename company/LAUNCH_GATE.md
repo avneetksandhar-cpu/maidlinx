@@ -128,6 +128,6 @@ Server enforces consent before booking lookup / Stripe. Policy version `maidlinx
 3. **Authorize Stripe MCP TEST mode** if agents need Dashboard/MCP wallet inspection (currently MCP session was LIVE-only; TEST work used local `sk_test` without printing secrets).  
 4. **Optional:** merge split stack `#2…#16` into `main`.  
 5. **No further Resend TEST sends** unless founder requests.  
-6. **AI exec (post-P0):** apply migration `00029_ai_exec_foundation` and review `/owner` Revenue Director V0 — does **not** change LIVE money status.
+6. **AI OS (post-P0):** apply migrations `00029_ai_exec_foundation` + `00030_ai_os_foundation`; review `/owner` Controls (pause/flags) + Revenue brief — does **not** change LIVE money status. Prod deploy of AI OS foundation is founder-optional after BOOK→PAY smoke.
 
 **READY_FOR_REAL_MONEY_LAUNCH: NO**
