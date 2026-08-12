@@ -12,12 +12,12 @@
 
 | Metric | Count |
 |--------|------:|
-| LAUNCH BLOCKERS (P0) | **1** |
+| LAUNCH BLOCKERS (P0) | **0** |
 | P1 open | see below |
 | Sections PASS (of scorecard below) | improved |
 
-**READY FOR CONTROLLED TEST LAUNCH: YES** (prod Maps proven + Stripe TEST lifecycle proven + Sentry production capture proven; notifications use honest log/skip fallback)  
-**READY FOR REAL-MONEY LAUNCH: NO** (notification providers still FAIL; no LIVE Stripe keys)
+**READY FOR CONTROLLED TEST LAUNCH: YES** (prod Maps + Sentry + Resend email delivery proven; Stripe **TEST** lifecycle proven)  
+**READY FOR REAL-MONEY LAUNCH: NO** (Maps + Sentry + email notifications **PASS**; Stripe LIVE remains **disabled** pending explicit founder approval — no `sk_live_` / `pk_live_`)
 
 ---
 
@@ -63,25 +63,40 @@ Note: Vercel preview domains are **not** covered by the two production referrers
 
 ---
 
-## Notifications (2026-08-12T05:25Z; Production recheck 2026-08-12T05:54Z)
+## Notifications / Resend (2026-08-12T07:49Z)
 
-| Check | Result |
+| Check | Result | Evidence |
+|-------|--------|----------|
+| Vercel Production `EMAIL_PROVIDER` | **FOUND** | `vercel env ls --scope maidlinx` (names only) |
+| Vercel Production `RESEND_API_KEY` | **FOUND** | Sensitive; value never printed/pulled |
+| Vercel Production `RESEND_FROM_EMAIL` | **FOUND** | Production + Preview |
+| Vercel Production `EMAIL_FROM` | **FOUND** | Production + Preview |
+| Vercel Production `SMS_PROVIDER` / Twilio | **MISSING** | Optional for this gate; SMS remains log/skip |
+| Outbox honesty | **PASS** | `skipped` when log; does not fake delivery |
+| Customer/admin in-app/API status | **PASS** | Controlled TEST ops |
+| App wiring | **PASS** | `src/lib/notifications/email.ts` uses Resend + `RESEND_FROM_EMAIL`/`EMAIL_FROM` + optional `reply_to` |
+| Controlled Resend TEST | **PASS** | One send only — see below |
+| **RESEND_DELIVERY** | **PASS** | Resend log **Delivered** + human inbox confirmation |
+
+### Controlled TEST email (exactly one)
+
+| Field | Value |
 |-------|--------|
-| Vercel Production `EMAIL_PROVIDER` | **MISSING** (app defaults to `log`) |
-| Vercel Production `RESEND_API_KEY` | **MISSING** |
-| Vercel Production `RESEND_FROM_EMAIL` | **MISSING** |
-| Vercel Production `EMAIL_FROM` | **MISSING** |
-| Vercel Production `SMS_PROVIDER` / Twilio | **MISSING** |
-| Outbox honesty | **PASS** — `skipped` when log; does not fake delivery |
-| Customer/admin in-app/API status | **PASS** for controlled TEST ops |
-| Controlled Resend TEST send | **NOT RUN** — stopped: Production email env incomplete |
+| To | `info@maidlinx.com` |
+| From | `MaidLinx <bookings@mail.maidlinx.com>` |
+| Reply-To | `info@maidlinx.com` |
+| Subject | MaidLinx Launch Gate TEST — production Resend delivery |
+| Resend id (prefix) | `a16c1687-f2b…` |
+| Resend events | **Sent** Aug 12, 3:49 AM ET → **Delivered** Aug 12, 3:49 AM ET |
+| Human inbox | **CONFIRMED** received at `info@maidlinx.com` (founder) |
+| Temporary proof route | Deployed then removed (`/api/internal/resend-launch-gate-test`); no further TEST sends |
 
-**Recheck (founder “check now” / claimed ready):** `vercel env ls production` — all four claimed email vars still **MISSING** across Production (and no EMAIL/RESEND names on any env). **STOP** — do not wire or send TEST until human adds them on Vercel + redeploys. Values never printed.
+`mail.maidlinx.com` is the Resend **sending subdomain only** (not an inbox). Replies go to `info@maidlinx.com`.
 
-**NOTIFICATIONS:** **FAIL** for real-money (no external provider).  
-**Controlled TEST:** **P1_WITH_SAFE_FALLBACK** — ops can rely on admin + customer status; email/SMS not delivered externally.
+**NOTIFICATIONS (email / Resend): PASS** for founder notification-provider gate.  
+**SMS / Twilio:** still **MISSING** — P1 only (not blocking controlled TEST or the Maps+Sentry+email P0 set).
 
-Stripe LIVE remains disabled (no `sk_live_` / `pk_live_` present).
+Stripe LIVE remains disabled (TEST keys only; no LIVE enablement).
 
 ---
 
@@ -98,13 +113,14 @@ Stripe LIVE remains disabled (no `sk_live_` / `pk_live_` present).
 | Live Stripe keys (`sk_live_` / `pk_live_`) | NO (absent) |
 | `STRIPE_CONNECT_ENABLED` | MISSING (treated as off — correct for controlled launch) |
 | `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` | FOUND (prod browser key works — live Places PASS) |
-| `EMAIL_PROVIDER` / `SMS_PROVIDER` | MISSING → app default `log` (recheck 05:54Z) |
-| `RESEND_API_KEY` / `RESEND_FROM_EMAIL` / `EMAIL_FROM` / Twilio | MISSING → notifications not delivered externally (recheck 05:54Z) |
+| `EMAIL_PROVIDER` | FOUND (`resend`) |
+| `RESEND_API_KEY` / `RESEND_FROM_EMAIL` / `EMAIL_FROM` | FOUND |
+| `SMS_PROVIDER` / Twilio | MISSING → SMS not delivered externally |
 | `SENTRY_DSN` | FOUND |
 | `NEXT_PUBLIC_SENTRY_DSN` | FOUND |
 | `IDENTITY_PROVIDER_CONNECTED` / `BACKGROUND_PROVIDER_CONNECTED` | MISSING → PENDING_PROVIDER |
 
-Stripe **TEST** only. Do not enable LIVE without founder approval after P0 clear.
+Stripe **TEST** only. Do not enable LIVE without explicit founder approval.
 
 ---
 
@@ -131,7 +147,7 @@ Regression this session: lint 0 errors (1 warning), typecheck OK, **272** tests 
 
 | # | Area | Result | Evidence |
 |---|------|--------|----------|
-| 1 | Env audit | **PASS** | Local TEST Stripe + Supabase; no LIVE keys |
+| 1 | Env audit | **PASS** | Local TEST Stripe + Supabase; no LIVE keys; Resend email env FOUND |
 | 2 | Migrations compare / safe apply | **PARTIAL** | Dispatch+Cleaner applied; retention/brain/recurring gaps — non-blocking for core pay |
 | 3 | TEST personas | **PASS** | Active verified cleaner used in smoke |
 | 4 | Customer book path (mobile+desktop) | **PASS** (Maps) | Live Places autocomplete+select on apex + www; geolocation reverse geocode PASS |
@@ -148,50 +164,49 @@ Regression this session: lint 0 errors (1 warning), typecheck OK, **272** tests 
 | 15 | Privacy audit | **PARTIAL** | Funnel strips PII keys; legal placeholder history |
 | 16 | RLS / authorization | **PARTIAL** | Policies present; advisor hygiene not re-run |
 | 17 | Performance obvious fixes | **PASS** | Build OK |
-| 18 | Observability | **PASS** | Vercel DSN FOUND; `@sentry/nextjs` wired; production TEST event proved (env=production, release set) |
+| 18 | Observability | **PASS** | Vercel DSN FOUND; `@sentry/nextjs` wired; production TEST event proved |
 | 19 | Regression lint/typecheck/tests/build | **PASS** | lint/typecheck/272 tests/build OK this session |
 | 20 | Full lifecycle proof | **PASS** | Stripe TEST BOOK→PAY→WEBHOOK→… this session |
 
 ---
 
-## P0 LAUNCH BLOCKERS (1 remaining) — dependency order
+## P0 LAUNCH BLOCKERS (0 remaining)
 
-1. **Notifications — providers not connected — FAIL (real-money) / P1_WITH_SAFE_FALLBACK (controlled TEST)** — Resend/Twilio MISSING; defaults to log; outbox marks `skipped` honestly. In-app/API status works for controlled TEST ops. **Blocks real-money per founder rule.**
+Cleared:
 
-Cleared this session:
+- ~~Production Maps Places referrer / autocomplete~~ **CLEARED**  
+- ~~Fresh Stripe TEST lifecycle / smoke~~ **CLEARED**  
+- ~~Sentry / production error monitoring~~ **CLEARED**  
+- ~~Notifications — Resend email provider~~ **CLEARED** (`RESEND_DELIVERY: PASS` — Resend Delivered + human inbox at `info@maidlinx.com`)
 
-- ~~Production Maps Places referrer / autocomplete~~ **CLEARED** (apex + www + current location evidence above).  
-- ~~Fresh Stripe TEST lifecycle / smoke~~ **CLEARED** (booking `4700004e-…`).  
-- ~~Sentry / production error monitoring~~ **CLEARED** (`maidlinx-production` + Vercel DSN FOUND + SDK wired + TEST event `MAIDLINX-PRODUCTION-1`).
+**Not a P0 (remaining before real-money):** Stripe LIVE still **disabled** by design — requires **explicit founder approval** to add LIVE keys / flip livemode. SMS/Twilio remains optional P1.
 
 ---
 
 ## P1 (important, not blocking controlled TEST)
 
-- Notification email/SMS for cleaner “on the way” etc. (ops can use admin + customer status for controlled TEST).  
+- Twilio / SMS provider (email Resend is PASS; SMS still log/skip).  
 - Retention / Brain / recurring migrations not on remote (unused for core pay).  
 - Legal pages polish; full mobile matrix; RLS advisor hygiene re-run.  
 - Preview-domain Maps referrer if agents test on `*.vercel.app`.  
-- Sentry source maps auth token (`SENTRY_AUTH_TOKEN`) optional for readable frames (event proved without it).
+- Sentry source maps auth token (`SENTRY_AUTH_TOKEN`) optional for readable frames.  
+- Redeploy Production once more if temporary Resend proof route still present on last alias (route removed from repo).
 
 ---
 
 ## What passed with evidence
 
 - **Production Maps:** apex + www autocomplete + select + geolocation reverse geocode.  
-- **Production Sentry:** project + DSN on Vercel + SDK + controlled TEST error with `environment=production` and release.  
+- **Production Sentry:** project + DSN on Vercel + SDK + controlled TEST error.  
+- **Production Resend:** four email env names FOUND; one TEST to `info@maidlinx.com` From `MaidLinx <bookings@mail.maidlinx.com>` Reply-To `info@maidlinx.com`; Resend **Delivered**; human inbox **confirmed**.  
 - Local Stripe **TEST** smoke + webhook + customer/admin visibility.  
 - Lint / typecheck / 272 tests / build green.  
 - No LIVE Stripe keys; Connect off.
 
 ---
 
-## HUMAN ACTION REQUIRED (exactly one)
+## HUMAN ACTION REQUIRED
 
-**Add all four email vars on Vercel for Production + Preview, then Redeploy Production** (claimed save was not present on recheck):
+**NONE** for Maps / Sentry / Resend email P0.
 
-1. In Vercel → Project → Settings → Environment Variables, add for **Production** and **Preview**: `EMAIL_PROVIDER=resend`, `RESEND_API_KEY`, `RESEND_FROM_EMAIL`, `EMAIL_FROM` (use From `MaidLinx <bookings@mail.maidlinx.com>` once domain is verified in Resend).  
-2. Redeploy Production.  
-3. Reply **check now** — agent will re-verify FOUND/MISSING only, wire if complete, send **one** TEST to `info@maidlinx.com`, confirm Resend delivery, update this gate.
-
-Do **not** enable Stripe LIVE until notification providers PASS + founder LIVE approval. Maps + Sentry are PASS.
+**Before real-money:** explicit founder approval to enable Stripe **LIVE** keys (keep TEST until then). Optional: add Twilio when SMS delivery is required.
