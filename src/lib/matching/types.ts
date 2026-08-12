@@ -84,6 +84,11 @@ export interface MatchCleaner {
   qualifications?: string[];
   /** YYYY-MM-DD dates the cleaner blocked. */
   unavailableDates?: string[];
+  /**
+   * When set, Platform V1 approval gates result.
+   * false → ineligible for offers (identity/screening/training/admin/active).
+   */
+  platformGatesAllowed?: boolean;
 }
 
 /** Precomputed / lookup context shared across candidates. */

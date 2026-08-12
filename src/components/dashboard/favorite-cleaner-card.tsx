@@ -43,8 +43,14 @@ export function FavoriteCleanerCard({ cleaner }: FavoriteCleanerCardProps) {
             <p className="font-medium text-ink">{cleaner.name}</p>
             <p className="text-sm text-ink-muted">
               {cleaner.ratingAverage.toFixed(1)} · {cleaner.ratingCount} reviews
-              {cleaner.isVerified && " · Verified"}
+              {cleaner.isVerified ? " · MaidLinx Verified" : ""}
             </p>
+            {cleaner.isVerified && (
+              <p className="mt-1 text-xs text-ink-muted">
+                Ops-approved and trained for MaidLinx jobs. Screening partner status is
+                shown only when a real provider is connected — never invented.
+              </p>
+            )}
           </div>
         </div>
         <Button variant="ghost" size="sm" onClick={handleRemove} disabled={loading}>
