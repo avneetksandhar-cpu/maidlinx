@@ -16,7 +16,7 @@
 | P1 open | see below |
 | Sections PASS (of scorecard below) | improved |
 
-**READY FOR CONTROLLED TEST LAUNCH: YES** (prod Maps proven + Stripe TEST lifecycle proven)  
+**READY FOR CONTROLLED TEST LAUNCH: YES** (prod Maps proven + Stripe TEST lifecycle proven; notifications use honest log/skip fallback)  
 **READY FOR REAL-MONEY LAUNCH: NO** (Sentry + notification providers still FAIL; no LIVE keys)
 
 ---
@@ -44,6 +44,39 @@ Note: Vercel preview domains are **not** covered by the two production referrers
 
 ---
 
+## Sentry production check (2026-08-12T04:42Z)
+
+| Check | Result |
+|-------|--------|
+| Vercel Production `SENTRY_DSN` | **MISSING** |
+| Vercel Production `NEXT_PUBLIC_SENTRY_DSN` | **MISSING** |
+| Preview targets (same names) | **MISSING** |
+| `@sentry/nextjs` wired (not stub) | **NO** — blocked until DSN FOUND |
+| Safe TEST error proved in Sentry | **NO** |
+
+Founder indicated project `maidlinx-production` (Next.js) and intent to set both DSN vars — **not present** on Vercel Production/Preview as of this CLI audit (`vercel env ls`). No DSN values printed. No auth token required for runtime capture; do not add Stripe changes.
+
+**SENTRY: FAIL** — STOP pending human DSN add + redeploy, then Lead Engineer wires SDK + proves one safe TEST error.
+
+---
+
+## Notifications (2026-08-12T04:42Z)
+
+| Check | Result |
+|-------|--------|
+| Vercel Production `EMAIL_PROVIDER` / `SMS_PROVIDER` | **MISSING** (app defaults to `log`) |
+| `RESEND_API_KEY` | **MISSING** |
+| `TWILIO_ACCOUNT_SID` / `TWILIO_AUTH_TOKEN` / `TWILIO_FROM` | **MISSING** |
+| Outbox honesty | **PASS** — `skipped` when log; does not fake delivery |
+| Customer/admin in-app/API status | **PASS** for controlled TEST ops |
+
+**NOTIFICATIONS:** **FAIL** for real-money (no external provider).  
+**Controlled TEST:** **P1_WITH_SAFE_FALLBACK** — ops can rely on admin + customer status; email/SMS not delivered externally.
+
+No authenticated Resend/Twilio access available this session to auto-configure providers.
+
+---
+
 ## Env audit (names only)
 
 | Variable | Status |
@@ -57,9 +90,10 @@ Note: Vercel preview domains are **not** covered by the two production referrers
 | Live Stripe keys (`sk_live_` / `pk_live_`) | NO (absent) |
 | `STRIPE_CONNECT_ENABLED` | MISSING (treated as off — correct for controlled launch) |
 | `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` | FOUND (prod browser key works — live Places PASS) |
-| `EMAIL_PROVIDER` / `SMS_PROVIDER` | log default / not production-connected |
+| `EMAIL_PROVIDER` / `SMS_PROVIDER` | MISSING → app default `log` |
 | `RESEND_API_KEY` / Twilio | MISSING → notifications not delivered externally |
 | `SENTRY_DSN` | MISSING |
+| `NEXT_PUBLIC_SENTRY_DSN` | MISSING |
 | `IDENTITY_PROVIDER_CONNECTED` / `BACKGROUND_PROVIDER_CONNECTED` | MISSING → PENDING_PROVIDER |
 
 Stripe **TEST** only. Do not enable LIVE without founder approval after P0 clear.
@@ -106,7 +140,7 @@ Regression this session: lint 0 errors (1 warning), typecheck OK, **272** tests 
 | 15 | Privacy audit | **PARTIAL** | Funnel strips PII keys; legal placeholder history |
 | 16 | RLS / authorization | **PARTIAL** | Policies present; advisor hygiene not re-run |
 | 17 | Performance obvious fixes | **PASS** | Build OK |
-| 18 | Observability | **FAIL** | Sentry SDK not integrated; `SENTRY_DSN` MISSING — see P0 |
+| 18 | Observability | **FAIL** | Vercel `SENTRY_DSN` / `NEXT_PUBLIC_SENTRY_DSN` MISSING; SDK not wired — see P0 |
 | 19 | Regression lint/typecheck/tests/build | **PASS** | lint/typecheck/272 tests/build OK this session |
 | 20 | Full lifecycle proof | **PASS** | Stripe TEST BOOK→PAY→WEBHOOK→… this session |
 
@@ -114,8 +148,8 @@ Regression this session: lint 0 errors (1 warning), typecheck OK, **272** tests 
 
 ## P0 LAUNCH BLOCKERS (2 remaining) — dependency order
 
-1. **Sentry / production error monitoring — FAIL** — `@sentry/nextjs` is **not** installed; `src/lib/monitoring/sentry.ts` is a stub that only `console.error`s (even if DSN were set). No verified production error capture. **Blocks real-money per founder rule.**  
-2. **Notifications — providers not connected — FAIL** — `EMAIL_PROVIDER`/`SMS_PROVIDER` log-only; Resend/Twilio MISSING. Outbox honestly marks `skipped` (does not fake delivery). Customer/admin **in-app/API** status works for controlled TEST ops, but founder requires real providers before real-money.
+1. **Sentry / production error monitoring — FAIL** — Vercel Production `SENTRY_DSN` + `NEXT_PUBLIC_SENTRY_DSN` **MISSING** (CLI 2026-08-12T04:42Z). `@sentry/nextjs` not installed; `src/lib/monitoring/sentry.ts` remains a stub. No verified production error capture. **Blocks real-money per founder rule.**  
+2. **Notifications — providers not connected — FAIL (real-money) / P1_WITH_SAFE_FALLBACK (controlled TEST)** — Resend/Twilio MISSING; defaults to log; outbox marks `skipped` honestly. In-app/API status works for controlled TEST ops. **Blocks real-money per founder rule.**
 
 Cleared this session:
 
@@ -144,6 +178,8 @@ Cleared this session:
 
 ## HUMAN ACTION REQUIRED (exactly one)
 
-**Create a Sentry project and add `SENTRY_DSN` to Vercel Production (and Preview if desired).**  
-Then authorize Lead Engineer to install/wire `@sentry/nextjs` (stub today — DSN alone is insufficient) and re-run a safe TEST error capture.  
+**In Vercel → Project `maidlinx/website` → Settings → Environment Variables → Production, add both `SENTRY_DSN` and `NEXT_PUBLIC_SENTRY_DSN` (same DSN from Sentry project `maidlinx-production`), then trigger a Production redeploy.**
+
+Sentry sign-in opened for founder: https://sentry.io/auth/login/  
+After DSN is FOUND on Production, authorize Lead Engineer to install/wire `@sentry/nextjs`, redeploy, and prove one safe TEST error.  
 Do **not** enable Stripe LIVE until Maps (done) + Sentry PASS + notification providers PASS + founder LIVE approval.
