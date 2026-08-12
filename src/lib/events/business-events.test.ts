@@ -9,6 +9,9 @@ describe("business events", () => {
     expect(isCriticalBusinessEventType("booking_created")).toBe(true);
     expect(isCriticalBusinessEventType("payment_succeeded")).toBe(true);
     expect(isCriticalBusinessEventType("offer_accepted")).toBe(true);
+    expect(isCriticalBusinessEventType("job_completed")).toBe(true);
+    expect(isCriticalBusinessEventType("cancelled")).toBe(true);
+    expect(isCriticalBusinessEventType("rating_submitted")).toBe(true);
     expect(isCriticalBusinessEventType("cleaner_on_the_way")).toBe(false);
   });
 

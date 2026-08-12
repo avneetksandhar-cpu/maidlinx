@@ -18,6 +18,8 @@ export const AI_FLAG_KEYS = [
   "AI_GROWTH_DIRECTOR",
   "AI_CHIEF_OF_STAFF",
   "AI_OUTBOUND_AUTO_SEND",
+  "AI_OPPORTUNITY_ENGINE",
+  "AI_OWNER_SNAPSHOT",
 ] as const;
 
 export type AiFlagKey = (typeof AI_FLAG_KEYS)[number];
@@ -41,6 +43,8 @@ const DEFAULTS: Record<AiFlagKey, boolean> = {
   AI_GROWTH_DIRECTOR: false,
   AI_CHIEF_OF_STAFF: false,
   AI_OUTBOUND_AUTO_SEND: false,
+  AI_OPPORTUNITY_ENGINE: true,
+  AI_OWNER_SNAPSHOT: true,
 };
 
 const AGENT_FLAG: Record<AiAgentId, AiFlagKey> = {

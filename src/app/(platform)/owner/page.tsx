@@ -1,6 +1,9 @@
 import { Suspense } from "react";
+import Link from "next/link";
 import { AdminHeader } from "@/components/admin/admin-header";
 import { OwnerControls } from "@/components/owner/owner-controls";
+import { OwnerStat } from "@/components/owner/owner-stat";
+import { OwnerTargetsForm } from "@/components/owner/owner-targets-form";
 import { AI_AGENT_SLOTS } from "@/lib/ai/agents";
 import { writeAiAuditLog, listAiAuditLog } from "@/lib/ai/audit";
 import {
@@ -12,8 +15,10 @@ import { listAiFeatureFlags } from "@/lib/ai/flags";
 import { getAiPauseState } from "@/lib/ai/pause";
 import { buildRevenueDirectorBrief } from "@/ai/revenue-director";
 import { formatAdminCurrency } from "@/lib/admin/display";
-import { getPlatformMetrics } from "@/lib/admin/metrics";
 import { hasAdminEnv } from "@/lib/supabase/admin";
+import { buildOwnerSnapshot } from "@/lib/owner/snapshot";
+import { getInterventionWeeklyTrend } from "@/lib/owner/interventions";
+import { routes } from "@/config/site";
 import type { AiOpportunity, AiPermissionLevel } from "@/lib/ai/types";
 
 export const metadata = { title: "Owner · Command Center" };
@@ -59,9 +64,7 @@ function OpportunityCard({ opp }: { opp: AiOpportunity }) {
         </div>
         <div>
           <dt className="text-ink-muted">Confidence</dt>
-          <dd className="font-semibold text-ink">
-            {Math.round(opp.confidence * 100)}%
-          </dd>
+          <dd className="font-semibold text-ink">{Math.round(opp.confidence * 100)}%</dd>
         </div>
         <div>
           <dt className="text-ink-muted">AI-eligible</dt>
@@ -74,16 +77,20 @@ function OpportunityCard({ opp }: { opp: AiOpportunity }) {
   );
 }
 
+function fmtPct(n: number | null | undefined): string | null {
+  if (n == null) return null;
+  return `${n}%`;
+}
+
 async function OwnerDashboard() {
   const owner = await requireOwnerAnalyticsAccess();
-  const [brief, flags, pause, audit, metrics] = await Promise.all([
+  const [brief, flags, pause, audit, snapshot, trend] = await Promise.all([
     buildRevenueDirectorBrief(),
     listAiFeatureFlags(),
     getAiPauseState(),
     listAiAuditLog(12),
-    hasAdminEnv()
-      ? getPlatformMetrics().catch(() => null)
-      : Promise.resolve(null),
+    buildOwnerSnapshot(),
+    getInterventionWeeklyTrend(8),
   ]);
 
   if (!pause.globalPaused && pause.agents.revenue_director.enabled) {
@@ -107,51 +114,58 @@ async function OwnerDashboard() {
     <>
       <AdminHeader
         title="Owner command center"
-        description="AI OS foundation. Server-side only — isolated from customer UI. Stripe LIVE stays disabled. No autonomous RED actions."
-        badge="Foundation"
+        description="Zero-cost command vCenter. Real completed revenue + honest gaps. Stripe LIVE disabled. No autonomous outbound."
+        badge="vCenter"
       />
 
       {!hasAdminEnv() && (
         <div className="mb-6 rounded-lg border border-border bg-surface px-4 py-3 text-sm text-ink-muted">
-          Database admin env not configured. Opportunities and flags stay limited until service role
-          is available.
+          Database admin env not configured. Metrics stay limited until service role is available.
         </div>
       )}
 
       <section className="mb-10">
-        <h2 className="font-display text-xl font-semibold text-ink">Snapshot</h2>
+        <h2 className="font-display text-xl font-semibold text-ink">Revenue</h2>
         <p className="mt-1 text-sm text-ink-muted">
-          Real completed-booking revenue when available. Monthly target is not configured — shown as
-          a gap, not a fake goal.
+          Completed-booking revenue from DB. Never invented GMV.
         </p>
-        <dl className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          <div className="rounded-xl border border-border bg-surface p-4 shadow-card">
-            <dt className="text-xs text-ink-muted">Completed revenue</dt>
-            <dd className="mt-1 font-display text-xl font-semibold text-ink">
-              {metrics ? formatAdminCurrency(metrics.totalRevenueCents) : "—"}
-            </dd>
-          </div>
-          <div className="rounded-xl border border-border bg-surface p-4 shadow-card">
-            <dt className="text-xs text-ink-muted">Completed bookings</dt>
-            <dd className="mt-1 font-display text-xl font-semibold text-ink">
-              {metrics ? metrics.completedBookings : "—"}
-            </dd>
-          </div>
-          <div className="rounded-xl border border-border bg-surface p-4 shadow-card">
-            <dt className="text-xs text-ink-muted">Active bookings</dt>
-            <dd className="mt-1 font-display text-xl font-semibold text-ink">
-              {metrics ? metrics.activeBookings : "—"}
-            </dd>
-          </div>
-          <div className="rounded-xl border border-border bg-surface p-4 shadow-card">
-            <dt className="text-xs text-ink-muted">Monthly target</dt>
-            <dd className="mt-1 font-display text-xl font-semibold text-ink-muted">
-              Not set
-            </dd>
-            <p className="mt-1 text-[11px] text-ink-subtle">
-              Honest gap — configure later; never invent a target.
-            </p>
-          </div>
+        <dl className="mt-4 grid gap-3 grid-cols-2 lg:grid-cols-4">
+          <OwnerStat
+            label="Today"
+            value={
+              snapshot.revenue.todayCents != null
+                ? formatAdminCurrency(snapshot.revenue.todayCents)
+                : null
+            }
+            unavailable={snapshot.revenue.todayCents == null}
+          />
+          <OwnerStat
+            label="This week"
+            value={
+              snapshot.revenue.weekCents != null
+                ? formatAdminCurrency(snapshot.revenue.weekCents)
+                : null
+            }
+            unavailable={snapshot.revenue.weekCents == null}
+          />
+          <OwnerStat
+            label="This month"
+            value={
+              snapshot.revenue.monthCents != null
+                ? formatAdminCurrency(snapshot.revenue.monthCents)
+                : null
+            }
+            unavailable={snapshot.revenue.monthCents == null}
+          />
+          <OwnerStat
+            label="YTD"
+            value={
+              snapshot.revenue.ytdCents != null
+                ? formatAdminCurrency(snapshot.revenue.ytdCents)
+                : null
+            }
+            unavailable={snapshot.revenue.ytdCents == null}
+          />
         </dl>
         <div className="mt-4 flex flex-wrap gap-2 text-xs">
           <span
@@ -176,6 +190,161 @@ async function OwnerDashboard() {
         </div>
       </section>
 
+      <section id="targets" className="mb-10 scroll-mt-6">
+        <h2 className="font-display text-xl font-semibold text-ink">$100K / $1M trackers</h2>
+        <p className="mt-1 text-sm text-ink-muted">
+          Pace vs editable targets. Projected end = linear extrapolation from real revenue.
+        </p>
+        <dl className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <OwnerStat
+            label="Monthly target"
+            value={formatAdminCurrency(snapshot.targets.monthlyTargetCents)}
+            sublabel={snapshot.targets.source === "db" ? "from DB" : "default"}
+          />
+          <OwnerStat
+            label="Month actual"
+            value={formatAdminCurrency(snapshot.monthPace.actualCents)}
+            sublabel={snapshot.monthPace.label}
+          />
+          <OwnerStat
+            label="Projected month-end"
+            value={
+              snapshot.monthPace.projectedEndCents != null
+                ? formatAdminCurrency(snapshot.monthPace.projectedEndCents)
+                : null
+            }
+            estimate
+            unavailable={snapshot.monthPace.projectedEndCents == null}
+          />
+          <OwnerStat
+            label="Month shortfall / surplus"
+            value={formatAdminCurrency(snapshot.monthPace.shortfallOrSurplusCents)}
+            sublabel={`vs pace · day ${snapshot.monthPace.daysElapsed}/${snapshot.monthPace.daysInPeriod}`}
+          />
+          <OwnerStat
+            label="Annual target"
+            value={formatAdminCurrency(snapshot.targets.annualTargetCents)}
+          />
+          <OwnerStat
+            label="YTD actual"
+            value={formatAdminCurrency(snapshot.yearPace.actualCents)}
+            sublabel={snapshot.yearPace.label}
+          />
+          <OwnerStat
+            label="Projected year-end"
+            value={
+              snapshot.yearPace.projectedEndCents != null
+                ? formatAdminCurrency(snapshot.yearPace.projectedEndCents)
+                : null
+            }
+            estimate
+            unavailable={snapshot.yearPace.projectedEndCents == null}
+          />
+          <OwnerStat
+            label="Year shortfall / surplus"
+            value={formatAdminCurrency(snapshot.yearPace.shortfallOrSurplusCents)}
+            sublabel={`vs pace · day ${snapshot.yearPace.daysElapsed}/${snapshot.yearPace.daysInPeriod}`}
+          />
+        </dl>
+        <div className="mt-4">
+          <OwnerTargetsForm
+            monthlyDollars={Math.round(snapshot.targets.monthlyTargetCents / 100)}
+            annualDollars={Math.round(snapshot.targets.annualTargetCents / 100)}
+          />
+        </div>
+      </section>
+
+      <section id="bookings" className="mb-10 scroll-mt-6">
+        <h2 className="font-display text-xl font-semibold text-ink">Bookings & ops</h2>
+        <dl className="mt-4 grid gap-3 grid-cols-2 lg:grid-cols-4">
+          <OwnerStat label="All bookings" value={snapshot.bookings.all} unavailable={!snapshot.bookings.available} />
+          <OwnerStat label="Completed" value={snapshot.bookings.completed} unavailable={!snapshot.bookings.available} />
+          <OwnerStat label="Upcoming / active" value={snapshot.bookings.upcoming} unavailable={!snapshot.bookings.available} />
+          <OwnerStat label="Cancelled" value={snapshot.bookings.cancelled} unavailable={!snapshot.bookings.available} />
+          <OwnerStat label="Repeat rate" value={fmtPct(snapshot.repeatRatePercent)} unavailable={snapshot.repeatRatePercent == null} />
+          <OwnerStat label="Recurring prefs" value={snapshot.recurringPreferenceCount} unavailable={snapshot.recurringPreferenceCount == null} />
+          <OwnerStat
+            label="AOV"
+            value={snapshot.aovCents != null ? formatAdminCurrency(snapshot.aovCents) : null}
+            unavailable={snapshot.aovCents == null}
+          />
+          <OwnerStat
+            label="Est. contribution"
+            value={
+              snapshot.estimatedContributionCents != null
+                ? formatAdminCurrency(snapshot.estimatedContributionCents)
+                : null
+            }
+            estimate
+            unavailable={snapshot.estimatedContributionCents == null}
+          />
+          <OwnerStat
+            label="Cleaner util"
+            value={
+              snapshot.cleaners.utilizationPct != null
+                ? `${snapshot.cleaners.active}/${snapshot.cleaners.total} (${snapshot.cleaners.utilizationPct}%)`
+                : null
+            }
+            unavailable={!snapshot.cleaners.available}
+          />
+          <OwnerStat
+            label="Conversion (30d)"
+            value={fmtPct(snapshot.conversion.ratePct)}
+            sublabel={
+              snapshot.conversion.available
+                ? `${snapshot.conversion.paid ?? 0} paid / ${snapshot.conversion.checkoutStarted ?? 0} checkout`
+                : undefined
+            }
+            unavailable={!snapshot.conversion.available}
+          />
+          <OwnerStat label="Abandoned (14d)" value={snapshot.abandonedCheckouts} unavailable={snapshot.abandonedCheckouts == null} />
+          <OwnerStat label="Open opportunities" value={snapshot.openOpportunities} unavailable={snapshot.openOpportunities == null} />
+          <OwnerStat label="Open leads" value={snapshot.openLeads} unavailable={snapshot.openLeads == null} />
+          <OwnerStat label="Stale follow-ups" value={snapshot.staleFollowUps} unavailable={snapshot.staleFollowUps == null} />
+          <OwnerStat label="Open exceptions" value={snapshot.openExceptions} unavailable={snapshot.openExceptions == null} />
+          <OwnerStat
+            label="Founder interventions (7d)"
+            value={snapshot.founderInterventionsWeek}
+            unavailable={snapshot.founderInterventionsWeek == null}
+          />
+        </dl>
+        <div className="mt-4 flex flex-wrap gap-2 text-sm">
+          <Link className="rounded-md border border-border bg-surface px-3 py-1.5 hover:bg-surface-muted" href={routes.ownerOpportunities}>
+            Opportunities →
+          </Link>
+          <Link className="rounded-md border border-border bg-surface px-3 py-1.5 hover:bg-surface-muted" href={routes.ownerExceptions}>
+            Exceptions →
+          </Link>
+          <Link className="rounded-md border border-border bg-surface px-3 py-1.5 hover:bg-surface-muted" href={routes.ownerSales}>
+            Sales →
+          </Link>
+          <Link className="rounded-md border border-border bg-surface px-3 py-1.5 hover:bg-surface-muted" href={routes.ownerCleaners}>
+            Cleaners →
+          </Link>
+          <Link className="rounded-md border border-border bg-surface px-3 py-1.5 hover:bg-surface-muted" href={routes.ownerActivity}>
+            Activity →
+          </Link>
+        </div>
+      </section>
+
+      {trend.available && (
+        <section className="mb-10">
+          <h2 className="font-display text-xl font-semibold text-ink">Intervention weekly trend</h2>
+          <p className="mt-1 text-sm text-ink-muted">Counts from founder_interventions (real rows only).</p>
+          <ul className="mt-4 flex flex-wrap gap-2">
+            {trend.points.map((p) => (
+              <li
+                key={p.weekStart}
+                className="rounded-md border border-border bg-surface px-3 py-2 text-xs"
+              >
+                <span className="text-ink-muted">{p.weekStart}</span>{" "}
+                <span className="font-semibold text-ink">{p.count}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
       <OwnerControls
         initialFlags={flags.map((f) => ({
           key: f.key,
@@ -187,25 +356,20 @@ async function OwnerDashboard() {
       <section className="mb-10">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
-            <h2 className="font-display text-xl font-semibold text-ink">
-              Revenue Director
-            </h2>
+            <h2 className="font-display text-xl font-semibold text-ink">Revenue Director</h2>
             <p className="mt-1 text-sm text-ink-muted">
-              Ranked opportunities from real data. Missing sources shown as gaps — never invented
-              pipeline.
+              Deterministic opportunity engine. Potentials labeled estimates. No auto messages.
             </p>
           </div>
           <p className="text-xs text-ink-subtle">
             Generated {new Date(brief.generatedAt).toLocaleString()}
           </p>
         </div>
-
         <div className="mt-4 flex flex-wrap gap-2 text-xs">
           <span className="rounded-md border border-border bg-surface px-2 py-1 text-ink-muted">
             GREEN: {describePermissionLevel("green")}
           </span>
         </div>
-
         {brief.notes.length > 0 && (
           <ul className="mt-4 list-disc space-y-1 pl-5 text-sm text-ink-muted">
             {brief.notes.map((note) => (
@@ -213,33 +377,32 @@ async function OwnerDashboard() {
             ))}
           </ul>
         )}
-
         <div className="mt-6 grid gap-4">
           {brief.opportunities.length === 0 ? (
             <div className="rounded-xl border border-dashed border-border bg-surface px-5 py-8 text-sm text-ink-muted">
-              No ranked opportunities yet. See data gaps below — this is an honest empty state, not a
-              zero-revenue claim.
+              No ranked opportunities yet. See data gaps — honest empty state.
             </div>
           ) : (
-            brief.opportunities.map((opp) => (
+            brief.opportunities.slice(0, 6).map((opp) => (
               <OpportunityCard key={opp.id} opp={opp} />
             ))
           )}
         </div>
+        {brief.opportunities.length > 6 && (
+          <p className="mt-3 text-sm">
+            <Link href={routes.ownerOpportunities} className="text-ink underline">
+              View all opportunities →
+            </Link>
+          </p>
+        )}
       </section>
 
       {brief.gaps.length > 0 && (
         <section className="mb-10">
           <h2 className="font-display text-xl font-semibold text-ink">Data gaps</h2>
-          <p className="mt-1 text-sm text-ink-muted">
-            Where evidence is missing, we surface the gap instead of fabricating numbers.
-          </p>
           <ul className="mt-4 grid gap-3 lg:grid-cols-2">
             {brief.gaps.map((gap) => (
-              <li
-                key={gap.key}
-                className="rounded-xl border border-border bg-surface p-4 text-sm shadow-card"
-              >
+              <li key={gap.key} className="rounded-xl border border-border bg-surface p-4 text-sm shadow-card">
                 <p className="font-semibold text-ink">{gap.label}</p>
                 <p className="mt-1 text-ink-muted">{gap.reason}</p>
                 <p className="mt-2 text-xs text-ink-subtle">{gap.howToFill}</p>
@@ -251,9 +414,6 @@ async function OwnerDashboard() {
 
       <section className="mb-10">
         <h2 className="font-display text-xl font-semibold text-ink">Recent AI audit</h2>
-        <p className="mt-1 text-sm text-ink-muted">
-          From `ai_audit_log`. Soft-empty if migration not applied.
-        </p>
         {audit.length === 0 ? (
           <p className="mt-4 text-sm text-ink-muted">No audit rows yet.</p>
         ) : (
@@ -278,18 +438,11 @@ async function OwnerDashboard() {
 
       <section>
         <h2 className="font-display text-xl font-semibold text-ink">AI executive team</h2>
-        <p className="mt-1 text-sm text-ink-muted">
-          First wave order: Revenue → Ops → Retention → B2B → Growth → Chief of Staff. Only Revenue
-          is live; others remain placeholders until foundation earns trust.
-        </p>
         <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
           {AI_AGENT_SLOTS.map((slot) => {
             const agentOn = pause.agents[slot.id]?.enabled;
             return (
-              <div
-                key={slot.id}
-                className="rounded-xl border border-border bg-surface p-4 shadow-card"
-              >
+              <div key={slot.id} className="rounded-xl border border-border bg-surface p-4 shadow-card">
                 <div className="flex items-center justify-between gap-2">
                   <p className="font-display font-semibold text-ink">
                     {slot.buildOrder}. {slot.name}
@@ -301,11 +454,7 @@ async function OwnerDashboard() {
                         : "text-ink-subtle"
                     }`}
                   >
-                    {pause.globalPaused
-                      ? "global pause"
-                      : !agentOn
-                        ? "paused"
-                        : slot.status}
+                    {pause.globalPaused ? "global pause" : !agentOn ? "paused" : slot.status}
                   </span>
                 </div>
                 <p className="mt-2 text-sm text-ink-muted">{slot.blurb}</p>

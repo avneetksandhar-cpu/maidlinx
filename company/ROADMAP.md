@@ -13,6 +13,7 @@
 | AI exec V0 | Internal `/owner` + Revenue Director | **Shipped (thin V0)** |
 | AI OS Phase 0 | Full architecture audit | **COMPLETE** — `AI_OS_PHASE0_AUDIT.md` |
 | AI OS Foundation | Events, audit tables, flags, pause, owner shell | **COMPLETE (local)** — see `AI_OS_FOUNDATION_REPORT.md` |
+| Owner Command vCenter | Real metrics, targets, opportunities, CRM, capacity, exceptions | **COMPLETE (local)** — see `AI_OS_OWNER_VCENTER_REPORT.md` |
 
 ## Ranking goals
 
@@ -28,13 +29,14 @@
 | Rank | Item | Notes |
 |------|------|-------|
 | 1 | Protect booking/pay/webhook/consent/Sentry | Never regress |
-| 2 | **AI OS Foundation** | Events + audit + flags + pause + `/owner` harden |
-| 3 | AI Revenue Director V0 | **Shipped** — reuse; no duplicate |
-| 4 | AI Ops Director V0 | After foundation stable; recommend-first |
-| 5 | AI Retention Director V0 | Recommend-only messaging until gates clear |
-| 6 | AI B2B Sales → Growth → Chief of Staff | Placeholders until prior agents earn trust |
-| 7 | Merge split PR stack into `main` | P1 ops (HUMAN) |
-| 8 | Stripe LIVE enablement | RED — founder only |
+| 2 | **AI OS Foundation** | **Shipped (local)** |
+| 3 | Owner Command vCenter | **Shipped (local)** — extend, do not duplicate |
+| 4 | AI Revenue Director V0 | **Shipped + opportunity engine** |
+| 5 | AI Ops Director V0 | After vCenter migrations applied; recommend-first |
+| 6 | AI Retention Director V0 | Recommend-only messaging until gates clear |
+| 7 | AI B2B Sales → Growth → Chief of Staff | CRM shell exists; agent logic later |
+| 8 | Merge split PR stack into `main` | P1 ops (HUMAN) |
+| 9 | Stripe LIVE enablement | RED — founder only |
 
 ## AI permission model (all agents)
 

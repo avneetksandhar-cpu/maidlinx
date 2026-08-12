@@ -14,6 +14,12 @@ import {
   permissionLevelForAction,
 } from "@/lib/ai/permissions";
 import { assertAiActionAllowed } from "@/lib/ai/gateway";
+import { upsertOpenOpportunity } from "@/lib/owner/opportunities-store";
+import { huntInactiveHighLtv } from "@/lib/owner/customers";
+import {
+  countStaleSalesFollowUps,
+  huntCommercialBookingCandidates,
+} from "@/lib/owner/sales";
 
 const REBOOK_DUE_DAYS_MIN = 14;
 const REBOOK_DUE_DAYS_MAX = 90;
@@ -323,6 +329,334 @@ async function huntUtilization(): Promise<{
   return { opportunities, gaps };
 }
 
+async function huntRecurringCandidates(): Promise<{
+  opportunities: AiOpportunity[];
+  gaps: AiDataGap[];
+}> {
+  const gaps: AiDataGap[] = [];
+  const opportunities: AiOpportunity[] = [];
+  const supabase = createAdminClient();
+
+  const { data, error } = await supabase
+    .from("bookings")
+    .select(
+      "id, customer_id, status, total_cents, recurring_preference, completed_at" as never,
+    )
+    .eq("status", "completed")
+    .limit(2000);
+
+  if (error) {
+    gaps.push({
+      key: "recurring_query",
+      label: "Recurring candidates",
+      reason: error.message,
+      howToFill: "Ensure bookings.recurring_preference column exists (00023).",
+    });
+    return { opportunities, gaps };
+  }
+
+  const byCustomer = new Map<
+    string,
+    { count: number; lastCents: number; hasRecurring: boolean }
+  >();
+  for (const row of (data ?? []) as unknown as Array<Record<string, unknown>>) {
+    const r = row;
+    const cid = r.customer_id ? String(r.customer_id) : null;
+    if (!cid) continue;
+    const pref = r.recurring_preference ? String(r.recurring_preference) : "one_time";
+    const prev = byCustomer.get(cid) ?? {
+      count: 0,
+      lastCents: 0,
+      hasRecurring: false,
+    };
+    prev.count += 1;
+    prev.lastCents = Number(r.total_cents ?? 0) || prev.lastCents;
+    if (pref !== "one_time" && pref !== "") prev.hasRecurring = true;
+    byCustomer.set(cid, prev);
+  }
+
+  let candidates = 0;
+  let estimate = 0;
+  for (const [, v] of byCustomer) {
+    if (v.count >= 2 && !v.hasRecurring) {
+      candidates += 1;
+      estimate += v.lastCents > 0 ? Math.round(v.lastCents * 4) : 0;
+    }
+  }
+
+  if (candidates === 0) {
+    gaps.push({
+      key: "recurring_empty",
+      label: "Recurring candidates",
+      reason: "No repeat completers without a recurring preference.",
+      howToFill: "Complete repeat TEST bookings; prefer weekly/biweekly in wizard.",
+    });
+    return { opportunities, gaps };
+  }
+
+  opportunities.push({
+    id: "opp-recurring-candidates",
+    agentId: "revenue_director",
+    title: "Convert repeats to recurring plans",
+    category: "recurring_candidate",
+    potentialCentsEstimate: estimate > 0 ? estimate : null,
+    confidence: confidenceFromSample(candidates),
+    permissionLevel: permissionLevelForAction("reminder.recommend"),
+    recommendedAction:
+      "Recommend recurring cadence (no auto-enroll / no auto-charge in V0).",
+    evidence: `${candidates} customers with ≥2 completions and no recurring preference. Estimate = ~4× last ticket (labeled estimate).`,
+    isEstimate: true,
+    aiEligible: true,
+  });
+
+  return { opportunities, gaps };
+}
+
+async function huntInactiveLtv(): Promise<{
+  opportunities: AiOpportunity[];
+  gaps: AiDataGap[];
+}> {
+  const gaps: AiDataGap[] = [];
+  const opportunities: AiOpportunity[] = [];
+  const hunt = await huntInactiveHighLtv(40);
+  if (!hunt.available) {
+    gaps.push({
+      key: "inactive_ltv",
+      label: "Inactive high-LTV",
+      reason: hunt.gapReason ?? "Unavailable",
+      howToFill: "Need completed bookings with customer_id + totals.",
+    });
+    return { opportunities, gaps };
+  }
+  if (hunt.count === 0) {
+    gaps.push({
+      key: "inactive_ltv_empty",
+      label: "Inactive high-LTV",
+      reason: "No customers with LTV ≥ $150 and ≥60d silence.",
+      howToFill: "Natural aging of completed customers fills this window.",
+    });
+    return { opportunities, gaps };
+  }
+
+  opportunities.push({
+    id: "opp-inactive-high-ltv",
+    agentId: "revenue_director",
+    title: "Win back inactive high-LTV customers",
+    category: "inactive_high_ltv",
+    potentialCentsEstimate: hunt.estimatedCents,
+    confidence: confidenceFromSample(hunt.count),
+    permissionLevel: permissionLevelForAction("message.recommend"),
+    recommendedAction:
+      "Recommend win-back outreach (auto-send OFF — create opportunity only).",
+    evidence: `${hunt.count} customers (LTV≥$150, silent ≥60d). Estimate ≈ 25% of LTV — estimate only.`,
+    isEstimate: true,
+    aiEligible: true,
+  });
+  return { opportunities, gaps };
+}
+
+async function huntCommercialFollowup(): Promise<{
+  opportunities: AiOpportunity[];
+  gaps: AiDataGap[];
+}> {
+  const gaps: AiDataGap[] = [];
+  const opportunities: AiOpportunity[] = [];
+  const commercial = await huntCommercialBookingCandidates();
+  const stale = await countStaleSalesFollowUps();
+
+  if (!commercial.available) {
+    gaps.push({
+      key: "commercial",
+      label: "Commercial / PM follow-up",
+      reason: commercial.gapReason ?? "Unavailable",
+      howToFill: "Commercial/office/airbnb bookings populate this signal.",
+    });
+  } else if (commercial.count === 0 && (stale ?? 0) === 0) {
+    gaps.push({
+      key: "commercial_empty",
+      label: "Commercial / PM follow-up",
+      reason: "No commercial bookings and no stale CRM follow-ups.",
+      howToFill: "Add B2B leads in /owner/sales or book commercial TEST jobs.",
+    });
+  } else {
+    if (commercial.count > 0) {
+      opportunities.push({
+        id: "opp-commercial-followup",
+        agentId: "b2b_sales_director",
+        title: "Commercial / PM account follow-up",
+        category: "commercial_followup",
+        potentialCentsEstimate: commercial.estimatedCents,
+        confidence: confidenceFromSample(commercial.count),
+        permissionLevel: permissionLevelForAction("reminder.recommend"),
+        recommendedAction:
+          "Review commercial bookings; add/update CRM leads (no auto outbound).",
+        evidence: `${commercial.count} commercial/office/airbnb bookings in sample. Dollar figure is historical ticket sum — estimate for expansion.`,
+        isEstimate: true,
+        aiEligible: true,
+      });
+    }
+    if ((stale ?? 0) > 0) {
+      opportunities.push({
+        id: "opp-stale-sales",
+        agentId: "b2b_sales_director",
+        title: "Stale B2B CRM follow-ups",
+        category: "stale_sales_followup",
+        potentialCentsEstimate: null,
+        confidence: 0.7,
+        permissionLevel: permissionLevelForAction("reminder.recommend"),
+        recommendedAction: "Work overdue follow-ups in /owner/sales.",
+        evidence: `${stale} open leads with next_follow_up_at in the past.`,
+        isEstimate: true,
+        aiEligible: true,
+      });
+    }
+  }
+
+  return { opportunities, gaps };
+}
+
+async function huntAddonAndReferral(): Promise<{
+  opportunities: AiOpportunity[];
+  gaps: AiDataGap[];
+}> {
+  const gaps: AiDataGap[] = [];
+  const opportunities: AiOpportunity[] = [];
+  const supabase = createAdminClient();
+
+  const { data, error } = await supabase
+    .from("bookings")
+    .select("id, status, total_cents, extras, service_type, customer_id")
+    .eq("status", "completed")
+    .limit(1000);
+
+  if (error) {
+    gaps.push({
+      key: "addon_referral",
+      label: "Add-on / referral",
+      reason: error.message,
+      howToFill: "Completed bookings required.",
+    });
+    return { opportunities, gaps };
+  }
+
+  const rows = (data ?? []) as Array<Record<string, unknown>>;
+  let withoutExtras = 0;
+  let withoutExtrasCents = 0;
+  const customerCounts = new Map<string, number>();
+  for (const r of rows) {
+    const extras = r.extras;
+    const emptyExtras =
+      extras == null ||
+      (Array.isArray(extras) && extras.length === 0) ||
+      (typeof extras === "object" &&
+        !Array.isArray(extras) &&
+        Object.keys(extras as object).length === 0);
+    if (emptyExtras) {
+      withoutExtras += 1;
+      withoutExtrasCents += Number(r.total_cents ?? 0);
+    }
+    const cid = r.customer_id ? String(r.customer_id) : null;
+    if (cid) customerCounts.set(cid, (customerCounts.get(cid) ?? 0) + 1);
+  }
+
+  const referEligible = Array.from(customerCounts.values()).filter((n) => n >= 2).length;
+
+  if (withoutExtras === 0) {
+    gaps.push({
+      key: "addon_empty",
+      label: "Add-on upsell",
+      reason: "No completed bookings without extras in sample.",
+      howToFill: "Track extras on bookings for upsell detection.",
+    });
+  } else {
+    opportunities.push({
+      id: "opp-addon-upsell",
+      agentId: "revenue_director",
+      title: "Add-on upsell on bare tickets",
+      category: "addon_upsell",
+      potentialCentsEstimate:
+        withoutExtras > 0 ? Math.round((withoutExtrasCents / withoutExtras) * 0.15 * withoutExtras) : null,
+      confidence: confidenceFromSample(withoutExtras),
+      permissionLevel: permissionLevelForAction("reminder.recommend"),
+      recommendedAction:
+        "Recommend add-on prompts at rebook (no auto messages).",
+      evidence: `${withoutExtras} completed bookings with empty extras. Estimate ≈ 15% of avg ticket × count.`,
+      isEstimate: true,
+      aiEligible: true,
+    });
+  }
+
+  if (referEligible === 0) {
+    gaps.push({
+      key: "referral_empty",
+      label: "Referral",
+      reason: "No customers with ≥2 completions for referral ask.",
+      howToFill: "Repeat completers become referral candidates.",
+    });
+  } else {
+    opportunities.push({
+      id: "opp-referral",
+      agentId: "growth_director",
+      title: "Referral asks from happy repeats",
+      category: "referral",
+      potentialCentsEstimate: null,
+      confidence: confidenceFromSample(referEligible),
+      permissionLevel: permissionLevelForAction("message.recommend"),
+      recommendedAction:
+        "Recommend referral ask after positive ratings (auto-send OFF).",
+      evidence: `${referEligible} customers with ≥2 completions. Dollar upside not estimated without referral program metrics.`,
+      isEstimate: true,
+      aiEligible: true,
+    });
+  }
+
+  return { opportunities, gaps };
+}
+
+async function huntExcessSupply(): Promise<{
+  opportunities: AiOpportunity[];
+  gaps: AiDataGap[];
+}> {
+  const gaps: AiDataGap[] = [];
+  const opportunities: AiOpportunity[] = [];
+  try {
+    const metrics = await getPlatformMetrics();
+    const idle = Math.max(0, metrics.totalCleaners - metrics.activeCleaners);
+    const upcomingPressure = metrics.activeBookings;
+    if (idle >= 2 && upcomingPressure < Math.max(2, idle)) {
+      opportunities.push({
+        id: "opp-excess-supply",
+        agentId: "ops_director",
+        title: "Excess supply windows",
+        category: "excess_supply",
+        potentialCentsEstimate: null,
+        confidence: 0.4,
+        permissionLevel: permissionLevelForAction("analytics.read"),
+        recommendedAction:
+          "Match demand gen / offers to idle supply (recommend-only).",
+        evidence: `${idle} inactive vs ${metrics.activeCleaners} active cleaners; ${upcomingPressure} active bookings.`,
+        isEstimate: true,
+        aiEligible: true,
+      });
+    } else {
+      gaps.push({
+        key: "excess_supply_none",
+        label: "Excess supply",
+        reason: "No clear idle-supply vs demand imbalance in platform metrics.",
+        howToFill: "Watch /owner/cleaners for market/day skew.",
+      });
+    }
+  } catch (err) {
+    gaps.push({
+      key: "excess_supply_err",
+      label: "Excess supply",
+      reason: err instanceof Error ? err.message : "Metrics failed",
+      howToFill: "Verify professionals + bookings metrics.",
+    });
+  }
+  return { opportunities, gaps };
+}
+
 export async function buildRevenueDirectorBrief(): Promise<RevenueDirectorBrief> {
   if (!hasAdminEnv()) {
     return emptyBrief();
@@ -351,26 +685,57 @@ export async function buildRevenueDirectorBrief(): Promise<RevenueDirectorBrief>
     );
   }
 
-  const [abandoned, rebook, utilization] = await Promise.all([
+  const [
+    abandoned,
+    rebook,
+    utilization,
+    recurring,
+    inactive,
+    commercial,
+    addonReferral,
+    excess,
+  ] = await Promise.all([
     huntAbandonedCheckouts(),
     huntRebookDue(),
     huntUtilization(),
+    huntRecurringCandidates(),
+    huntInactiveLtv(),
+    huntCommercialFollowup(),
+    huntAddonAndReferral(),
+    huntExcessSupply(),
   ]);
 
   const opportunities = rankOpportunities([
     ...abandoned.opportunities,
     ...rebook.opportunities,
     ...utilization.opportunities,
+    ...recurring.opportunities,
+    ...inactive.opportunities,
+    ...commercial.opportunities,
+    ...addonReferral.opportunities,
+    ...excess.opportunities,
   ]);
 
-  const gaps = [...abandoned.gaps, ...rebook.gaps, ...utilization.gaps];
+  // Persist open opportunities (create only — no auto messages). Soft-fail.
+  await Promise.all(opportunities.map((opp) => upsertOpenOpportunity(opp)));
+
+  const gaps = [
+    ...abandoned.gaps,
+    ...rebook.gaps,
+    ...utilization.gaps,
+    ...recurring.gaps,
+    ...inactive.gaps,
+    ...commercial.gaps,
+    ...addonReferral.gaps,
+    ...excess.gaps,
+  ];
 
   const notes = [
     "Stripe LIVE disabled — figures are estimates or counts, never live GMV claims.",
     "GREEN: analytics + ranked brief. YELLOW: message recommends. RED: campaigns/pricing/refunds/payouts.",
     AI_OUTBOUND_MESSAGING_AUTO_SEND
       ? "Outbound auto-send is ON (unexpected for V0)."
-      : "Outbound customer messaging auto-send is OFF (recommend-only).",
+      : "Outbound customer messaging auto-send is OFF — opportunities only, no auto messages.",
   ];
 
   if (opportunities.length === 0) {

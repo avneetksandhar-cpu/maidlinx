@@ -2,6 +2,13 @@
 
 Format: date · decision · owner · rationale · status
 
+## 2026-08-12 — Owner Command vCenter (extend foundation)
+
+- **Decision:** Build zero-cost Owner Command vCenter inside existing `/owner` + `src/lib/owner/` extending `00029`/`00030` via migration `00031`. Real-data dashboard, editable $100K/$1M targets, deterministic opportunity engine (persist to `ai_recommendations`, no auto-send), customer NBA profiles, cleaner capacity, B2B CRM shell, exceptions inbox, activity timeline, founder interventions. No paid LLM, no second app, no Stripe LIVE, no autonomous campaigns. Deploy only after migrations + BOOK→PAY smoke (founder call; default ship to PR).
+- **Owner:** Founder + Lead Engineer
+- **Rationale:** Foundation landed; founder needs operable remote command center on real signals before Ops/Retention agents.
+- **Status:** Accepted
+
 ## 2026-08-12 — AI OS Phase 0 audit → Foundation only
 
 - **Decision:** Complete full architecture audit (`company/AI_OS_PHASE0_AUDIT.md`) before more agent work. Next implementation slice is **FOUNDATION only**: `business_events` emitter, extend AI audit family (`ai_recommendations` / `ai_decisions` / `ai_actions` / `ai_exceptions` atop `00029`), GREEN/YELLOW/RED enforcement hooks, AI feature flags + simulation mode, global + per-agent AI pause, harden `/owner` command center. Do **not** build Ops/Retention/B2B/Growth/CoS agents beyond placeholders, abandoned campaigns, autonomous dispatch, CEO chat LLM, or pricing autonomy. Autonomy ladder: simulation → recommend → approval → GREEN-only later. No RED autonomy. No Stripe LIVE. Extend existing `src/ai` + `src/lib/ai` + `/owner` — no new app, no customer-site redesign.

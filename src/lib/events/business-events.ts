@@ -24,6 +24,9 @@ export const CRITICAL_BUSINESS_EVENT_TYPES = [
   "booking_created",
   "payment_succeeded",
   "offer_accepted",
+  "job_completed",
+  "cancelled",
+  "rating_submitted",
 ] as const;
 
 export type CriticalBusinessEventType =
@@ -61,6 +64,7 @@ export async function emitBusinessEvent(input: {
   entityId: string;
   idempotencyKey?: string;
   discriminator?: string | null;
+  correlationId?: string | null;
   actorType?: string | null;
   actorId?: string | null;
   source?: string;
@@ -86,6 +90,7 @@ export async function emitBusinessEvent(input: {
       entity_type: input.entityType,
       entity_id: input.entityId,
       idempotency_key: idempotencyKey,
+      correlation_id: input.correlationId ?? input.entityId,
       actor_type: input.actorType ?? null,
       actor_id: input.actorId ?? null,
       source: input.source ?? "system",
@@ -133,6 +138,13 @@ export async function mirrorCriticalBookingEvent(input: {
   } else if (input.eventType === "offer_accepted") {
     const offerId = input.payload?.offerId;
     disc = typeof offerId === "string" && offerId.length > 0 ? offerId : "v1";
+  } else if (input.eventType === "rating_submitted") {
+    const reviewId = input.payload?.reviewId;
+    disc = typeof reviewId === "string" && reviewId.length > 0 ? reviewId : "rating";
+  } else if (input.eventType === "cancelled") {
+    disc = "cancel";
+  } else if (input.eventType === "job_completed") {
+    disc = "complete";
   }
 
   await emitBusinessEvent({
@@ -140,6 +152,7 @@ export async function mirrorCriticalBookingEvent(input: {
     entityType: "booking",
     entityId: input.bookingId,
     discriminator: disc,
+    correlationId: input.bookingId,
     actorType: input.actorType,
     actorId: input.actorId,
     source: "booking_events",

@@ -32,16 +32,26 @@ export type AiActionKind =
   | "safety.action"
   | "bank.change";
 
+export type AiOpportunityCategory =
+  | "abandoned_checkout"
+  | "rebook_due"
+  | "recurring_candidate"
+  | "utilization"
+  | "unused_capacity"
+  | "commercial_followup"
+  | "inactive_high_ltv"
+  | "addon_upsell"
+  | "referral"
+  | "excess_supply"
+  | "stale_sales_followup"
+  | "data_gap"
+  | "other";
+
 export interface AiOpportunity {
   id: string;
   agentId: AiAgentId;
   title: string;
-  category:
-    | "abandoned_checkout"
-    | "rebook_due"
-    | "utilization"
-    | "data_gap"
-    | "other";
+  category: AiOpportunityCategory;
   /** Estimated upside in cents — always labeled estimate, never live truth. */
   potentialCentsEstimate: number | null;
   confidence: number;
