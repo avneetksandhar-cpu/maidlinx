@@ -100,7 +100,9 @@ export async function POST(request: Request, context: RouteContext) {
       {
         amount: depositCents,
         currency: booking.currency.toLowerCase(),
-        automatic_payment_methods: { enabled: true },
+        // Card Payment Element path — disable redirect methods so TEST confirm
+        // and non-redirect clients do not require return_url.
+        automatic_payment_methods: { enabled: true, allow_redirects: "never" },
         metadata: {
           bookingId: booking.id,
           paymentType,
