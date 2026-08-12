@@ -15,6 +15,8 @@ const serverSchema = z.object({
   TWILIO_FROM: z.string().min(1).optional(),
   DEPOSIT_PERCENT: z.coerce.number().min(1).max(100).optional(),
   SENTRY_DSN: z.string().url().optional(),
+  SENTRY_ENVIRONMENT: z.string().min(1).optional(),
+  SENTRY_RELEASE: z.string().min(1).optional(),
   ADMIN_BOOTSTRAP_EMAIL: z.string().email().optional(),
 });
 
@@ -27,6 +29,7 @@ const clientSchema = z.object({
   NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string().min(1).optional(),
   NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: z.string().min(1).optional(),
   NEXT_PUBLIC_DEPOSIT_PERCENT: z.coerce.number().min(1).max(100).optional(),
+  NEXT_PUBLIC_SENTRY_DSN: z.string().url().optional(),
 });
 
 export type ServerEnv = z.infer<typeof serverSchema>;
