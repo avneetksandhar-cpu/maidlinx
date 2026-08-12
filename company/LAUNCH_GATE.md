@@ -93,6 +93,37 @@ Prior proven booking still completed: `21c3fe01-110e-4552-b21b-1778553b1c6f`.
 | Markets active in app | Toronto GTA + South Florida |
 | Geographic empty-supply if ads open | **HUMAN ops P0** if traffic opens without a ready cleaner in the city |
 
+### Cleaner coverage verification (2026-08-12T23:08Z ET)
+
+| Metric | Value |
+|--------|------:|
+| TOTAL_REAL_CLEANERS (DB rows) | **2** (1 applicant + 1 approved; no fabricated accounts) |
+| APPROVED_CLEANERS (approved+active) | **1** |
+| BOOKABLE_CLEANERS | **0** (needs zones + services + availability) |
+| CLEANERS_WITH_AVAILABILITY | **0** |
+| Online / auto-offer eligible | **0** (`is_online=false`) |
+| CLEANER_COVERAGE_READY | **NO** |
+| RECOMMENDED_FIRST_MARKET (launch-ready) | **none** |
+| Ops candidate after onboarding | **TORONTO_GTA** (6 completed bookings; FL = 0 completed) |
+
+| MARKET | APPROVED | BOOKABLE | ONLINE CAP. | SERVICES (catalog) | GEO | LAUNCH_READY | STATUS |
+|--------|--------:|---------:|------------:|-------------------:|-----|--------------|--------|
+| TORONTO_GTA | 0* | 0 | 0 | 9 | None attributed | NO | RED |
+| SOUTH_FLORIDA | 0* | 0 | 0 | 9 | None attributed | NO | RED |
+| NEW_YORK / CALIFORNIA | 0 | 0 | 0 | — | inactive in TS config | NO | RED |
+
+\*Approved cleaner `ba902d50-…` has `market_id=null` and **0** `cleaner_service_zones` — not counted against either active market.
+
+**Missing for bookable supply:** set `market_id` or zones, `cleaner_services`, `professional_availability`, go online (`is_online`), complete payout onboarding (Connect still stub / `STRIPE_CONNECT_ENABLED` off).
+
+**Supply UX:** Arrival windows default `available=true` when `supplyByWindow` omitted (UI label “preference for now”). **Misleading for real-money ads** — does not prove capacity. Controlled TEST may still book; fulfillment is manual dispatch.
+
+**Payout:** On complete → `payouts` ledger row `pending` (`subtotal_cents`). Cleaner sees earnings summary; Connect transfers gated / stub — **no new paid products enabled**. Stripe LIVE stays off.
+
+**Cleaner TEST path:** Prior full lifecycle PASS on booking `140b7aaa-…` (offer→accept→assign→complete→rating) with providers=`log` — **not re-run** against the real eligible cleaner to avoid misleading notifications. Offer decline API/UI still P1 gap.
+
+**Owner view:** `/owner/cleaners` extended with LAUNCH COVERAGE STATUS (GREEN/YELLOW/RED) + per-cleaner missing fields (branch tip; not on prod SHA `ca3c88f`).
+
 ---
 
 ## P0 LAUNCH BLOCKERS (0 remaining)
@@ -141,7 +172,7 @@ Prior proven booking still completed: `21c3fe01-110e-4552-b21b-1778553b1c6f`.
 ## HUMAN ACTION REQUIRED
 
 1. **Keep Stripe LIVE disabled** — no `sk_live_` / `pk_live_` until explicit founder approval.  
-2. **Before inviting 5–10 real TEST customers:** confirm at least one approved cleaner can cover the launch city (zones/services/availability or standby manual dispatch).  
+2. **Before inviting 5–10 real TEST customers / opening one market:** complete approved cleaner onboarding for **TORONTO_GTA** (zones + services + availability + online) **or** confirm standby manual dispatch. Coverage audit: **CLEANER_COVERAGE_READY NO**.  
 3. **Optional device proof:** Safari Apple Pay / Chrome Google Pay (domains already active in TEST).  
 4. **Optional:** merge split stack `#2…#16` into `main`.  
 5. **No further Resend TEST spam** unless founder requests.  
