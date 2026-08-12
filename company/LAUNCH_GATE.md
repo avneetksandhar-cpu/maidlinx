@@ -1,23 +1,46 @@
 # MaidLinx Launch Gate
 
 **Date:** 2026-08-12  
-**Branch:** `cursor/launch-gate` (from `cursor/maidlinx-brain-v1` tip; includes Cleaner Platform + Dispatch schema checkpoint + Brain libs)  
+**Branch:** `cursor/launch-gate`  
 **Mode:** Launch Gate — no new features; evidence only  
 **Rule:** UI ≠ proven. Secrets reported FOUND / EMPTY / MISSING / INVALID only — never values.  
-**HARD RULE:** `READY TO LAUNCH: YES` only if real Stripe TEST completed full BOOK→PAY→WEBHOOK→ASSIGN→ACCEPT→COMPLETE **and** all P0 security checks pass.
+**HARD RULE (founder):** `READY FOR REAL-MONEY LAUNCH: YES` only when **Maps + Sentry + notification providers** all **PASS**. Stripe LIVE remains disabled until explicit founder approval after those three.
 
 ---
 
-## READY TO LAUNCH: **NO**
+## READY TO LAUNCH: **NO** (real money)
 
 | Metric | Count |
 |--------|------:|
-| LAUNCH BLOCKERS (P0) | **3** |
-| P1 open | 6 |
+| LAUNCH BLOCKERS (P0) | **2** |
+| P1 open | see below |
 | Sections PASS (of scorecard below) | improved |
 
-**READY FOR FIRST TEST BOOKING: YES** (local + Stripe TEST proven this session)  
-**READY FOR REAL-MONEY LAUNCH: NO** (no LIVE keys; Maps / Sentry / real notification providers still open)
+**READY FOR CONTROLLED TEST LAUNCH: YES** (prod Maps proven + Stripe TEST lifecycle proven)  
+**READY FOR REAL-MONEY LAUNCH: NO** (Sentry + notification providers still FAIL; no LIVE keys)
+
+---
+
+## Maps production retest (2026-08-12T04:22Z browser)
+
+Founder confirmed GCP browser key Website restrictions:
+
+- `https://maidlinx.com/*`
+- `https://www.maidlinx.com/*`
+
+API restrictions: Places API (New), Geocoding API, Maps JavaScript API. Saved; ~5 min wait before retest.
+
+| Check | Result | Evidence |
+|-------|--------|----------|
+| Autocomplete `100 King` on **maidlinx.com** | **PASS** | 5 real suggestions (e.g. 100 King Street East, Toronto, ON) |
+| Select suggestion (apex) | **PASS** | Place details → filled `100 King St E, Toronto, ON M5C 2V8, Canada` → auto-advance `/book/property` |
+| Autocomplete `100 King` on **www.maidlinx.com** | **PASS** | Same 5 real suggestions; Maps JS + Places loaded; no referrer/denied UI |
+| Select suggestion (www) | **PASS** | Confirming address… → advance `/book/property` |
+| Use current location (apex) | **PASS** | Did **not** stick on loading; reverse geocode → `110 Dolobram Trail` / Brampton ON L7A 4Y4; button returned to idle label |
+
+**MAPS P0: CLEARED**
+
+Note: Vercel preview domains are **not** covered by the two production referrers above — add the exact preview host if preview Maps testing is required.
 
 ---
 
@@ -33,59 +56,32 @@
 | `STRIPE_WEBHOOK_SECRET` | FOUND |
 | Live Stripe keys (`sk_live_` / `pk_live_`) | NO (absent) |
 | `STRIPE_CONNECT_ENABLED` | MISSING (treated as off — correct for controlled launch) |
-| `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` | FOUND |
-| `EMAIL_PROVIDER` / `SMS_PROVIDER` | FOUND(`log`) |
-| `RESEND_API_KEY` / Twilio | MISSING → notifications PENDING_PROVIDER |
+| `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` | FOUND (prod browser key works — live Places PASS) |
+| `EMAIL_PROVIDER` / `SMS_PROVIDER` | log default / not production-connected |
+| `RESEND_API_KEY` / Twilio | MISSING → notifications not delivered externally |
 | `SENTRY_DSN` | MISSING |
 | `IDENTITY_PROVIDER_CONNECTED` / `BACKGROUND_PROVIDER_CONNECTED` | MISSING → PENDING_PROVIDER |
 
-Stripe **TEST** API reachable from agent via local `sk_test` (this session). Stripe MCP account listing is LIVE-only — **do not use** for gate payments.
+Stripe **TEST** only. Do not enable LIVE without founder approval after P0 clear.
 
 ---
 
-## Migrations: repo vs prod (`pgoyhujsfbmfshtnlbnx`)
-
-**Applied remotely (named):** through `dispatch_live_ops_v1` + `cleaner_platform_v1` + pro foundation prereq.
-
-| Local migration | Remote | Notes |
-|-----------------|--------|-------|
-| `00025` Cleaner Platform | APPLIED (as `cleaner_platform_v1`) | gates/academy/trust present |
-| `00026` Dispatch Live Ops | APPLIED | `booking_offers` present; fresh offer created this session |
-| `00023` Repeat revenue | **NOT applied** | `referral_codes` / `retention_events` / preferred columns may be partial |
-| `00017` recurring_plans | **NOT applied** | `recurring_plans` null |
-| `00027` Brain V1 | **NOT applied** | `brain_events` null — do not apply mid-gate unless needed; not required for BOOK→PAY |
-
-No destructive resets performed this session.
-
----
-
-## Fresh E2E evidence (this session — 2026-08-12T04:15Z)
+## Fresh TEST E2E evidence (smoke this session — 2026-08-12T04:21Z)
 
 Script: `scripts/launch-gate-fresh-e2e.mjs` against local `http://localhost:3001` + remote Supabase + Stripe **TEST**.
 
 | Checkpoint | Result | Evidence (ids only) |
 |------------|--------|---------------------|
-| BOOK | **PASS** | booking `647edc22-831f-497e-a160-bf202229adbd` created `pending_payment` |
-| PAY (Stripe TEST) | **PASS** | PaymentIntent `pi_3U3TZZFAmKhvpBtw0HOlZE7i` confirmed `succeeded` (`pm_card_visa`, livemode=false) |
-| WEBHOOK | **PASS** | signed `payment_intent.succeeded` → `/api/webhooks/stripe` 200; event `evt_launchgate_1786508127241` claimed |
-| PAYMENT DB | **PASS** | booking → `awaiting_assignment` + `payment_status=deposit_paid`; payments row `succeeded` |
-| CLEANER GATES | **PASS** | TEST cleaner `ba902d50-…` ACTIVE / maidlinx_verified / identity verified / background clear |
-| OFFER | **PASS** | `booking_offers` `579348aa-0c62-46ad-8647-8c351bff5387` pending→accepted |
-| ACCEPT / ASSIGN | **PASS** | offer accepted; `cleaner_assignments` active `source=offer_accept` |
-| COMPLETE | **PASS** | booking status `completed` |
-| CUSTOMER STATUS | **PASS** | GET `/api/bookings/{id}` with access token → `status=completed` |
-| ADMIN STATUS | **PASS** | service-role admin fields: completed + deposit_paid + active assignment |
-| RATE | **PASS** | review `b8464f01-fd06-47e5-8d50-719a3b133d16` rating 5 |
+| BOOK | **PASS** | booking `4700004e-29a3-4756-a85b-ccb20b33a574` |
+| PAY (Stripe TEST) | **PASS** | PI `pi_3U3TfrFAmKhvpBtw2TMlirtX` (livemode=false) |
+| WEBHOOK | **PASS** | signed claim → 200; event `evt_launchgate_1786508516560` |
+| PAYMENT DB | **PASS** | `awaiting_assignment` + `deposit_paid` |
+| CUSTOMER STATUS | **PASS** | GET booking → `completed` (after accept/complete steps in script) |
+| ADMIN STATUS | **PASS** | completed + deposit_paid + active assignment |
 
-**FULL FRESH E2E: PASS**
+Prior same-day full lifecycle also PASS (`647edc22-…`). **FRESH TRANSACTION SMOKE: PASS**
 
-Prior same-day booking `09893ad1-…` is historical only; this session proves a new lifecycle with customer + admin status checks.
-
----
-
-## Remote DB snapshot (post fresh e2e)
-
-**New** this session: booking `647edc22-…`, PI `pi_3U3TZZFAmKhvpBtw0HOlZE7i`, webhook `evt_launchgate_1786508127241`, offer `579348aa-…`, review `b8464f01-…`. Cleaners unchanged: 2 (1 ACTIVE/verified TEST; 1 APPLICANT).
+Regression this session: lint 0 errors (1 warning), typecheck OK, **272** tests PASS, production build OK.
 
 ---
 
@@ -93,65 +89,61 @@ Prior same-day booking `09893ad1-…` is historical only; this session proves a 
 
 | # | Area | Result | Evidence |
 |---|------|--------|----------|
-| 1 | Env audit | **PASS** | Local TEST Stripe + Supabase FOUND; no LIVE keys in `.env.local` |
-| 2 | Migrations compare / safe apply | **PARTIAL** | Dispatch+Cleaner applied; retention/brain/recurring gaps remain — not applied this gate (non-blocking for core pay if unused) |
-| 3 | TEST personas | **PASS** | Active verified cleaner gate-checked before fresh offer→accept→complete |
-| 4 | Customer book path (mobile+desktop) | **PARTIAL** | API book path proven; live Places historically referrer-blocked on prod; browser UI not re-run |
-| 5 | Price attack | **PASS** (code) | `assertPriceMatch` tests reject mismatched client totals |
-| 6 | Stripe TEST + webhook | **PASS** | Fresh PI succeed + signed webhook claim + DB deposit_paid this session |
-| 7 | Cleaner security attacks | **PASS** (code) | `privilege-escalation.test.ts` + `backend-hardening.test.ts` green |
-| 8 | Dispatch + race accept | **PASS** (fresh) | Fresh offer + accept + active assignment; race still unit-covered |
-| 9 | Cleaner job lifecycle | **PASS** (fresh) | assigned→accepted→on_the_way→arrived→in_progress→completed |
-| 10 | Customer live status | **PASS** (API) | Customer booking GET returns `completed` with access token this session |
-| 11 | Admin + cross-role route attacks | **PASS** (data+code) | Admin-visible booking/payment/assignment fields correct this session; permission tests previously green |
-| 12 | Rating + rebook | **PARTIAL** | Fresh review inserted; rebook CTA/quote coded — one-tap rebook UI not re-browsered |
-| 13 | Mobile QA defects | **PARTIAL** | One-decision booking screens shipped; Maps prod referrer historically FAIL |
-| 14 | Failure recovery / no secret leaks | **PASS** (code) | Customer-friendly config errors + hardening tests; no secrets printed this session |
-| 15 | Privacy audit | **PARTIAL** | Funnel strips PII keys; legal pages placeholder history; no new invasive tracking |
-| 16 | RLS / authorization | **PARTIAL** | Policies present on bookings/payments/cleaners/offers/reviews; advisor hygiene not re-run |
-| 17 | Performance obvious fixes | **PASS** | No checkout-blocking Brain wiring; build OK |
-| 18 | Observability | **FAIL** | `SENTRY_DSN` MISSING; email/SMS log-only |
-| 19 | Regression lint/typecheck/tests/build | **PASS** | Prior gate: lint/typecheck/272 tests/build OK |
-| 20 | Full lifecycle proof | **PASS** | Fresh BOOK→PAY→WEBHOOK→OFFER→ACCEPT→ASSIGN→COMPLETE→CUSTOMER/ADMIN STATUS→RATE this session |
+| 1 | Env audit | **PASS** | Local TEST Stripe + Supabase; no LIVE keys |
+| 2 | Migrations compare / safe apply | **PARTIAL** | Dispatch+Cleaner applied; retention/brain/recurring gaps — non-blocking for core pay |
+| 3 | TEST personas | **PASS** | Active verified cleaner used in smoke |
+| 4 | Customer book path (mobile+desktop) | **PASS** (Maps) | Live Places autocomplete+select on apex + www; geolocation reverse geocode PASS |
+| 5 | Price attack | **PASS** (code) | `assertPriceMatch` tests |
+| 6 | Stripe TEST + webhook | **PASS** | Fresh PI + webhook + DB this session |
+| 7 | Cleaner security attacks | **PASS** (code) | privilege + hardening suites green |
+| 8 | Dispatch + race accept | **PASS** | Covered in e2e + unit |
+| 9 | Cleaner job lifecycle | **PASS** | Prior + smoke script |
+| 10 | Customer live status | **PASS** (API) | Customer booking GET |
+| 11 | Admin + cross-role | **PASS** | Admin fields correct in smoke |
+| 12 | Rating + rebook | **PARTIAL** | Review insert proven; rebook UI not re-browsered |
+| 13 | Mobile QA defects | **PARTIAL** | Maps prod cleared; full mobile matrix not re-run |
+| 14 | Failure recovery / no secret leaks | **PASS** | No secrets printed this session |
+| 15 | Privacy audit | **PARTIAL** | Funnel strips PII keys; legal placeholder history |
+| 16 | RLS / authorization | **PARTIAL** | Policies present; advisor hygiene not re-run |
+| 17 | Performance obvious fixes | **PASS** | Build OK |
+| 18 | Observability | **FAIL** | Sentry SDK not integrated; `SENTRY_DSN` MISSING — see P0 |
+| 19 | Regression lint/typecheck/tests/build | **PASS** | lint/typecheck/272 tests/build OK this session |
+| 20 | Full lifecycle proof | **PASS** | Stripe TEST BOOK→PAY→WEBHOOK→… this session |
 
 ---
 
-## P0 LAUNCH BLOCKERS (3 remaining) — dependency order
+## P0 LAUNCH BLOCKERS (2 remaining) — dependency order
 
-1. **Production Maps Places referrer restrictions** — blocks reliable customer address autocomplete on live domain (manual address may be accepted soft path). Depends on Google Cloud Console key restrictions.  
-2. **Monitoring — `SENTRY_DSN` MISSING** — no production error visibility before real money. Depends on Sentry project + DSN in env (Vercel/local).  
-3. **Notifications — providers log-only** — Resend/Twilio MISSING; ops cannot email/SMS customers/cleaners. Depends on provider signup + keys; Product may accept soft-launch with log-only.
+1. **Sentry / production error monitoring — FAIL** — `@sentry/nextjs` is **not** installed; `src/lib/monitoring/sentry.ts` is a stub that only `console.error`s (even if DSN were set). No verified production error capture. **Blocks real-money per founder rule.**  
+2. **Notifications — providers not connected — FAIL** — `EMAIL_PROVIDER`/`SMS_PROVIDER` log-only; Resend/Twilio MISSING. Outbox honestly marks `skipped` (does not fake delivery). Customer/admin **in-app/API** status works for controlled TEST ops, but founder requires real providers before real-money.
 
-Cleared earlier / this session (not counted in remaining 3):
+Cleared this session:
 
-- ~~Fresh Stripe TEST lifecycle~~ **CLEARED** (booking `647edc22-…`).  
-- ~~Dispatch offer→accept~~ **CLEARED** (offer `579348aa-…`).  
-- ~~Customer + admin status~~ **CLEARED** (API + admin fields).  
-- ~~Rate / review~~ **CLEARED** (review `b8464f01-…`).  
-- ~~Outbound Stripe TEST API~~ **CLEARED** (`sk_test` PI confirmed).
+- ~~Production Maps Places referrer / autocomplete~~ **CLEARED** (apex + www + current location evidence above).  
+- ~~Fresh Stripe TEST lifecycle / smoke~~ **CLEARED** (booking `4700004e-…`).
+
+---
+
+## P1 (important, not blocking controlled TEST)
+
+- Notification email/SMS for cleaner “on the way” etc. (ops can use admin + customer status for controlled TEST).  
+- Retention / Brain / recurring migrations not on remote (unused for core pay).  
+- Legal pages polish; full mobile matrix; RLS advisor hygiene re-run.  
+- Preview-domain Maps referrer if agents test on `*.vercel.app`.
 
 ---
 
 ## What passed with evidence
 
-- Local env: Supabase + Stripe **TEST** configured; no LIVE keys.  
-- Fresh Stripe TEST lifecycle + webhook claim + gate-eligible offer/accept/assignment/complete + customer/admin status + rate.  
-- Remote: cleaner platform gates + dispatch tables present.  
-- Security/pricing/auth unit suites previously green; production build previously green on `cursor/launch-gate`.
+- **Production Maps:** apex + www autocomplete + select + geolocation reverse geocode.  
+- Local Stripe **TEST** smoke + webhook + customer/admin visibility.  
+- Lint / typecheck / 272 tests / build green.  
+- No LIVE Stripe keys; Connect off.
 
 ---
 
-## Ancestry checkpoints (brief)
+## HUMAN ACTION REQUIRED (exactly one)
 
-- **Cleaner Platform V1:** migration applied remotely; Verified gates in code.  
-- **Dispatch Live Ops:** schema applied; fresh offer proven this session.  
-- **Retention:** checkpoint doc only; `00023` / recurring not on remote.  
-- **Brain V1:** libs+`00027` committed on tip; **not** applied to remote; not wired into checkout.
-
----
-
-## HUMAN ACTION REQUIRED
-
-**Confirm production Google Maps Places referrer restrictions** (HTTP referrer for browser key / API restrictions) so autocomplete works on the live domain — or document that manual address entry is the accepted launch path.
-
-Until Maps + Sentry + notification-provider decisions clear: **READY TO LAUNCH (real money): NO**.
+**Create a Sentry project and add `SENTRY_DSN` to Vercel Production (and Preview if desired).**  
+Then authorize Lead Engineer to install/wire `@sentry/nextjs` (stub today — DSN alone is insufficient) and re-run a safe TEST error capture.  
+Do **not** enable Stripe LIVE until Maps (done) + Sentry PASS + notification providers PASS + founder LIVE approval.
