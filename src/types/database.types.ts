@@ -850,6 +850,8 @@ export type Database = {
           quote_id: string | null;
           coupon_code: string | null;
           idempotency_key: string | null;
+          legal_consent_accepted_at: string | null;
+          legal_consent_policy_version: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -934,6 +936,8 @@ export type Database = {
           quote_id?: string | null;
           coupon_code?: string | null;
           idempotency_key?: string | null;
+          legal_consent_accepted_at?: string | null;
+          legal_consent_policy_version?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -1018,6 +1022,8 @@ export type Database = {
           quote_id?: string | null;
           coupon_code?: string | null;
           idempotency_key?: string | null;
+          legal_consent_accepted_at?: string | null;
+          legal_consent_policy_version?: string | null;
           created_at?: string;
           updated_at?: string;
         };

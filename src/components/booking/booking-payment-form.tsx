@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
+import Link from "next/link";
 import { Elements, PaymentElement, useElements, useStripe } from "@stripe/react-stripe-js";
 import { getStripeBrowser, hasStripeBrowserEnv } from "@/lib/stripe/client";
 import {
@@ -9,6 +10,8 @@ import {
   pollBookingUntilConfirmed,
   startBookingCheckout,
 } from "@/lib/bookings/client-api";
+import { LEGAL_CONSENT_POLICY_VERSION } from "@/lib/legal/consent";
+import { routes } from "@/config/site";
 import { Button, Text } from "@/components/ui";
 import { formatCurrency } from "@/lib/utils";
 
@@ -27,15 +30,68 @@ interface CheckoutDetails {
   depositPercent: number;
 }
 
+function LegalConsentCheckbox({
+  checked,
+  onChange,
+  disabled,
+}: {
+  checked: boolean;
+  onChange: (next: boolean) => void;
+  disabled?: boolean;
+}) {
+  return (
+    <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-[#E2E9E6] bg-white px-3.5 py-3 text-sm leading-snug text-ink">
+      <input
+        type="checkbox"
+        className="mt-0.5 h-4 w-4 shrink-0 accent-teal-700"
+        checked={checked}
+        disabled={disabled}
+        onChange={(event) => onChange(event.target.checked)}
+        required
+        aria-required="true"
+      />
+      <span>
+        I agree to the{" "}
+        <Link className="underline underline-offset-2" href={routes.legal.terms} target="_blank">
+          Terms of Service
+        </Link>
+        ,{" "}
+        <Link className="underline underline-offset-2" href={routes.legal.privacy} target="_blank">
+          Privacy Policy
+        </Link>
+        ,{" "}
+        <Link
+          className="underline underline-offset-2"
+          href={routes.legal.cancellation}
+          target="_blank"
+        >
+          Cancellation
+        </Link>
+        ,{" "}
+        <Link className="underline underline-offset-2" href={routes.legal.refund} target="_blank">
+          Refund
+        </Link>
+        , and{" "}
+        <Link className="underline underline-offset-2" href={routes.legal.damage} target="_blank">
+          Damage Claims
+        </Link>{" "}
+        policies.
+      </span>
+    </label>
+  );
+}
+
 function PaymentForm({
   bookingId,
   accessToken,
   checkout,
+  legalConsent,
   onSuccess,
 }: {
   bookingId: string;
   accessToken?: string | null;
   checkout: CheckoutDetails;
+  legalConsent: boolean;
   onSuccess: () => void;
 }) {
   const stripe = useStripe();
@@ -47,6 +103,11 @@ function PaymentForm({
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
     if (!stripe || !elements || submitLock.current) return;
+
+    if (!legalConsent) {
+      setError("Please accept the Terms and Privacy Policy before paying.");
+      return;
+    }
 
     submitLock.current = true;
     setSubmitting(true);
@@ -119,7 +180,7 @@ function PaymentForm({
 
       {error ? <p className="text-sm text-error">{error}</p> : null}
 
-      <Button type="submit" disabled={!stripe || submitting} className="w-full">
+      <Button type="submit" disabled={!stripe || submitting || !legalConsent} className="w-full">
         {submitting ? "Processing…" : `Pay deposit ${formatCurrency(checkout.depositCents)}`}
       </Button>
     </form>
@@ -132,56 +193,67 @@ export function BookingPaymentForm({
   totalCents,
   onSuccess,
 }: BookingPaymentFormProps) {
+  const [legalConsent, setLegalConsent] = useState(false);
   const [checkout, setCheckout] = useState<CheckoutDetails | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [stripePromise] = useState(() => getStripeBrowser());
-  const startedRef = useRef(false);
+  const startLock = useRef(false);
 
-  useEffect(() => {
-    if (startedRef.current) return;
-    startedRef.current = true;
-    let cancelled = false;
+  async function beginCheckout() {
+    if (!legalConsent || startLock.current || checkout) return;
+    startLock.current = true;
+    setLoading(true);
+    setError(null);
 
-    startBookingCheckout(bookingId, accessToken)
-      .then((result) => {
-        if (!cancelled) {
-          setCheckout({
-            clientSecret: result.clientSecret,
-            paymentIntentId: result.paymentIntentId,
-            depositCents: result.depositCents,
-            totalCents: result.totalCents,
-            depositPercent: result.depositPercent,
-          });
-        }
-      })
-      .catch((err) => {
-        if (!cancelled) {
-          setError(err instanceof Error ? err.message : "Unable to start checkout.");
-        }
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
+    try {
+      const result = await startBookingCheckout(bookingId, accessToken, {
+        legalConsentAccepted: true,
+        legalConsentPolicyVersion: LEGAL_CONSENT_POLICY_VERSION,
       });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [bookingId, accessToken]);
-
-  if (loading) {
-    return <Text muted>Preparing secure checkout…</Text>;
+      setCheckout({
+        clientSecret: result.clientSecret,
+        paymentIntentId: result.paymentIntentId,
+        depositCents: result.depositCents,
+        totalCents: result.totalCents,
+        depositPercent: result.depositPercent,
+      });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unable to start checkout.");
+      startLock.current = false;
+    } finally {
+      setLoading(false);
+    }
   }
 
-  if (error || !checkout) {
+  if (!checkout) {
     return (
-      <div className="space-y-3">
-        <p className="rounded-lg border border-error/20 bg-red-50 px-4 py-3 text-sm text-error">
-          {error ?? "Payment is unavailable."}
-        </p>
+      <div className="space-y-4">
         <Text muted className="text-sm">
-          Total: {formatCurrency(totalCents)}. Please try again in a moment.
+          Total: {formatCurrency(totalCents)}. Accept the policies below to continue to secure card
+          payment.
         </Text>
+
+        <LegalConsentCheckbox
+          checked={legalConsent}
+          onChange={setLegalConsent}
+          disabled={loading}
+        />
+
+        {error ? (
+          <p className="rounded-lg border border-error/20 bg-red-50 px-4 py-3 text-sm text-error">
+            {error}
+          </p>
+        ) : null}
+
+        <Button
+          type="button"
+          disabled={!legalConsent || loading}
+          className="w-full"
+          onClick={() => void beginCheckout()}
+        >
+          {loading ? "Preparing secure checkout…" : "Continue to payment"}
+        </Button>
       </div>
     );
   }
@@ -206,19 +278,24 @@ export function BookingPaymentForm({
   }
 
   return (
-    <Elements
-      stripe={stripePromise}
-      options={{
-        clientSecret: checkout.clientSecret,
-        appearance: { theme: "stripe", variables: { colorPrimary: "#0d9488" } },
-      }}
-    >
-      <PaymentForm
-        bookingId={bookingId}
-        accessToken={accessToken}
-        checkout={checkout}
-        onSuccess={onSuccess}
-      />
-    </Elements>
+    <div className="space-y-4">
+      <LegalConsentCheckbox checked={legalConsent} onChange={setLegalConsent} disabled />
+
+      <Elements
+        stripe={stripePromise}
+        options={{
+          clientSecret: checkout.clientSecret,
+          appearance: { theme: "stripe", variables: { colorPrimary: "#0d9488" } },
+        }}
+      >
+        <PaymentForm
+          bookingId={bookingId}
+          accessToken={accessToken}
+          checkout={checkout}
+          legalConsent={legalConsent}
+          onSuccess={onSuccess}
+        />
+      </Elements>
+    </div>
   );
 }

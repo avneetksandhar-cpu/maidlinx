@@ -69,6 +69,10 @@ export async function createBooking(
 export async function startBookingCheckout(
   bookingId: string,
   accessToken?: string | null,
+  consent?: {
+    legalConsentAccepted: boolean;
+    legalConsentPolicyVersion: string;
+  },
 ): Promise<{
   clientSecret: string;
   paymentIntentId: string;
@@ -78,12 +82,17 @@ export async function startBookingCheckout(
   depositPercent: number;
   paymentType: string;
   reused?: boolean;
+  legalConsentPolicyVersion?: string;
 }> {
   const token = accessToken ?? getStoredBookingAccessToken(bookingId);
   const response = await fetch(`/api/bookings/${bookingId}/checkout`, {
     method: "POST",
     headers: bookingAccessHeaders(token),
-    body: JSON.stringify({ accessToken: token }),
+    body: JSON.stringify({
+      accessToken: token,
+      legalConsentAccepted: consent?.legalConsentAccepted === true,
+      legalConsentPolicyVersion: consent?.legalConsentPolicyVersion,
+    }),
   });
 
   return parseJson<{
@@ -95,6 +104,7 @@ export async function startBookingCheckout(
     depositPercent: number;
     paymentType: string;
     reused?: boolean;
+    legalConsentPolicyVersion?: string;
   }>(response);
 }
 

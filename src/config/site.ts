@@ -119,5 +119,8 @@ export const routes = {
     privacy: "/legal/privacy",
     terms: "/legal/terms",
     cleanerAgreement: "/legal/cleaner-agreement",
+    cancellation: "/legal/cancellation",
+    refund: "/legal/refund",
+    damage: "/legal/damage",
   },
 } as const;
