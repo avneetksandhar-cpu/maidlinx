@@ -92,6 +92,7 @@ export const routes = {
   cleanerJob: (id: string) => `/cleaner/jobs/${id}`,
   proSettings: "/pro/settings",
   admin: "/admin",
+  owner: "/owner",
   adminBookings: "/admin/bookings",
   adminCustomers: "/admin/customers",
   adminCleaners: "/admin/cleaners",

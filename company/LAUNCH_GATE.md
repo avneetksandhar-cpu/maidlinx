@@ -127,6 +127,7 @@ Server enforces consent before booking lookup / Stripe. Policy version `maidlinx
 2. **Optional device proof:** Safari/Apple device for Apple Pay; compatible device for Google Pay (domains already active in TEST).  
 3. **Authorize Stripe MCP TEST mode** if agents need Dashboard/MCP wallet inspection (currently MCP session was LIVE-only; TEST work used local `sk_test` without printing secrets).  
 4. **Optional:** merge split stack `#2…#16` into `main`.  
-5. **No further Resend TEST sends** unless founder requests.
+5. **No further Resend TEST sends** unless founder requests.  
+6. **AI exec (post-P0):** apply migration `00029_ai_exec_foundation` and review `/owner` Revenue Director V0 — does **not** change LIVE money status.
 
 **READY_FOR_REAL_MONEY_LAUNCH: NO**

@@ -1314,6 +1314,54 @@ export type Database = {
         Update: Record<string, unknown>;
         Relationships: [];
       };
+      ai_audit_log: {
+        Row: {
+          id: string;
+          agent_id: string;
+          action: string;
+          permission_level: string;
+          actor_profile_id: string | null;
+          entity_type: string | null;
+          entity_id: string | null;
+          summary: string | null;
+          metadata: Json;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          agent_id: string;
+          action: string;
+          permission_level: string;
+          actor_profile_id?: string | null;
+          entity_type?: string | null;
+          entity_id?: string | null;
+          summary?: string | null;
+          metadata?: Json;
+          created_at?: string;
+        };
+        Update: Record<string, unknown>;
+        Relationships: [];
+      };
+      ai_action_approvals: {
+        Row: {
+          id: string;
+          agent_id: string;
+          action: string;
+          permission_level: string;
+          status: string;
+          requested_by_profile_id: string | null;
+          decided_by_profile_id: string | null;
+          entity_type: string | null;
+          entity_id: string | null;
+          summary: string;
+          payload: Json;
+          decided_at: string | null;
+          created_at: string;
+        };
+        Insert: Record<string, unknown>;
+        Update: Record<string, unknown>;
+        Relationships: [];
+      };
       admin_permissions: {
         Row: Record<string, unknown>;
         Insert: Record<string, unknown>;

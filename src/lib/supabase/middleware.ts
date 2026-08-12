@@ -8,7 +8,7 @@ const AUTH_ROUTES = ["/sign-in", "/sign-up", "/forgot-password", "/reset-passwor
 const CUSTOMER_PREFIXES = ["/dashboard", "/account"];
 const CLEANER_PREFIXES = ["/cleaner", "/pro"];
 const CLEANER_API_PREFIXES = ["/api/cleaner", "/api/pro"];
-const ADMIN_PREFIXES = ["/admin"];
+const ADMIN_PREFIXES = ["/admin", "/owner"];
 const ADMIN_API_PREFIXES = ["/api/admin"];
 
 function matchesPrefix(pathname: string, prefixes: string[]): boolean {
