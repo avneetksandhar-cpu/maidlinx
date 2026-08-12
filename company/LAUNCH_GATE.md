@@ -118,13 +118,29 @@ Prior proven booking still completed: `21c3fe01-110e-4552-b21b-1778553b1c6f`.
 
 **Coverage GREEN rule:** ≥2 bookable cleaners + online capacity + catalog services + zone coverage + pricing ready — never GREEN for one cleaner alone.
 
-**Architecture (branch tip):** per-market `booking_enabled` / `launch_enabled`; strict marketplace eligibility service; `/owner/cleaners` market tabs ALL | TORONTO_GTA | SOUTH_FLORIDA; cleaner capabilities collect market + zones. Report: `company/AGENT_REPORTS/2026-08-12-dual-market-launch-architecture.md`.
+**Architecture (branch tip):** per-market `booking_enabled` / `launch_enabled`; strict marketplace eligibility service; `/owner/cleaners` market tabs ALL | TORONTO_GTA | SOUTH_FLORIDA with Bookable YES/NO + exact blocker; owner ops editor at `/owner/cleaners/[cleanerId]` for REAL market/zones/services/availability/unavailable dates/online (no fabricate). Report: `company/AGENT_REPORTS/2026-08-12-launch-phase1-cleaner-ops.md`.
 
 **Booking create:** fails closed with `403 BOOKING_DISABLED` while `booking_enabled=false` (both markets). Address→market→currency still resolves for preview.
 
 **Supply UX:** Arrival windows default `available=true` when `supplyByWindow` omitted — do not treat as proven capacity.
 
 **Payout / Stripe LIVE:** unchanged OFF. No new paid products.
+
+### Phase 1 STOP — HUMAN_INPUT_REQUIRED (cleaner coverage)
+
+Do **not** enable `booking_enabled` / `launch_enabled` until coverage ready per market.
+
+1. Open `/owner/cleaners` — confirm TORONTO_GTA + SOUTH_FLORIDA are independent 🔴 RED.  
+2. For approved cleaner `ba902d50-…` open `/owner/cleaners/ba902d50-…` (full UUID from table Edit link) and enter **only real facts**:
+   - Market: `TORONTO_GTA` **or** `SOUTH_FLORIDA` (do not guess)
+   - Service zones (same market)
+   - Services offered
+   - Recurring weekly availability (Save to persist rows)
+   - Unavailable dates (YYYY-MM-DD lines)
+   - Online for auto-offers (when ready)
+3. Approve/activate other cleaners at `/admin/cleaners` if needed, then complete ops for each at `/owner/cleaners/[id]`.  
+4. Coverage GREEN needs ≥2 **bookable** cleaners in that market (plus pricing ready) — recruit second cleaner before enabling booking.  
+5. Keep Stripe LIVE off.
 
 ---
 
@@ -174,10 +190,10 @@ Prior proven booking still completed: `21c3fe01-110e-4552-b21b-1778553b1c6f`.
 ## HUMAN ACTION REQUIRED
 
 1. **Keep Stripe LIVE disabled** — no `sk_live_` / `pk_live_` until explicit founder approval.  
-2. **Confirm real market** for approved cleaner `ba902d50-…` — TORONTO_GTA or SOUTH_FLORIDA (do not assume Toronto).  
-3. **Complete that market’s cleaner onboarding** (zones + services + availability + online) and recruit ≥1 additional bookable cleaner before coverage GREEN.  
+2. **Enter REAL cleaner ops** at `/owner/cleaners/[cleanerId]` for `ba902d50-…`: market, zones, services, recurring availability, unavailable dates, online (see Phase 1 STOP above).  
+3. **Approve/activate** at `/admin/cleaners` as needed; recruit ≥1 additional bookable cleaner in the same market before coverage GREEN.  
 4. **Confirm market prices:** GTA CAD price card + tax/HST; South Florida USD price card (separate).  
-5. **Enable flags independently** when ready: `booking_enabled` and/or `launch_enabled` per market (both currently false).  
+5. **Enable flags independently** when ready: `booking_enabled` and/or `launch_enabled` per market at `/admin/markets` (both currently false).  
 6. **Optional device proof:** Safari Apple Pay / Chrome Google Pay (domains already active in TEST).  
 7. **Optional:** merge split stack `#2…#16` into `main`.  
 8. **No further Resend TEST spam** unless founder requests.

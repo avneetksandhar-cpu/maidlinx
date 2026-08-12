@@ -1,14 +1,32 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
 import { OwnerStat } from "@/components/owner/owner-stat";
 import { LAUNCH_MARKET_IDS } from "@/config/markets";
+import { routes } from "@/config/site";
 import type {
   CleanerCoverageRow,
   LaunchCoverageStatus,
   MarketLaunchCoverage,
 } from "@/lib/owner/launch-coverage";
 import { cn } from "@/lib/utils";
+
+function primaryBlocker(missing: string[]): string {
+  if (missing.length === 0) return "—";
+  const order = [
+    "approval",
+    "active",
+    "market_or_service_area",
+    "services",
+    "availability",
+    "online_for_offers",
+  ];
+  for (const key of order) {
+    if (missing.includes(key)) return key;
+  }
+  return missing[0] ?? "—";
+}
 
 function statusClass(status: LaunchCoverageStatus): string {
   if (status === "GREEN") return "bg-emerald-600 text-white";
@@ -174,15 +192,15 @@ export function MarketCoverageTabs({
               <thead className="border-b border-border text-xs text-ink-muted">
                 <tr>
                   <th className="px-3 py-2 font-medium">Cleaner</th>
-                  <th className="px-3 py-2 font-medium">Approval</th>
-                  <th className="px-3 py-2 font-medium">Onboarding</th>
+                  <th className="px-3 py-2 font-medium">Approved</th>
+                  <th className="px-3 py-2 font-medium">Active</th>
                   <th className="px-3 py-2 font-medium">Market</th>
                   <th className="px-3 py-2 font-medium">Zones</th>
                   <th className="px-3 py-2 font-medium">Services</th>
                   <th className="px-3 py-2 font-medium">Avail</th>
-                  <th className="px-3 py-2 font-medium">Eligible</th>
-                  <th className="px-3 py-2 font-medium">Upcoming</th>
-                  <th className="px-3 py-2 font-medium">Missing</th>
+                  <th className="px-3 py-2 font-medium">Bookable</th>
+                  <th className="px-3 py-2 font-medium">Blocker</th>
+                  <th className="px-3 py-2 font-medium">Ops</th>
                 </tr>
               </thead>
               <tbody>
@@ -194,30 +212,30 @@ export function MarketCoverageTabs({
                     <td className="px-3 py-2 font-mono text-xs text-ink">
                       {c.cleanerId.slice(0, 8)}…
                     </td>
-                    <td className="px-3 py-2">
-                      {c.approved && c.active
-                        ? "approved+active"
-                        : c.approved
-                          ? "approved"
-                          : "no"}
-                    </td>
-                    <td className="px-3 py-2">{c.onboardingStatus}</td>
+                    <td className="px-3 py-2">{c.approved ? "YES" : "NO"}</td>
+                    <td className="px-3 py-2">{c.active ? "YES" : "NO"}</td>
                     <td className="px-3 py-2">
                       {c.marketId ?? (c.markets[0] ? `${c.markets[0]} (zones)` : "—")}
                     </td>
                     <td className="px-3 py-2">{c.zoneCount}</td>
                     <td className="px-3 py-2">{c.serviceCount}</td>
                     <td className="px-3 py-2">{c.availabilityCount}</td>
-                    <td className="px-3 py-2">
-                      {c.bookable
-                        ? "bookable"
-                        : c.eligibleToReceiveJobs
-                          ? "online only"
-                          : "no"}
+                    <td className="px-3 py-2 font-semibold">
+                      {c.bookable ? "YES" : "NO"}
                     </td>
-                    <td className="px-3 py-2">{c.upcomingAssignments}</td>
                     <td className="px-3 py-2 text-xs text-ink-muted">
-                      {c.missing.length ? c.missing.join(", ") : "—"}
+                      {c.bookable ? "—" : primaryBlocker(c.missing)}
+                      {!c.bookable && c.missing.length > 1
+                        ? ` (+${c.missing.length - 1})`
+                        : ""}
+                    </td>
+                    <td className="px-3 py-2">
+                      <Link
+                        href={routes.ownerCleaner(c.cleanerId)}
+                        className="text-sm underline text-ink"
+                      >
+                        Edit
+                      </Link>
                     </td>
                   </tr>
                 ))}

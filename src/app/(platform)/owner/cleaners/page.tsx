@@ -88,6 +88,7 @@ export default async function OwnerCleanersPage() {
             <p className="mt-1 text-sm text-ink-muted">
               Bookable = approved + active + services + (market or zones) + availability.
               Coverage GREEN needs ≥2 bookable + online capacity + pricing ready — not one cleaner alone.
+              Use Edit on each row to enter REAL market/zones/services/availability.
             </p>
           </div>
           <span

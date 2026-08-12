@@ -6,4 +6,5 @@ export * from "@/lib/owner/sales";
 export * from "@/lib/owner/interventions";
 export * from "@/lib/owner/customers";
 export * from "@/lib/owner/cleaners";
+export * from "@/lib/owner/cleaner-ops";
 export * from "@/lib/owner/activity";

@@ -95,6 +95,7 @@ export const routes = {
   owner: "/owner",
   ownerOpportunities: "/owner/opportunities",
   ownerCleaners: "/owner/cleaners",
+  ownerCleaner: (id: string) => `/owner/cleaners/${id}`,
   ownerSales: "/owner/sales",
   ownerExceptions: "/owner/exceptions",
   ownerActivity: "/owner/activity",
