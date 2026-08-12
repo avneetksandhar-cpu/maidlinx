@@ -2,7 +2,14 @@
 
 import { useRef, useState } from "react";
 import Link from "next/link";
-import { Elements, PaymentElement, useElements, useStripe } from "@stripe/react-stripe-js";
+import {
+  Elements,
+  ExpressCheckoutElement,
+  PaymentElement,
+  useElements,
+  useStripe,
+} from "@stripe/react-stripe-js";
+import type { StripeExpressCheckoutElementConfirmEvent } from "@stripe/stripe-js";
 import { getStripeBrowser, hasStripeBrowserEnv } from "@/lib/stripe/client";
 import {
   confirmBookingPaymentSync,
@@ -98,12 +105,22 @@ function PaymentForm({
   const elements = useElements();
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [expressVisible, setExpressVisible] = useState(false);
   const submitLock = useRef(false);
 
-  async function handleSubmit(event: React.FormEvent) {
-    event.preventDefault();
-    if (!stripe || !elements || submitLock.current) return;
+  async function finalizeSuccessfulPayment(paymentIntentId: string) {
+    const token = accessToken ?? getStoredBookingAccessToken(bookingId);
+    try {
+      await confirmBookingPaymentSync(bookingId, token, paymentIntentId);
+    } catch {
+      // Fall through to poll — webhook may still confirm.
+    }
+    await pollBookingUntilConfirmed(bookingId, token, { maxAttempts: 20, intervalMs: 750 });
+    onSuccess();
+  }
 
+  async function confirmWithElements() {
+    if (!stripe || !elements || submitLock.current) return;
     if (!legalConsent) {
       setError("Please accept the Terms and Privacy Policy before paying.");
       return;
@@ -126,23 +143,19 @@ function PaymentForm({
       });
 
       if (submitError) {
+        // Customer dismissed wallet sheet / cancelled — keep form usable.
+        if (
+          submitError.code === "canceled" ||
+          /cancel/i.test(submitError.message ?? "")
+        ) {
+          setError(null);
+          return;
+        }
         setError(submitError.message ?? "Payment failed.");
         return;
       }
 
-      // Server-side sync: confirms booking from Stripe PI status (works without webhook).
-      try {
-        await confirmBookingPaymentSync(
-          bookingId,
-          token,
-          paymentIntent?.id ?? checkout.paymentIntentId,
-        );
-      } catch {
-        // Fall through to poll — webhook may still confirm.
-      }
-
-      await pollBookingUntilConfirmed(bookingId, token, { maxAttempts: 20, intervalMs: 750 });
-      onSuccess();
+      await finalizeSuccessfulPayment(paymentIntent?.id ?? checkout.paymentIntentId);
     } catch (pollError) {
       setError(
         pollError instanceof Error
@@ -152,6 +165,24 @@ function PaymentForm({
     } finally {
       submitLock.current = false;
       setSubmitting(false);
+    }
+  }
+
+  async function handleSubmit(event: React.FormEvent) {
+    event.preventDefault();
+    await confirmWithElements();
+  }
+
+  async function handleExpressConfirm(event: StripeExpressCheckoutElementConfirmEvent) {
+    if (!legalConsent) {
+      setError("Please accept the Terms and Privacy Policy before paying.");
+      event.paymentFailed({ reason: "fail" });
+      return;
+    }
+    try {
+      await confirmWithElements();
+    } catch {
+      event.paymentFailed({ reason: "fail" });
     }
   }
 
@@ -176,7 +207,50 @@ function PaymentForm({
         </div>
       </div>
 
-      <PaymentElement />
+      {/* Wallets (Apple Pay / Google Pay / Link) — same PaymentIntent lifecycle as card. */}
+      <div className={expressVisible ? "space-y-3" : "hidden"}>
+        <ExpressCheckoutElement
+          options={{
+            paymentMethods: {
+              applePay: "always",
+              googlePay: "always",
+              link: "auto",
+              paypal: "never",
+              amazonPay: "never",
+              klarna: "never",
+            },
+            buttonHeight: 48,
+          }}
+          onReady={({ availablePaymentMethods }) => {
+            const anyWallet = Boolean(
+              availablePaymentMethods &&
+                Object.values(availablePaymentMethods).some(Boolean),
+            );
+            setExpressVisible(anyWallet);
+          }}
+          onConfirm={(event) => {
+            void handleExpressConfirm(event);
+          }}
+          onCancel={() => {
+            setError(null);
+          }}
+        />
+        <div className="flex items-center gap-3 text-xs uppercase tracking-wide text-ink-subtle">
+          <span className="h-px flex-1 bg-border" />
+          Or pay with card
+          <span className="h-px flex-1 bg-border" />
+        </div>
+      </div>
+
+      <PaymentElement
+        options={{
+          wallets: {
+            applePay: "auto",
+            googlePay: "auto",
+          },
+          layout: "tabs",
+        }}
+      />
 
       {error ? <p className="text-sm text-error">{error}</p> : null}
 
@@ -230,8 +304,8 @@ export function BookingPaymentForm({
     return (
       <div className="space-y-4">
         <Text muted className="text-sm">
-          Total: {formatCurrency(totalCents)}. Accept the policies below to continue to secure card
-          payment.
+          Total: {formatCurrency(totalCents)}. Accept the policies below to continue to secure
+          checkout (Apple Pay, Google Pay, Link, or card).
         </Text>
 
         <LegalConsentCheckbox
