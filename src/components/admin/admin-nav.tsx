@@ -24,6 +24,7 @@ const NAV_GROUPS = [
       { href: routes.adminBookings, label: "Bookings", icon: CalendarIcon },
       { href: routes.adminCustomers, label: "Customers", icon: UsersIcon },
       { href: routes.adminCleaners, label: "Cleaners", icon: BriefcaseIcon },
+      { href: routes.adminCleanerTrust, label: "Trust Center", icon: ShieldIcon },
       { href: routes.adminPayments, label: "Payments", icon: DollarIcon },
       { href: routes.adminReviews, label: "Reviews", icon: StarIcon },
     ],
@@ -264,6 +265,18 @@ function TagIcon({ className }: { className?: string }) {
         strokeLinejoin="round"
       />
       <circle cx="7.5" cy="7.5" r="1" fill="currentColor" />
+    </svg>
+  );
+}
+function ShieldIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none">
+      <path
+        d="M12 3 5 6v6c0 5 3.5 7.5 7 9 3.5-1.5 7-4 7-9V6l-7-3Z"
+        stroke="currentColor"
+        strokeWidth="1.75"
+        strokeLinejoin="round"
+      />
     </svg>
   );
 }
