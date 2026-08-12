@@ -6,16 +6,19 @@
 export {
   MARKETS,
   SERVICE_ZONES,
+  LAUNCH_MARKET_IDS,
   getActiveMarkets,
   getMarketByCode,
   getMarketById,
   getMarketBySlug,
   getZoneById,
   getZonesForMarket,
+  isLaunchMarketId,
   normalizeCity,
   normalizePostalCode,
   normalizeRegion,
   resolveMarket,
+  type LaunchMarketId,
   type MarketConfig,
   type MarketResolveInput,
   type MarketResolveResult,
@@ -27,3 +30,12 @@ export {
   marketSupportsService,
   resolveMarketOrThrow,
 } from "@/lib/markets/eligibility";
+
+export {
+  assertMarketBookingEnabled,
+  getMarketFlagsFromConfig,
+  isBookingEnabledForMarket,
+  isLaunchEnabledForMarket,
+  loadMarketFlagSnapshots,
+  type MarketFlagSnapshot,
+} from "@/lib/markets/flags";

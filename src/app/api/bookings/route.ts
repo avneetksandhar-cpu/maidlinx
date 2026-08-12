@@ -11,6 +11,7 @@ import {
   loadQuoteById,
   markQuoteConsumed,
 } from "@/lib/pricing/quotes";
+import { assertMarketBookingEnabled } from "@/lib/markets/flags";
 import { resolveServerPricing } from "@/lib/pricing/resolve";
 import { jsonError, jsonSuccess } from "@/lib/api/response";
 import { checkRateLimit, clientIpFromRequest } from "@/lib/api/rate-limit";
@@ -61,6 +62,7 @@ export async function POST(request: Request) {
     });
     let pricing = resolved.pricing;
     const appliedPromo = resolved.appliedPromo;
+    assertMarketBookingEnabled(resolved.marketId);
 
     if (parsed.data.quoteId) {
       const stored = await loadQuoteById(parsed.data.quoteId);
@@ -134,6 +136,9 @@ export async function POST(request: Request) {
       /not in a MaidLinx service area|outside MaidLinx/i.test(message);
     if (isServiceArea) {
       return jsonError(message, 422, "OUT_OF_SERVICE_AREA");
+    }
+    if (/Booking is not enabled for this market/i.test(message)) {
+      return jsonError(message, 403, "BOOKING_DISABLED");
     }
     return jsonError(message, isPriceError ? 400 : 500, isPriceError ? "PRICE_MISMATCH" : undefined);
   }

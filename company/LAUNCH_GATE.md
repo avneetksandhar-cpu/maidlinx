@@ -93,36 +93,38 @@ Prior proven booking still completed: `21c3fe01-110e-4552-b21b-1778553b1c6f`.
 | Markets active in app | Toronto GTA + South Florida |
 | Geographic empty-supply if ads open | **HUMAN ops P0** if traffic opens without a ready cleaner in the city |
 
-### Cleaner coverage verification (2026-08-12T23:08Z ET)
+### Dual-market coverage verification (2026-08-12T23:21Z ET)
+
+**Rule:** TORONTO_GTA and SOUTH_FLORIDA are independent. Do not combine for launch readiness. Configured ≠ booking/launch ready.
 
 | Metric | Value |
 |--------|------:|
 | TOTAL_REAL_CLEANERS (DB rows) | **2** (1 applicant + 1 approved; no fabricated accounts) |
 | APPROVED_CLEANERS (approved+active) | **1** |
-| BOOKABLE_CLEANERS | **0** (needs zones + services + availability) |
-| CLEANERS_WITH_AVAILABILITY | **0** |
-| Online / auto-offer eligible | **0** (`is_online=false`) |
-| CLEANER_COVERAGE_READY | **NO** |
-| RECOMMENDED_FIRST_MARKET (launch-ready) | **none** |
-| Ops candidate after onboarding | **TORONTO_GTA** (6 completed bookings; FL = 0 completed) |
+| BOOKABLE_CLEANERS | **0** |
+| EXISTING_CLEANER_REAL_MARKET | **HUMAN_INPUT_REQUIRED** (`ba902d50-…` `market_id=null`, 0 zones) |
+| TORONTO_GTA_COVERAGE_READY | **NO** |
+| SOUTH_FLORIDA_COVERAGE_READY | **NO** |
+| READY_FOR_STRIPE_LIVE_CONFIGURATION | **NO** |
 
-| MARKET | APPROVED | BOOKABLE | ONLINE CAP. | SERVICES (catalog) | GEO | LAUNCH_READY | STATUS |
-|--------|--------:|---------:|------------:|-------------------:|-----|--------------|--------|
-| TORONTO_GTA | 0* | 0 | 0 | 9 | None attributed | NO | RED |
-| SOUTH_FLORIDA | 0* | 0 | 0 | 9 | None attributed | NO | RED |
-| NEW_YORK / CALIFORNIA | 0 | 0 | 0 | — | inactive in TS config | NO | RED |
+| MARKET | APPROVED | BOOKABLE | AVAIL TODAY | SERVICES | ZONES | PRICING | CURRENCY | booking_enabled | launch_enabled | COVERAGE_READY | LAUNCH_READY | STATUS |
+|--------|--------:|---------:|------------:|---------:|------:|---------|----------|-----------------|----------------|----------------|--------------|--------|
+| TORONTO_GTA | 0* | 0 | 0 | 9 | 3–4 cfg | NO† | CAD YES | false | false | NO | NO | 🔴 RED |
+| SOUTH_FLORIDA | 0* | 0 | 0 | 9 | 3 cfg | NO‡ | USD YES | false | false | NO | NO | 🔴 RED |
 
-\*Approved cleaner `ba902d50-…` has `market_id=null` and **0** `cleaner_service_zones` — not counted against either active market.
+\*Approved cleaner not attributed to either market.  
+†GTA uses global `SERVICE_BASE_CENTS` in CAD; founder must confirm price card + tax/HST.  
+‡FL market-specific USD prices = HUMAN_INPUT_REQUIRED (do not treat CAD-tuned globals as FL truth).
 
-**Missing for bookable supply:** set `market_id` or zones, `cleaner_services`, `professional_availability`, go online (`is_online`), complete payout onboarding (Connect still stub / `STRIPE_CONNECT_ENABLED` off).
+**Coverage GREEN rule:** ≥2 bookable cleaners + online capacity + catalog services + zone coverage + pricing ready — never GREEN for one cleaner alone.
 
-**Supply UX:** Arrival windows default `available=true` when `supplyByWindow` omitted (UI label “preference for now”). **Misleading for real-money ads** — does not prove capacity. Controlled TEST may still book; fulfillment is manual dispatch.
+**Architecture (branch tip):** per-market `booking_enabled` / `launch_enabled`; strict marketplace eligibility service; `/owner/cleaners` market tabs ALL | TORONTO_GTA | SOUTH_FLORIDA; cleaner capabilities collect market + zones. Report: `company/AGENT_REPORTS/2026-08-12-dual-market-launch-architecture.md`.
 
-**Payout:** On complete → `payouts` ledger row `pending` (`subtotal_cents`). Cleaner sees earnings summary; Connect transfers gated / stub — **no new paid products enabled**. Stripe LIVE stays off.
+**Booking create:** fails closed with `403 BOOKING_DISABLED` while `booking_enabled=false` (both markets). Address→market→currency still resolves for preview.
 
-**Cleaner TEST path:** Prior full lifecycle PASS on booking `140b7aaa-…` (offer→accept→assign→complete→rating) with providers=`log` — **not re-run** against the real eligible cleaner to avoid misleading notifications. Offer decline API/UI still P1 gap.
+**Supply UX:** Arrival windows default `available=true` when `supplyByWindow` omitted — do not treat as proven capacity.
 
-**Owner view:** `/owner/cleaners` extended with LAUNCH COVERAGE STATUS (GREEN/YELLOW/RED) + per-cleaner missing fields (branch tip; not on prod SHA `ca3c88f`).
+**Payout / Stripe LIVE:** unchanged OFF. No new paid products.
 
 ---
 
@@ -172,11 +174,14 @@ Prior proven booking still completed: `21c3fe01-110e-4552-b21b-1778553b1c6f`.
 ## HUMAN ACTION REQUIRED
 
 1. **Keep Stripe LIVE disabled** — no `sk_live_` / `pk_live_` until explicit founder approval.  
-2. **Before inviting 5–10 real TEST customers / opening one market:** complete approved cleaner onboarding for **TORONTO_GTA** (zones + services + availability + online) **or** confirm standby manual dispatch. Coverage audit: **CLEANER_COVERAGE_READY NO**.  
-3. **Optional device proof:** Safari Apple Pay / Chrome Google Pay (domains already active in TEST).  
-4. **Optional:** merge split stack `#2…#16` into `main`.  
-5. **No further Resend TEST spam** unless founder requests.  
-6. **AI OS / Owner vCenter:** founder-optional prod deploy after BOOK→PAY smoke — does **not** change LIVE money status.
+2. **Confirm real market** for approved cleaner `ba902d50-…` — TORONTO_GTA or SOUTH_FLORIDA (do not assume Toronto).  
+3. **Complete that market’s cleaner onboarding** (zones + services + availability + online) and recruit ≥1 additional bookable cleaner before coverage GREEN.  
+4. **Confirm market prices:** GTA CAD price card + tax/HST; South Florida USD price card (separate).  
+5. **Enable flags independently** when ready: `booking_enabled` and/or `launch_enabled` per market (both currently false).  
+6. **Optional device proof:** Safari Apple Pay / Chrome Google Pay (domains already active in TEST).  
+7. **Optional:** merge split stack `#2…#16` into `main`.  
+8. **No further Resend TEST spam** unless founder requests.
 
-**READY_FOR_CONTROLLED_TEST_LAUNCH: YES**  
-**READY_FOR_CONTROLLED_REAL_MONEY_LAUNCH: NO**
+**READY_FOR_CONTROLLED_TEST_LAUNCH: YES** (prior lifecycle; new bookings gated until a market’s `booking_enabled=true`)  
+**READY_FOR_CONTROLLED_REAL_MONEY_LAUNCH: NO**  
+**TORONTO_GTA_COVERAGE_READY: NO** · **SOUTH_FLORIDA_COVERAGE_READY: NO**

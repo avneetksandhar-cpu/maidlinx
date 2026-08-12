@@ -1,4 +1,5 @@
 import { AdminHeader } from "@/components/admin/admin-header";
+import { MarketCoverageTabs } from "@/components/owner/market-coverage-tabs";
 import { OwnerStat } from "@/components/owner/owner-stat";
 import { requireOwnerAnalyticsAccess } from "@/lib/ai/session";
 import { buildCleanerCapacitySnapshot } from "@/lib/owner/cleaners";
@@ -67,11 +68,14 @@ export default async function OwnerCleanersPage() {
     buildLaunchCoverageSnapshot(),
   ]);
 
+  const toronto = coverage.markets.find((m) => m.marketId === "TORONTO_GTA");
+  const florida = coverage.markets.find((m) => m.marketId === "SOUTH_FLORIDA");
+
   return (
     <>
       <AdminHeader
         title="Cleaner capacity"
-        description="Launch coverage + supply by market / zone / service / day / time from real data. Gaps labeled when thin."
+        description="Independent launch coverage for TORONTO_GTA and SOUTH_FLORIDA. Never combine markets for readiness."
         badge="Capacity"
       />
 
@@ -82,14 +86,15 @@ export default async function OwnerCleanersPage() {
               Launch coverage status
             </h2>
             <p className="mt-1 text-sm text-ink-muted">
-              Bookable = approved + active + services + (market or zones) + availability rows.
-              Auto-offer eligible also requires online.
+              Bookable = approved + active + services + (market or zones) + availability.
+              Coverage GREEN needs ≥2 bookable + online capacity + pricing ready — not one cleaner alone.
             </p>
           </div>
           <span
             className={`rounded-md px-3 py-1.5 text-xs font-semibold uppercase tracking-wide ${statusClass(coverage.overallStatus)}`}
+            title="Informational only — use per-market status for launch"
           >
-            {coverage.overallStatus}
+            Overall {coverage.overallStatus}
           </span>
         </div>
 
@@ -98,25 +103,18 @@ export default async function OwnerCleanersPage() {
           <OwnerStat label="Approved active" value={coverage.totals.approvedCleaners} />
           <OwnerStat label="Bookable" value={coverage.totals.bookableCleaners} />
           <OwnerStat label="With availability" value={coverage.totals.cleanersWithAvailability} />
-          <OwnerStat label="Online eligible" value={coverage.totals.eligibleOnline} />
+          <OwnerStat
+            label="Unassigned approved"
+            value={coverage.totals.unassignedApprovedCleaners}
+          />
         </dl>
 
         <p className="mt-4 text-sm text-ink">
-          CLEANER_COVERAGE_READY:{" "}
-          <span className="font-semibold">
-            {coverage.cleanerCoverageReady ? "YES" : "NO"}
-          </span>
+          TORONTO_GTA_COVERAGE_READY:{" "}
+          <span className="font-semibold">{toronto?.coverageReady ? "YES" : "NO"}</span>
           {" · "}
-          Recommended first market:{" "}
-          <span className="font-semibold">
-            {coverage.recommendedFirstMarket ?? "— (none launch-ready)"}
-          </span>
-          {coverage.candidateFirstMarket && !coverage.recommendedFirstMarket ? (
-            <span className="text-ink-muted">
-              {" "}
-              · ops candidate after onboarding: {coverage.candidateFirstMarket}
-            </span>
-          ) : null}
+          SOUTH_FLORIDA_COVERAGE_READY:{" "}
+          <span className="font-semibold">{florida?.coverageReady ? "YES" : "NO"}</span>
         </p>
 
         {coverage.gaps.length > 0 && (
@@ -129,112 +127,8 @@ export default async function OwnerCleanersPage() {
       </section>
 
       <section className="mb-8">
-        <h2 className="font-display text-lg font-semibold text-ink">Markets</h2>
-        <div className="mt-3 overflow-x-auto rounded-xl border border-border bg-surface">
-          <table className="min-w-full text-left text-sm">
-            <thead className="border-b border-border text-xs text-ink-muted">
-              <tr>
-                <th className="px-3 py-2 font-medium">Market</th>
-                <th className="px-3 py-2 font-medium">Status</th>
-                <th className="px-3 py-2 font-medium">Approved</th>
-                <th className="px-3 py-2 font-medium">Bookable</th>
-                <th className="px-3 py-2 font-medium">Online cap.</th>
-                <th className="px-3 py-2 font-medium">Services</th>
-                <th className="px-3 py-2 font-medium">Geo</th>
-                <th className="px-3 py-2 font-medium">Launch ready</th>
-              </tr>
-            </thead>
-            <tbody>
-              {coverage.markets.map((m) => (
-                <tr key={m.marketId} className="border-b border-border/60 last:border-0 align-top">
-                  <td className="px-3 py-2 text-ink">
-                    <div className="font-medium">{m.marketName}</div>
-                    <div className="text-xs text-ink-muted">{m.marketId}</div>
-                    {!m.configuredActive ? (
-                      <div className="text-xs text-ink-muted">inactive</div>
-                    ) : null}
-                  </td>
-                  <td className="px-3 py-2">
-                    <span
-                      className={`inline-block rounded px-2 py-0.5 text-[11px] font-semibold ${statusClass(m.status)}`}
-                    >
-                      {m.status}
-                    </span>
-                  </td>
-                  <td className="px-3 py-2">{m.approvedCleaners}</td>
-                  <td className="px-3 py-2">{m.bookableCleaners}</td>
-                  <td className="px-3 py-2">{m.availableCapacity}</td>
-                  <td className="px-3 py-2">
-                    {m.servicesCovered}/{m.catalogServices} catalog
-                  </td>
-                  <td className="px-3 py-2 text-ink-muted">{m.geographicCoverage}</td>
-                  <td className="px-3 py-2">{m.launchReady ? "YES" : "NO"}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        {coverage.markets.some((m) => m.majorGaps.length > 0) ? (
-          <ul className="mt-3 list-disc space-y-1 pl-5 text-sm text-ink-muted">
-            {coverage.markets.flatMap((m) =>
-              m.majorGaps.map((g) => (
-                <li key={`${m.marketId}-${g}`}>
-                  {m.marketId}: {g}
-                </li>
-              )),
-            )}
-          </ul>
-        ) : null}
-      </section>
-
-      <section className="mb-8">
-        <h2 className="font-display text-lg font-semibold text-ink">Cleaners</h2>
-        {coverage.cleaners.length === 0 ? (
-          <p className="mt-3 text-sm text-ink-muted">No cleaner rows.</p>
-        ) : (
-          <div className="mt-3 overflow-x-auto rounded-xl border border-border bg-surface">
-            <table className="min-w-full text-left text-sm">
-              <thead className="border-b border-border text-xs text-ink-muted">
-                <tr>
-                  <th className="px-3 py-2 font-medium">Cleaner</th>
-                  <th className="px-3 py-2 font-medium">Approval</th>
-                  <th className="px-3 py-2 font-medium">Onboarding</th>
-                  <th className="px-3 py-2 font-medium">Market</th>
-                  <th className="px-3 py-2 font-medium">Zones</th>
-                  <th className="px-3 py-2 font-medium">Services</th>
-                  <th className="px-3 py-2 font-medium">Avail</th>
-                  <th className="px-3 py-2 font-medium">Eligible</th>
-                  <th className="px-3 py-2 font-medium">Upcoming</th>
-                  <th className="px-3 py-2 font-medium">Missing</th>
-                </tr>
-              </thead>
-              <tbody>
-                {coverage.cleaners.map((c) => (
-                  <tr key={c.cleanerId} className="border-b border-border/60 last:border-0 align-top">
-                    <td className="px-3 py-2 font-mono text-xs text-ink">
-                      {c.cleanerId.slice(0, 8)}…
-                    </td>
-                    <td className="px-3 py-2">
-                      {c.approved && c.active ? "approved+active" : c.approved ? "approved" : "no"}
-                    </td>
-                    <td className="px-3 py-2">{c.onboardingStatus}</td>
-                    <td className="px-3 py-2">{c.marketId ?? "—"}</td>
-                    <td className="px-3 py-2">{c.zoneCount}</td>
-                    <td className="px-3 py-2">{c.serviceCount}</td>
-                    <td className="px-3 py-2">{c.availabilityCount}</td>
-                    <td className="px-3 py-2">
-                      {c.bookable ? "bookable" : c.eligibleToReceiveJobs ? "online only" : "no"}
-                    </td>
-                    <td className="px-3 py-2">{c.upcomingAssignments}</td>
-                    <td className="px-3 py-2 text-xs text-ink-muted">
-                      {c.missing.length ? c.missing.join(", ") : "—"}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+        <h2 className="mb-3 font-display text-lg font-semibold text-ink">Markets</h2>
+        <MarketCoverageTabs markets={coverage.markets} cleaners={coverage.cleaners} />
       </section>
 
       <dl className="mb-8 grid gap-3 grid-cols-2 lg:grid-cols-4">

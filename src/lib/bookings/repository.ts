@@ -3,6 +3,7 @@ import { emitBookingEvent } from "@/lib/bookings/events";
 import { resolveSchedule } from "@/lib/bookings/schedule";
 import { estimateTravelMinutes } from "@/lib/eta";
 import { resolveMarketOrThrow } from "@/lib/markets/eligibility";
+import { assertMarketBookingEnabled } from "@/lib/markets/flags";
 import { estimateServiceDurationMinutes, resolveCatalogService } from "@/lib/services/catalog";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { PriceBreakdown } from "@/lib/pricing/calculate";
@@ -245,6 +246,7 @@ export async function insertBooking(
     state: input.state,
     country: input.country,
   });
+  assertMarketBookingEnabled(marketResolve.market?.id);
   const catalogService = resolveCatalogService(input.serviceType);
   const quoteOnly =
     Boolean(pricing.quoteOnly) || catalogService?.pricingModel === "quote";

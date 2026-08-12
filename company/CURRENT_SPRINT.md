@@ -35,6 +35,8 @@
 
 ## Next
 
-1. **HUMAN:** Apply `00029` + `00030` + `00031` on Supabase; smoke `/owner` + BOOK→PAY.  
-2. **Ops Director V0** (recommend-first) after vCenter live in a trusted env.  
-3. Keep Stripe LIVE off until explicit founder approval.
+1. **HUMAN:** Confirm approved cleaner’s real market (TORONTO_GTA vs SOUTH_FLORIDA); complete zones/services/availability; enable `booking_enabled` per market intentionally.  
+2. **HUMAN:** Apply remaining local migrations as needed (`00029`–`00032`); smoke `/owner/cleaners` tabs + BOOK→PAY only after a market’s booking flag is ON.  
+3. **Ops Director V0** (recommend-first) after vCenter live in a trusted env.  
+4. Keep Stripe LIVE off until explicit founder approval.  
+5. Dual-market architecture: see `company/AGENT_REPORTS/2026-08-12-dual-market-launch-architecture.md`.

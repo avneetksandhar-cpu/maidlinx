@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   evaluateCleanerCoverage,
+  evaluateMarketCoverageReady,
   marketCoverageStatus,
   overallCoverageStatus,
   pickCandidateFirstMarket,
@@ -50,39 +51,73 @@ describe("evaluateCleanerCoverage", () => {
 });
 
 describe("market / overall status", () => {
-  it("YELLOW when approved but not bookable; GREEN only when launchReady", () => {
+  it("never GREEN for one bookable cleaner without redundancy + flags", () => {
     expect(
       marketCoverageStatus({
         configuredActive: true,
         approvedCleaners: 1,
-        bookableCleaners: 0,
+        bookableCleaners: 1,
+        coverageReady: false,
         launchReady: false,
       }),
     ).toBe("YELLOW");
     expect(
       marketCoverageStatus({
         configuredActive: true,
-        approvedCleaners: 1,
-        bookableCleaners: 1,
+        approvedCleaners: 2,
+        bookableCleaners: 2,
+        coverageReady: true,
         launchReady: true,
       }),
     ).toBe("GREEN");
   });
 
-  it("overall prefers GREEN then YELLOW then RED", () => {
+  it("coverageReady requires ≥2 bookable cleaners", () => {
+    expect(
+      evaluateMarketCoverageReady({
+        configuredActive: true,
+        bookableCleaners: 1,
+        availableCapacity: 1,
+        catalogServices: 9,
+        zonesWithCleaners: 1,
+        pricingReady: true,
+      }),
+    ).toBe(false);
+    expect(
+      evaluateMarketCoverageReady({
+        configuredActive: true,
+        bookableCleaners: 2,
+        availableCapacity: 1,
+        catalogServices: 9,
+        zonesWithCleaners: 1,
+        pricingReady: true,
+      }),
+    ).toBe(true);
+  });
+
+  it("overall prefers GREEN then YELLOW then RED (informational only)", () => {
     expect(
       overallCoverageStatus([
         {
           marketId: "A",
           marketName: "A",
           configuredActive: true,
+          bookingEnabled: false,
+          launchEnabled: false,
           approvedCleaners: 0,
           bookableCleaners: 0,
+          availableToday: 0,
           availableCapacity: 0,
           servicesCovered: 0,
           catalogServices: 9,
+          zonesConfigured: 3,
+          zonesWithCleaners: 0,
           geographicCoverage: "None",
           majorGaps: [],
+          pricingReady: false,
+          currencyReady: true,
+          currency: "CAD",
+          coverageReady: false,
           launchReady: false,
           status: "RED",
         },
@@ -90,13 +125,22 @@ describe("market / overall status", () => {
           marketId: "B",
           marketName: "B",
           configuredActive: true,
+          bookingEnabled: false,
+          launchEnabled: false,
           approvedCleaners: 1,
           bookableCleaners: 0,
+          availableToday: 0,
           availableCapacity: 0,
           servicesCovered: 0,
           catalogServices: 9,
+          zonesConfigured: 3,
+          zonesWithCleaners: 0,
           geographicCoverage: "gap",
           majorGaps: [],
+          pricingReady: false,
+          currencyReady: true,
+          currency: "USD",
+          coverageReady: false,
           launchReady: false,
           status: "YELLOW",
         },
@@ -106,27 +150,53 @@ describe("market / overall status", () => {
 });
 
 describe("pickCandidateFirstMarket", () => {
-  it("returns null when no approved cleaner and none ready", () => {
+  it("returns null when no attributed cleaners", () => {
     expect(
       pickCandidateFirstMarket({
-        hasApprovedActiveCleaner: false,
         markets: [
-          { marketId: "TORONTO_GTA", configuredActive: true, launchReady: false },
-          { marketId: "SOUTH_FLORIDA", configuredActive: true, launchReady: false },
+          {
+            marketId: "TORONTO_GTA",
+            configuredActive: true,
+            launchReady: false,
+            coverageReady: false,
+            approvedCleaners: 0,
+            bookableCleaners: 0,
+          },
+          {
+            marketId: "SOUTH_FLORIDA",
+            configuredActive: true,
+            launchReady: false,
+            coverageReady: false,
+            approvedCleaners: 0,
+            bookableCleaners: 0,
+          },
         ],
       }),
     ).toBeNull();
   });
 
-  it("prefers TORONTO_GTA as ops candidate when approved cleaner exists", () => {
+  it("does not prefer TORONTO_GTA when only Florida has attributed cleaners", () => {
     expect(
       pickCandidateFirstMarket({
-        hasApprovedActiveCleaner: true,
         markets: [
-          { marketId: "SOUTH_FLORIDA", configuredActive: true, launchReady: false },
-          { marketId: "TORONTO_GTA", configuredActive: true, launchReady: false },
+          {
+            marketId: "TORONTO_GTA",
+            configuredActive: true,
+            launchReady: false,
+            coverageReady: false,
+            approvedCleaners: 0,
+            bookableCleaners: 0,
+          },
+          {
+            marketId: "SOUTH_FLORIDA",
+            configuredActive: true,
+            launchReady: false,
+            coverageReady: false,
+            approvedCleaners: 1,
+            bookableCleaners: 0,
+          },
         ],
       }),
-    ).toBe("TORONTO_GTA");
+    ).toBe("SOUTH_FLORIDA");
   });
 });

@@ -7,6 +7,7 @@
  */
 
 import { resolveMarketOrThrow } from "@/lib/markets/eligibility";
+import { isBookingEnabledForMarket } from "@/lib/markets/flags";
 import { calculateBookingPrice, withServerDiscount } from "@/lib/pricing/calculateQuote";
 import { runPricingEngine } from "@/lib/pricing/engine/calculate";
 import {
@@ -53,6 +54,7 @@ export interface ResolveServerPricingResult {
   engine: EngineQuoteResult;
   appliedPromo: AppliedPromo | null;
   marketId: string | null;
+  bookingEnabled: boolean;
 }
 
 export async function resolveServerPricing(
@@ -65,6 +67,7 @@ export async function resolveServerPricing(
     country: input.quote.country,
   });
   const marketId = marketResolve.market?.id ?? null;
+  // Quotes may resolve for preview; booking create enforces booking_enabled separately.
 
   const [rules, signals] = await Promise.all([
     loadPricingRules(marketId),
@@ -139,6 +142,7 @@ export async function resolveServerPricing(
       },
       appliedPromo: null,
       marketId,
+      bookingEnabled: isBookingEnabledForMarket(marketId),
     };
   }
 
@@ -167,6 +171,7 @@ export async function resolveServerPricing(
         engine,
         appliedPromo,
         marketId,
+        bookingEnabled: isBookingEnabledForMarket(marketId),
       };
     }
     return {
@@ -174,6 +179,7 @@ export async function resolveServerPricing(
       engine: { ...engine, public: withPromo },
       appliedPromo,
       marketId,
+      bookingEnabled: isBookingEnabledForMarket(marketId),
     };
   }
 
@@ -185,5 +191,6 @@ export async function resolveServerPricing(
     engine,
     appliedPromo,
     marketId,
+    bookingEnabled: isBookingEnabledForMarket(marketId),
   };
 }
