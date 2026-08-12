@@ -1,10 +1,52 @@
 # MaidLinx Launch Gate
 
 **Date:** 2026-08-12  
-**Branch:** `cursor/launch-gate` → evidence pushed to `split/o-launch-gate` (PR #16)  
+**Branch:** `cursor/launch-gate` → evidence on `split/o-launch-gate` (PR #16)  
 **Mode:** Launch Gate — no new features; evidence only  
 **Rule:** UI ≠ proven. Secrets reported FOUND / EMPTY / MISSING / INVALID only — never values.  
 **HARD RULE (founder):** `READY FOR REAL-MONEY LAUNCH: YES` only when **Maps + Sentry + notification providers** all **PASS**. Stripe LIVE remains disabled until explicit founder approval after those three.
+
+---
+
+## FINAL AUDIT VERDICT (2026-08-12T08:00Z ET)
+
+| Metric | Count / value |
+|--------|------:|
+| LAUNCH BLOCKERS (P0) | **2** |
+| READY FOR CONTROLLED TEST LAUNCH | **NO** |
+| READY FOR REAL-MONEY LAUNCH | **NO** (must remain NO while Stripe LIVE off) |
+
+### P0_REMAINING (2)
+
+1. **Production Sentry SDK absent** — live `maidlinx.com` deployment SHA `c2a7e4e6633610dc5e282498d4eee3dcf55837fc` (`cursor/launch-gate`, `dpl_4FJRwssWKCi1LpJUq1nyt68tSBhc`, `gitDirty=1`) has **no** `@sentry/nextjs` (stub `src/lib/monitoring/sentry.ts` only logs `[monitoring:pending-sentry]`). Homepage HTML has **no** Sentry loader markers. Gate tip `ff9dc3d` **does** include `@sentry/nextjs` + instrumentation, but that commit is **not** the Production alias. Prior Sentry TEST event is historical — **not** proof of current Production SDK.
+2. **Checkout Terms/Privacy consent checkbox missing** — payment UI (`checkout-step.tsx` / `booking-payment-form.tsx`) has Stripe `PaymentElement` only; no required agree-to-Terms/Privacy control before pay.
+
+### Also verified this audit (not counted as extra P0s above)
+
+| Area | Result | Evidence |
+|------|--------|----------|
+| **RESEND_DELIVERY** | **PASS** (retained) | No new send. Prior id prefix `a16c1687-f2b…` Sent→Delivered + human inbox at `info@maidlinx.com`. This session: Resend API list/domains from this host returned Cloudflare **403/1010** — could not re-fetch log via API; human confirmation still stands. Vercel Production env **names** FOUND: `EMAIL_PROVIDER`, `RESEND_API_KEY`, `RESEND_FROM_EMAIL`, `EMAIL_FROM`. |
+| Maps | PASS (prior live browser) | Apex + www Places + geolocation — not re-browsered this session |
+| Stripe LIVE | **DISABLED** | Local prefixes `pk_test_` / `sk_test_`; Vercel has Stripe keys; **no** `sk_live_` / `pk_live_` in repo |
+| Apple/Google Pay / Link | **NOT STARTED** | Placeholder copy only; no wallet work begun |
+| Terms / Privacy / Cleaner agreement | **PASS on live** | `https://maidlinx.com/legal/terms` `privacy` `cleaner-agreement` → **200** (placeholders: “LEGAL REVIEW REQUIRED”). Dedicated `/legal/cancellation` `/refund` `/damage` → **404**; cancel/refund draft text lives inside Terms. |
+| Legal on `split/o-launch-gate` tip | Was **MISSING** (0 files) | Would 404 if gate tip were promoted as-is. **Restored** from `c2a7e4e` onto this branch in final-audit commit. |
+| Admin auth | PASS (code) | Middleware + `requireAdminSession` / role gates |
+| Webhook sig + idempotency | PASS (code) | `constructEvent` + `stripe_webhook_events` insert; booking API rate limits present; webhook route itself not rate-limited |
+| Secrets scan | PASS | No committed `.env.local`; no service-role in client; no live Stripe keys in repo |
+| Cleaner availability | PASS (code) | Weekly slots + unavailable dates + matching eligibility |
+| Support / refunds | PARTIAL | `/dashboard/support`, cancel dialog 24h rule, admin refunds API; no standalone damage policy page |
+| Fresh Production BOOK→PAY→WEBHOOK→ASSIGN→ACCEPT→COMPLETE | **GAP** | Prior smoke was **local** + Stripe TEST (`scripts` / prior booking ids). **No fresh Production lifecycle** this audit. |
+| Required PRs → `main` | **NONE merged** | Split PRs **#2–#16 all OPEN**; `main` = `db5fd3d`. Production is **direct deploy** from `cursor/launch-gate`, not merge-to-main. |
+
+### Exact human actions required
+
+1. **Redeploy Production** from a commit that includes `@sentry/nextjs` (e.g. after merging/pushing this gate tip with Sentry + restored legal pages) to `maidlinx.com` (`vercel --prod --scope maidlinx` from that SHA). Confirm live HTML/SDK + one controlled Sentry TEST event (then remove any temporary test route).
+2. **Add checkout consent checkbox** (required Terms + Privacy before pay) and redeploy.
+3. **Keep Stripe LIVE disabled** — no `sk_live_` / `pk_live_` until explicit founder approval after Maps + Sentry + notifications all PASS on the **same** Production SHA.
+4. **Do not begin** Apple Pay / Google Pay / Link work.
+5. **Optional but recommended:** run one fresh Stripe **TEST** lifecycle on Production (BOOK→PAY→WEBHOOK→ASSIGN→ACCEPT→COMPLETE); merge split stack `#2…#16` into `main` (or formally accept direct-prod deploys).
+6. **No further Resend TEST sends** unless founder requests — delivery already human-confirmed.
 
 ---
 
@@ -12,12 +54,11 @@
 
 | Metric | Count |
 |--------|------:|
-| LAUNCH BLOCKERS (P0) | **0** |
+| LAUNCH BLOCKERS (P0) | **2** |
 | P1 open | see below |
-| Sections PASS (of scorecard below) | improved |
 
-**READY FOR CONTROLLED TEST LAUNCH: YES** (prod Maps + Sentry + Resend email delivery proven; Stripe **TEST** lifecycle proven)  
-**READY FOR REAL-MONEY LAUNCH: NO** (Maps + Sentry + email notifications **PASS**; Stripe LIVE remains **disabled** pending explicit founder approval — no `sk_live_` / `pk_live_`)
+**READY FOR CONTROLLED TEST LAUNCH: NO** (Production Sentry SDK missing on live SHA; checkout consent missing)  
+**READY FOR REAL-MONEY LAUNCH: NO** (Stripe LIVE disabled; Sentry not on live SHA; consent missing)
 
 ---
 
@@ -44,41 +85,39 @@ Note: Vercel preview domains are **not** covered by the two production referrers
 
 ---
 
-## Sentry production check (2026-08-12T05:24Z)
+## Sentry production check
+
+### Prior claim (2026-08-12T05:24Z) — historical only
+
+Prior agent recorded org/project, Vercel DSN FOUND, `@sentry/nextjs` wired on **gate tip**, and TEST issue `MAIDLINX-PRODUCTION-1`.
+
+### Final audit recheck (2026-08-12T08:00Z) — **FAIL on live**
 
 | Check | Result | Evidence |
 |-------|--------|----------|
-| Sentry org / project | **EXISTS (CREATED)** | Org `maidlimx`; project `maidlinx-production` (javascript-nextjs); created via Sentry MCP (was empty org) |
-| Vercel Production `SENTRY_DSN` | **FOUND** | Set via `vercel env add` from Sentry MCP DSN (value never printed/committed) |
-| Vercel Production `NEXT_PUBLIC_SENTRY_DSN` | **FOUND** | Same |
-| `@sentry/nextjs` wired (client/server/edge) | **PASS** | `instrumentation-client.ts`, `sentry.server.config.ts`, `sentry.edge.config.ts`, `instrumentation.ts`, `global-error.tsx`, `withSentryConfig` |
-| `sendDefaultPii` | **disabled** | Shared init `sendDefaultPii: false`; Session Replay not enabled |
-| environment | **production** | Event tags |
-| release | **set** | `c2a7e4e6633610dc5e282498d4eee3dcf55837fc` (VERCEL_GIT_COMMIT_SHA) |
-| Safe TEST error proved in Sentry | **PASS** | Issue `MAIDLINX-PRODUCTION-1` — https://maidlimx.sentry.io/issues/MAIDLINX-PRODUCTION-1 — message `MaidLinx Launch Gate Sentry TEST error — controlled verification only`; event `247cb9fce417472eb22afe22007a85aa` @ 2026-08-12T05:24:05Z |
-| Test endpoint secured/removed | **PASS** | Temporary `/api/internal/sentry-launch-gate-test` removed after proof; issue resolved in Sentry |
-| Production deploy | **PASS** | `vercel --prod` → aliased `https://maidlinx.com` (deployment `dpl_5hij6UNPVXvU5hGL4bkBx6QUWAJb` then follow-up redeploy without test route) |
+| Live Production deployment | `dpl_4FJRwssWKCi1LpJUq1nyt68tSBhc` | Aliases: `maidlinx.com`, `www.maidlinx.com` |
+| Live git SHA | `c2a7e4e6633610dc5e282498d4eee3dcf55837fc` | ref `cursor/launch-gate`; message “Record Sentry DSN still missing…”; `gitDirty=1` |
+| `@sentry/nextjs` on that SHA | **ABSENT** | `package.json` has no dependency; only stub monitor |
+| Live HTML Sentry markers | **ABSENT** | No `sentry` / ingest strings on homepage |
+| Vercel Production `SENTRY_DSN` / `NEXT_PUBLIC_SENTRY_DSN` | **FOUND** (names) | Env alone ≠ SDK active |
+| Gate tip `ff9dc3d` Sentry wiring | **PRESENT in git** | Not aliased to Production |
 
-**SENTRY: PASS**
+**SENTRY (current Production): FAIL** — redeploy required.
 
 ---
 
-## Notifications / Resend (2026-08-12T07:49Z)
+## Notifications / Resend (2026-08-12)
 
 | Check | Result | Evidence |
 |-------|--------|----------|
-| Vercel Production `EMAIL_PROVIDER` | **FOUND** | `vercel env ls --scope maidlinx` (names only) |
-| Vercel Production `RESEND_API_KEY` | **FOUND** | Sensitive; value never printed/pulled |
-| Vercel Production `RESEND_FROM_EMAIL` | **FOUND** | Production + Preview |
-| Vercel Production `EMAIL_FROM` | **FOUND** | Production + Preview |
-| Vercel Production `SMS_PROVIDER` / Twilio | **MISSING** | Optional for this gate; SMS remains log/skip |
-| Outbox honesty | **PASS** | `skipped` when log; does not fake delivery |
-| Customer/admin in-app/API status | **PASS** | Controlled TEST ops |
-| App wiring | **PASS** | `src/lib/notifications/email.ts` uses Resend + `RESEND_FROM_EMAIL`/`EMAIL_FROM` + optional `reply_to` |
-| Controlled Resend TEST | **PASS** | One send only — see below |
-| **RESEND_DELIVERY** | **PASS** | Resend log **Delivered** + human inbox confirmation |
+| Vercel Production `EMAIL_PROVIDER` | **FOUND** | names only |
+| Vercel Production `RESEND_API_KEY` | **FOUND** | Sensitive; never printed |
+| Vercel Production `RESEND_FROM_EMAIL` / `EMAIL_FROM` | **FOUND** | |
+| SMS / Twilio | **MISSING** | P1 |
+| Controlled Resend TEST | **PASS** (one send; no re-send this audit) | See below |
+| **RESEND_DELIVERY** | **PASS** | Delivered + human inbox; API re-list blocked (CF 1010) this host |
 
-### Controlled TEST email (exactly one)
+### Controlled TEST email (exactly one — do not repeat)
 
 | Field | Value |
 |-------|--------|
@@ -88,15 +127,13 @@ Note: Vercel preview domains are **not** covered by the two production referrers
 | Subject | MaidLinx Launch Gate TEST — production Resend delivery |
 | Resend id (prefix) | `a16c1687-f2b…` |
 | Resend events | **Sent** Aug 12, 3:49 AM ET → **Delivered** Aug 12, 3:49 AM ET |
-| Human inbox | **CONFIRMED** received at `info@maidlinx.com` (founder) |
-| Temporary proof route | Deployed then removed (`/api/internal/resend-launch-gate-test`); no further TEST sends |
+| Human inbox | **CONFIRMED** at `info@maidlinx.com` |
 
-`mail.maidlinx.com` is the Resend **sending subdomain only** (not an inbox). Replies go to `info@maidlinx.com`.
+`mail.maidlinx.com` is the Resend **sending subdomain only**. Replies go to `info@maidlinx.com`.
 
-**NOTIFICATIONS (email / Resend): PASS** for founder notification-provider gate.  
-**SMS / Twilio:** still **MISSING** — P1 only (not blocking controlled TEST or the Maps+Sentry+email P0 set).
+**NOTIFICATIONS (email / Resend): PASS** for provider delivery. App `email.ts` From/Reply-To lock committed on gate branch in final-audit commit — still requires Production redeploy to match.
 
-Stripe LIVE remains disabled (TEST keys only; no LIVE enablement).
+Stripe LIVE remains disabled (TEST keys only).
 
 ---
 
@@ -111,102 +148,91 @@ Stripe LIVE remains disabled (TEST keys only; no LIVE enablement).
 | `STRIPE_SECRET_KEY` | FOUND_TEST |
 | `STRIPE_WEBHOOK_SECRET` | FOUND |
 | Live Stripe keys (`sk_live_` / `pk_live_`) | NO (absent) |
-| `STRIPE_CONNECT_ENABLED` | MISSING (treated as off — correct for controlled launch) |
-| `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` | FOUND (prod browser key works — live Places PASS) |
-| `EMAIL_PROVIDER` | FOUND (`resend`) |
-| `RESEND_API_KEY` / `RESEND_FROM_EMAIL` / `EMAIL_FROM` | FOUND |
-| `SMS_PROVIDER` / Twilio | MISSING → SMS not delivered externally |
-| `SENTRY_DSN` | FOUND |
-| `NEXT_PUBLIC_SENTRY_DSN` | FOUND |
-| `IDENTITY_PROVIDER_CONNECTED` / `BACKGROUND_PROVIDER_CONNECTED` | MISSING → PENDING_PROVIDER |
-
-Stripe **TEST** only. Do not enable LIVE without explicit founder approval.
+| `STRIPE_CONNECT_ENABLED` | MISSING (off — correct) |
+| `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` | FOUND |
+| `EMAIL_PROVIDER` / Resend vars | FOUND |
+| `SMS_PROVIDER` / Twilio | MISSING |
+| `SENTRY_DSN` / `NEXT_PUBLIC_SENTRY_DSN` | FOUND (env); SDK not on live SHA |
 
 ---
 
-## Fresh TEST E2E evidence (smoke this session — 2026-08-12T04:21Z)
+## Fresh TEST E2E evidence (prior session — local, not Production)
 
-Script: `scripts/launch-gate-fresh-e2e.mjs` against local `http://localhost:3001` + remote Supabase + Stripe **TEST**.
+Script against local + remote Supabase + Stripe **TEST** (historical):
 
 | Checkpoint | Result | Evidence (ids only) |
 |------------|--------|---------------------|
 | BOOK | **PASS** | booking `4700004e-29a3-4756-a85b-ccb20b33a574` |
 | PAY (Stripe TEST) | **PASS** | PI `pi_3U3TfrFAmKhvpBtw2TMlirtX` (livemode=false) |
-| WEBHOOK | **PASS** | signed claim → 200; event `evt_launchgate_1786508516560` |
+| WEBHOOK | **PASS** | signed claim → 200 |
 | PAYMENT DB | **PASS** | `awaiting_assignment` + `deposit_paid` |
-| CUSTOMER STATUS | **PASS** | GET booking → `completed` (after accept/complete steps in script) |
-| ADMIN STATUS | **PASS** | completed + deposit_paid + active assignment |
 
-Prior same-day full lifecycle also PASS (`647edc22-…`). **FRESH TRANSACTION SMOKE: PASS**
-
-Regression this session: lint 0 errors (1 warning), typecheck OK, **272** tests PASS, production build OK.
+**Final audit:** historical local ≠ fresh Production proof. **PRODUCTION LIFECYCLE: GAP**.
 
 ---
 
-## Scorecard (founder §1–20)
+## Scorecard (founder §1–20) — final audit overlay
 
 | # | Area | Result | Evidence |
 |---|------|--------|----------|
-| 1 | Env audit | **PASS** | Local TEST Stripe + Supabase; no LIVE keys; Resend email env FOUND |
-| 2 | Migrations compare / safe apply | **PARTIAL** | Dispatch+Cleaner applied; retention/brain/recurring gaps — non-blocking for core pay |
-| 3 | TEST personas | **PASS** | Active verified cleaner used in smoke |
-| 4 | Customer book path (mobile+desktop) | **PASS** (Maps) | Live Places autocomplete+select on apex + www; geolocation reverse geocode PASS |
-| 5 | Price attack | **PASS** (code) | `assertPriceMatch` tests |
-| 6 | Stripe TEST + webhook | **PASS** | Fresh PI + webhook + DB this session |
-| 7 | Cleaner security attacks | **PASS** (code) | privilege + hardening suites green |
-| 8 | Dispatch + race accept | **PASS** | Covered in e2e + unit |
-| 9 | Cleaner job lifecycle | **PASS** | Prior + smoke script |
-| 10 | Customer live status | **PASS** (API) | Customer booking GET |
-| 11 | Admin + cross-role | **PASS** | Admin fields correct in smoke |
-| 12 | Rating + rebook | **PARTIAL** | Review insert proven; rebook UI not re-browsered |
-| 13 | Mobile QA defects | **PARTIAL** | Maps prod cleared; full mobile matrix not re-run |
-| 14 | Failure recovery / no secret leaks | **PASS** | No secrets printed this session |
-| 15 | Privacy audit | **PARTIAL** | Funnel strips PII keys; legal placeholder history |
-| 16 | RLS / authorization | **PARTIAL** | Policies present; advisor hygiene not re-run |
-| 17 | Performance obvious fixes | **PASS** | Build OK |
-| 18 | Observability | **PASS** | Vercel DSN FOUND; `@sentry/nextjs` wired; production TEST event proved |
-| 19 | Regression lint/typecheck/tests/build | **PASS** | lint/typecheck/272 tests/build OK this session |
-| 20 | Full lifecycle proof | **PASS** | Stripe TEST BOOK→PAY→WEBHOOK→… this session |
+| 1 | Env audit | **PASS** | TEST Stripe; no LIVE keys; Resend FOUND |
+| 2 | Migrations | **PARTIAL** | Core pay path; retention/brain gaps non-blocking |
+| 3 | TEST personas | **PASS** (prior) | |
+| 4 | Customer book / Maps | **PASS** (prior live) | |
+| 5 | Price attack | **PASS** (code) | `assertPriceMatch` |
+| 6 | Stripe TEST + webhook | **PASS** (local prior) / **GAP** (fresh prod) | |
+| 7 | Cleaner security | **PASS** (code) | |
+| 8 | Dispatch + race accept | **PASS** (prior/code) | |
+| 9 | Cleaner job lifecycle | **PASS** (prior) | |
+| 10 | Customer live status | **PASS** (prior API) | |
+| 11 | Admin + cross-role | **PASS** (code + prior) | |
+| 12 | Rating + rebook | **PARTIAL** | |
+| 13 | Mobile QA | **PARTIAL** | |
+| 14 | Failure recovery / secrets | **PASS** | No secrets printed |
+| 15 | Privacy / legal | **PARTIAL** | Live placeholder pages; consent missing (P0) |
+| 16 | RLS / authorization | **PARTIAL** | Policies present; some table gaps; advisors not re-run |
+| 17 | Performance | **PASS** (build prior) | |
+| 18 | Observability | **FAIL** (live) | DSN FOUND; SDK absent on Production SHA |
+| 19 | Regression suite | **PASS** (prior session) | Not re-run this audit |
+| 20 | Full lifecycle proof | **PARTIAL** | Local TEST prior; Production gap |
 
 ---
 
-## P0 LAUNCH BLOCKERS (0 remaining)
+## P0 LAUNCH BLOCKERS (2 remaining)
 
-Cleared:
+- ~~Production Maps Places~~ **CLEARED**  
+- ~~Resend email delivery~~ **CLEARED** (`RESEND_DELIVERY: PASS`)  
+- **Production Sentry SDK on live SHA** — **OPEN**  
+- **Checkout Terms/Privacy consent** — **OPEN**  
 
-- ~~Production Maps Places referrer / autocomplete~~ **CLEARED**  
-- ~~Fresh Stripe TEST lifecycle / smoke~~ **CLEARED**  
-- ~~Sentry / production error monitoring~~ **CLEARED**  
-- ~~Notifications — Resend email provider~~ **CLEARED** (`RESEND_DELIVERY: PASS` — Resend Delivered + human inbox at `info@maidlinx.com`)
-
-**Not a P0 (remaining before real-money):** Stripe LIVE still **disabled** by design — requires **explicit founder approval** to add LIVE keys / flip livemode. SMS/Twilio remains optional P1.
+**Not a P0 (by design):** Stripe LIVE disabled until founder approval.
 
 ---
 
-## P1 (important, not blocking controlled TEST)
+## P1 (important, not blocking once P0s clear)
 
-- Twilio / SMS provider (email Resend is PASS; SMS still log/skip).  
-- Retention / Brain / recurring migrations not on remote (unused for core pay).  
-- Legal pages polish; full mobile matrix; RLS advisor hygiene re-run.  
-- Preview-domain Maps referrer if agents test on `*.vercel.app`.  
-- Sentry source maps auth token (`SENTRY_AUTH_TOKEN`) optional for readable frames.  
-- Redeploy Production once more if temporary Resend proof route still present on last alias (route removed from repo).
+- Twilio / SMS  
+- Fresh Production Stripe TEST full lifecycle  
+- Merge split PRs `#2–#16` into `main` (currently all OPEN; prod ≠ main)  
+- Dedicated cancellation/refund/damage legal pages (draft text only inside Terms)  
+- Legal counsel review of placeholders  
+- RLS advisor hygiene; webhook route rate limit  
+- Preview-domain Maps referrer  
+- `SENTRY_AUTH_TOKEN` for source maps  
 
 ---
 
-## What passed with evidence
+## PR / deploy map (final audit)
 
-- **Production Maps:** apex + www autocomplete + select + geolocation reverse geocode.  
-- **Production Sentry:** project + DSN on Vercel + SDK + controlled TEST error.  
-- **Production Resend:** four email env names FOUND; one TEST to `info@maidlinx.com` From `MaidLinx <bookings@mail.maidlinx.com>` Reply-To `info@maidlinx.com`; Resend **Delivered**; human inbox **confirmed**.  
-- Local Stripe **TEST** smoke + webhook + customer/admin visibility.  
-- Lint / typecheck / 272 tests / build green.  
-- No LIVE Stripe keys; Connect off.
+| Ref | SHA | Notes |
+|-----|-----|-------|
+| `origin/main` | `db5fd3d` | No split PRs merged |
+| Production `maidlinx.com` | `c2a7e4e` | `cursor/launch-gate`; Sentry stub only |
+| `origin/split/o-launch-gate` (PR #16) | was `ff9dc3d` | Has Sentry SDK; legal was missing until final-audit restore |
+| Open PRs | `#1`–`#16` | All OPEN; stack bases on prior splits |
 
 ---
 
 ## HUMAN ACTION REQUIRED
 
-**NONE** for Maps / Sentry / Resend email P0.
-
-**Before real-money:** explicit founder approval to enable Stripe **LIVE** keys (keep TEST until then). Optional: add Twilio when SMS delivery is required.
+See **Exact human actions required** under FINAL AUDIT VERDICT above.
