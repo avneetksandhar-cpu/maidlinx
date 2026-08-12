@@ -32,12 +32,6 @@ export async function POST(request: Request, context: RouteContext) {
 
   try {
     const { id } = await context.params;
-    const booking = await getBookingById(id);
-
-    if (!booking) {
-      return jsonError("Booking not found.", 404);
-    }
-
     const headerToken = request.headers.get("x-booking-access-token");
     let bodyToken: string | null = null;
     let legalConsentAccepted: unknown = undefined;
@@ -55,6 +49,7 @@ export async function POST(request: Request, context: RouteContext) {
       bodyToken = null;
     }
 
+    // Enforce consent before any booking lookup or Stripe work.
     if (
       !isValidLegalConsent({
         legalConsentAccepted,
@@ -66,6 +61,12 @@ export async function POST(request: Request, context: RouteContext) {
         400,
         "LEGAL_CONSENT_REQUIRED",
       );
+    }
+
+    const booking = await getBookingById(id);
+
+    if (!booking) {
+      return jsonError("Booking not found.", 404);
     }
 
     const accessToken = headerToken ?? bodyToken;
