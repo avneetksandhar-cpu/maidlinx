@@ -63,20 +63,25 @@ Note: Vercel preview domains are **not** covered by the two production referrers
 
 ---
 
-## Notifications (2026-08-12T05:25Z)
+## Notifications (2026-08-12T05:25Z; Production recheck 2026-08-12T05:54Z)
 
 | Check | Result |
 |-------|--------|
-| Vercel Production `EMAIL_PROVIDER` / `SMS_PROVIDER` | **MISSING** (app defaults to `log`) |
-| `RESEND_API_KEY` | **MISSING** |
-| `TWILIO_ACCOUNT_SID` / `TWILIO_AUTH_TOKEN` / `TWILIO_FROM` | **MISSING** |
+| Vercel Production `EMAIL_PROVIDER` | **MISSING** (app defaults to `log`) |
+| Vercel Production `RESEND_API_KEY` | **MISSING** |
+| Vercel Production `RESEND_FROM_EMAIL` | **MISSING** |
+| Vercel Production `EMAIL_FROM` | **MISSING** |
+| Vercel Production `SMS_PROVIDER` / Twilio | **MISSING** |
 | Outbox honesty | **PASS** — `skipped` when log; does not fake delivery |
 | Customer/admin in-app/API status | **PASS** for controlled TEST ops |
+| Controlled Resend TEST send | **NOT RUN** — stopped: Production email env incomplete |
+
+**Recheck (founder “check now” / claimed ready):** `vercel env ls production` — all four claimed email vars still **MISSING** across Production (and no EMAIL/RESEND names on any env). **STOP** — do not wire or send TEST until human adds them on Vercel + redeploys. Values never printed.
 
 **NOTIFICATIONS:** **FAIL** for real-money (no external provider).  
 **Controlled TEST:** **P1_WITH_SAFE_FALLBACK** — ops can rely on admin + customer status; email/SMS not delivered externally.
 
-No authenticated Resend/Twilio access available this session to auto-configure providers. Stripe LIVE remains disabled.
+Stripe LIVE remains disabled (no `sk_live_` / `pk_live_` present).
 
 ---
 
@@ -93,8 +98,8 @@ No authenticated Resend/Twilio access available this session to auto-configure p
 | Live Stripe keys (`sk_live_` / `pk_live_`) | NO (absent) |
 | `STRIPE_CONNECT_ENABLED` | MISSING (treated as off — correct for controlled launch) |
 | `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` | FOUND (prod browser key works — live Places PASS) |
-| `EMAIL_PROVIDER` / `SMS_PROVIDER` | MISSING → app default `log` |
-| `RESEND_API_KEY` / Twilio | MISSING → notifications not delivered externally |
+| `EMAIL_PROVIDER` / `SMS_PROVIDER` | MISSING → app default `log` (recheck 05:54Z) |
+| `RESEND_API_KEY` / `RESEND_FROM_EMAIL` / `EMAIL_FROM` / Twilio | MISSING → notifications not delivered externally (recheck 05:54Z) |
 | `SENTRY_DSN` | FOUND |
 | `NEXT_PUBLIC_SENTRY_DSN` | FOUND |
 | `IDENTITY_PROVIDER_CONNECTED` / `BACKGROUND_PROVIDER_CONNECTED` | MISSING → PENDING_PROVIDER |
@@ -183,10 +188,10 @@ Cleared this session:
 
 ## HUMAN ACTION REQUIRED (exactly one)
 
-**Add Resend (and optionally Twilio) credentials on Vercel Production** so external email/SMS can leave `log` fallback:
+**Add all four email vars on Vercel for Production + Preview, then Redeploy Production** (claimed save was not present on recheck):
 
-1. Set `EMAIL_PROVIDER=resend`, `RESEND_API_KEY`, and `EMAIL_FROM` (and/or Twilio vars + `SMS_PROVIDER=twilio`).  
+1. In Vercel → Project → Settings → Environment Variables, add for **Production** and **Preview**: `EMAIL_PROVIDER=resend`, `RESEND_API_KEY`, `RESEND_FROM_EMAIL`, `EMAIL_FROM` (use From `MaidLinx <bookings@mail.maidlinx.com>` once domain is verified in Resend).  
 2. Redeploy Production.  
-3. Authorize a one-message delivery proof (then Lead Engineer marks NOTIFICATIONS PASS).
+3. Reply **check now** — agent will re-verify FOUND/MISSING only, wire if complete, send **one** TEST to `info@maidlinx.com`, confirm Resend delivery, update this gate.
 
 Do **not** enable Stripe LIVE until notification providers PASS + founder LIVE approval. Maps + Sentry are PASS.
