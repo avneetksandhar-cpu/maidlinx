@@ -2,7 +2,7 @@
 
 **Date:** 2026-08-12  
 **Branch:** `split/o-launch-gate` (PR #16)  
-**Production SHA:** _(see FINAL REPORT after wallet deploy)_  
+**Production SHA:** `ca3c88faecd50b32e9be181f4d96adb23ea58a63`  
 **Mode:** Launch Gate — Phase 1 lifecycle PASS; Phase 2 wallets (TEST)  
 **Rule:** UI ≠ proven. Secrets reported FOUND / EMPTY / MISSING / INVALID only — never values.  
 **HARD RULE (founder):** `READY FOR REAL-MONEY LAUNCH: YES` only when **Maps + Sentry + notification providers** all **PASS** *and* Stripe LIVE is explicitly approved. Stripe LIVE remains disabled.
