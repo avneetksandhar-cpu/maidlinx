@@ -38,8 +38,23 @@ function ensureDir(p) {
 }
 
 function whichFfmpeg() {
-  const r = spawnSync("ffmpeg", ["-version"], { encoding: "utf8" });
-  if (r.status === 0) return "ffmpeg";
+  // Prefer ffmpeg-full (Homebrew keg) — plain ffmpeg bottle often lacks drawtext.
+  const candidates = [
+    "/opt/homebrew/opt/ffmpeg-full/bin/ffmpeg",
+    "/usr/local/opt/ffmpeg-full/bin/ffmpeg",
+    "ffmpeg",
+  ];
+  for (const bin of candidates) {
+    const r = spawnSync(bin, ["-filters"], { encoding: "utf8" });
+    if (r.status !== 0) continue;
+    const filters = `${r.stdout || ""}\n${r.stderr || ""}`;
+    if (filters.includes("drawtext")) return bin;
+    // Keep as fallback if nothing with drawtext is found
+    if (bin === "ffmpeg") {
+      const ver = spawnSync(bin, ["-version"], { encoding: "utf8" });
+      if (ver.status === 0) return bin;
+    }
+  }
   return null;
 }
 

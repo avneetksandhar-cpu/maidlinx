@@ -52,7 +52,7 @@
         "s01",
         "s02"
       ],
-      "description": "Luxury condo night interior. Lexi in signature pink satin pajamas, phone lit \u2014 preserve Lexi face/hair/jewelry identity."
+      "description": "Luxury condo night interior. Lexi in black hoodie (Bratz board plate; not pink satin), phone lit \u2014 preserve Lexi face/hair/jewelry identity."
     },
     {
       "id": "phone-text-unknown-summer",
@@ -61,22 +61,28 @@
         "s03",
         "s12"
       ],
-      "description": "Phone UI text from UNKNOWN (generic bubble, no franchise logos). Lines: summer spill / under couch / oven too."
+      "description": "Phone UI NEW MESSAGE from UNKNOWN (generic bubble, no franchise logos). Summer spill line on glitter pink phone."
     },
     {
       "id": "couch-mystery-spill",
       "shotIds": [
         "s04"
       ],
-      "description": "Old dried mystery spill under couch. Lexi disgust + scream \u2014 joke is horror at the stain, not an intruder."
+      "description": "Old dried mystery spill under couch. Lexi on floor with cloth \u2014 joke is horror at the stain, not an intruder."
     },
     {
       "id": "nia-doorbell-arrival",
       "shotIds": [
-        "s05",
+        "s05"
+      ],
+      "description": "Nia in MaidLinx uniform + supplies at door 2503. Preserve Nia visual identity."
+    },
+    {
+      "id": "nia-reaction",
+      "shotIds": [
         "s06"
       ],
-      "description": "Nia in navy MaidLinx uniform + supplies at door. Preserve Nia visual identity; looks at Lexi, spill, then camera."
+      "description": "Nia deadpan reaction inside condo (Boss Moves Only neon) \u2014 Girl."
     },
     {
       "id": "clean-montage-beats",
@@ -85,14 +91,14 @@
         "s08",
         "s09"
       ],
-      "description": "Fast cleaning montage plates: spray, scrub, extract, wipe, vacuum, reset pillows, polish countertop \u2014 same Nia look throughout."
+      "description": "Nia carpet extract / clean action plate with MaidLinx caddy \u2014 montage Ken Burns across spray/scrub/extract beats."
     },
     {
       "id": "immaculate-listing-reveal",
       "shotIds": [
         "s10"
       ],
-      "description": "Immaculate luxury condo reveal \u2014 premium Zillow/MLS listing energy (original photography, no stock logos)."
+      "description": "Immaculate luxury condo reveal \u2014 premium listing energy, Good Vibes Only neon (original board art)."
     },
     {
       "id": "lexi-relax-oven-look",
@@ -101,7 +107,7 @@
         "s12",
         "s13"
       ],
-      "description": "Lexi relaxes on clean couch; glance toward oven on callback. Optional oven insert still."
+      "description": "Lexi on couch with phone; oven callback text bubble: I know about the oven too."
     },
     {
       "id": "end-card",
@@ -142,7 +148,7 @@
       "startSec": 0,
       "durationSec": 1.2,
       "label": "Text from UNKNOWN",
-      "visual": "Luxury condo night. Lexi in pink satin pajamas. Phone buzz \u2014 UNKNOWN text: \u201cI know what you spilled last summer.\u201d",
+      "visual": "Luxury condo night. Lexi in black hoodie (Bratz board). Phone buzz \u2014 UNKNOWN text: \u201cI know what you spilled last summer.\u201d",
       "still": "assets/phone-text-unknown-summer.jpg",
       "background": "#0B1220",
       "movement": "kenburns-in",
@@ -162,7 +168,7 @@
       "startSec": 1.2,
       "durationSec": 0.8,
       "label": "Lexi What?",
-      "visual": "Close on Lexi \u2014 pink satin PJs, confused glam reaction",
+      "visual": "Close on Lexi \u2014 black hoodie, confused glam reaction",
       "still": "assets/lexi-pj-condo-night.jpg",
       "background": "#1A1020",
       "movement": "zoom-in",
@@ -200,7 +206,7 @@
       "durationSec": 2.0,
       "label": "Spill scream",
       "visual": "Lexi looks under couch, finds old dried mystery spill \u2014 disgust + scream. Joke: horrified by the spill, not an intruder.",
-      "still": null,
+      "still": "assets/couch-mystery-spill.jpg",
       "background": "#3A2018",
       "movement": "shake",
       "transition": "hard",
@@ -237,7 +243,7 @@
       "durationSec": 1.0,
       "label": "Girl.",
       "visual": "Nia looks at Lexi, the spill, then the camera \u2014 deadpan",
-      "still": "assets/nia-doorbell-arrival.jpg",
+      "still": "assets/nia-reaction.jpg",
       "background": "#12302C",
       "movement": "none",
       "transition": "hard",
@@ -326,7 +332,7 @@
       "startSec": 11.0,
       "durationSec": 1.0,
       "label": "Lexi relaxes",
-      "visual": "Lexi relaxes on the clean couch \u2014 glam calm in pink satin",
+      "visual": "Lexi on the clean couch with phone \u2014 glam calm; oven tease setup",
       "still": "assets/lexi-relax-oven-look.jpg",
       "background": "#E8EEF0",
       "movement": "none",
@@ -410,18 +416,15 @@
     }
   ],
   "assetIngest": {
-    "source": "assets/storyboard-source.jpg",
+    "source": "assets/storyboard-bratz-source.jpg",
+    "priorSource": "assets/storyboard-source.jpg",
     "date": "2026-08-12",
     "notes": [
-      "Collage title said LAST NIGHT / kitchen; mapped to summer script plates as best visual matches.",
-      "phone-text-unknown-summer is UNKNOWN CALLER incoming-call UI (not SMS bubbles).",
-      "nia-doorbell-arrival substituted with Nia scrubbing marble spill (no doorbell/door panel in collage).",
-      "lexi-relax-oven-look uses Lexi-on-couch plate (Best Decision Ever); no dedicated oven-look crop.",
-      "end-card regenerated from brand mark + summer title + maidlinx.com (collage had maidlink/LAST NIGHT).",
-      "MISSING: couch-mystery-spill \u2014 no usable under-couch spill panel (only kitchen counter/floor spills)."
+      "Authoritative board: Bratz_epi_1 collage (cartoon/Bratz style) \u2014 replaced prior photoreal plates for style consistency.",
+      "Panel map: 1 lexi-pj-condo-night (black hoodie), 2 phone-text NEW MESSAGE, 3 couch-mystery-spill (REQUIRED), 4 nia-doorbell door 2503, 5 nia-reaction, 6 clean-montage extract, 7 immaculate-listing-reveal, 8 lexi-relax-oven-look oven tease.",
+      "end-card kept (SUMMER title + MAIDLINX + maidlinx.com brand plate).",
+      "s14 cut-to-black intentionally still=null."
     ],
-    "missing": [
-      "content-studio/episodes/001-spilled-last-summer/assets/couch-mystery-spill.jpg"
-    ]
+    "missing": []
   }
 }
