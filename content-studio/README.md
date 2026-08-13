@@ -19,7 +19,7 @@
 1. On-disk library under `content-studio/` (characters, episodes, assets, audio, renders, thumbnails).
 2. Character profiles (Lexi, Nia, The Caller) + local reference image slots.
 3. Episode generator UI (fields + auto timestamped shot list).
-4. Episode 01 template: *I Know What You Spilled Last Night*.
+4. Episode 01 template: *I KNOW WHAT YOU SPILLED LAST SUMMER*.
 5. FFmpeg compose: stills / color plates, Ken Burns, hard cuts, text overlays, end card, SRT + platform captions + thumbnail.
 6. `npm run content-studio:render` for local export (not required in CI).  
 7. Render API returns CLI only (no server-side FFmpeg spawn — keeps Next NFT safe).
@@ -40,16 +40,18 @@
 
 ```bash
 # Requires system FFmpeg (brew install ffmpeg)
-npm run content-studio:render -- --episode=001-spilled-last-night
+npm run content-studio:render -- --episode=001-spilled-last-summer
+# or: npm run content-studio:render:ep01
 ```
 
 Outputs under `content-studio/renders/` and `content-studio/thumbnails/` (+ `.srt`, caption `.txt` files).
 
 ## Brand
 
-Pulls MaidLinx ink `#111827`, accent `#0d9488`, logos from `public/brand/`. End card copy:
+Pulls MaidLinx ink `#111827`, accent `#0d9488`, logos from `public/brand/`. Episode 01 end card:
 
-> MaidLinx  
+> I KNOW WHAT YOU SPILLED LAST SUMMER  
+> MAIDLINX  
 > Your Clean Connection.  
 > maidlinx.com
 

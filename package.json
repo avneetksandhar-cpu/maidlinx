@@ -12,7 +12,7 @@
     "test:watch": "vitest",
     "db:types": "supabase gen types typescript --local > src/types/database.types.ts",
     "content-studio:render": "node scripts/content-studio/render.mjs",
-    "content-studio:render:ep01": "node scripts/content-studio/render.mjs --episode=001-spilled-last-night"
+    "content-studio:render:ep01": "node scripts/content-studio/render.mjs --episode=001-spilled-last-summer"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

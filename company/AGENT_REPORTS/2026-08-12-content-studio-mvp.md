@@ -34,7 +34,7 @@
 ```bash
 brew install ffmpeg   # HUMAN once
 npm run content-studio:render:ep01
-# → content-studio/renders/001-spilled-last-night-tiktok.mp4
+# → content-studio/renders/001-spilled-last-summer-tiktok.mp4
 # → .srt + platform caption .txt + thumbnail jpg
 ```
 
@@ -42,9 +42,9 @@ UI “Render TikTok” shows the same command; “Try local render” spawns the
 
 ## Episode 01
 
-**I Know What You Spilled Last Night** — full dialogue/beats + MaidLinx end card  
-(`content-studio/episodes/001-spilled-last-night/episode.json`)  
-Scripted fiction disclaimer — not a customer testimonial.
+**I KNOW WHAT YOU SPILLED LAST SUMMER** — 15s mini horror-comedy + MaidLinx end card  
+(`content-studio/episodes/001-spilled-last-summer/episode.json`)  
+Scripted fiction disclaimer — not a customer testimonial. No franchise IP.
 
 ## DEPENDENCIES added
 
@@ -62,5 +62,5 @@ Scripted fiction disclaimer — not a customer testimonial.
 
 1. `brew install ffmpeg` (or equivalent) to export MP4  
 2. Drop character reference stills into `content-studio/characters/*/references/` (or upload in UI)  
-3. Optional: episode stills under `content-studio/episodes/001-spilled-last-night/assets/` and set `shot.still` paths  
+3. Optional: episode stills under `content-studio/episodes/001-spilled-last-summer/assets/` and set `shot.still` paths  
 4. Optional BGM/SFX under `content-studio/audio/`

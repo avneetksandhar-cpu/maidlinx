@@ -5,10 +5,12 @@ import { useState } from "react";
 import { Button } from "@/components/ui";
 import { routes } from "@/config/site";
 
-const DEFAULT_DIALOGUE = `UNKNOWN CALLER: I know what you did last night.
-Lexi: What do you want?
-CALLER: Look at your kitchen.
-CALLER: Your oven.`;
+const DEFAULT_DIALOGUE = `UNKNOWN: I know what you spilled last summer.
+Lexi: What?
+UNKNOWN: Check under your couch.
+Nia: Girl.
+UNKNOWN: I know about the oven too.
+Nia: I'm gonna need overtime.`;
 
 function parseDialogue(raw: string): Array<{ speaker: string; line: string }> {
   return raw

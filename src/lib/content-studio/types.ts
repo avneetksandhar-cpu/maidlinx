@@ -50,6 +50,11 @@ export interface ContentEpisode {
     sfx?: Record<string, string | null>;
     notes?: string;
   };
+  assetRequirements?: Array<{
+    id: string;
+    shotIds: string[];
+    description: string;
+  }>;
 }
 
 export interface ContentCharacter {

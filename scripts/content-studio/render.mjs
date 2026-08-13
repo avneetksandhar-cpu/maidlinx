@@ -2,8 +2,8 @@
 /**
  * MaidLinx Content Studio — local FFmpeg renderer (no paid SaaS).
  * Usage:
- *   node scripts/content-studio/render.mjs --episode=001-spilled-last-night
- *   npm run content-studio:render -- --episode=001-spilled-last-night
+ *   node scripts/content-studio/render.mjs --episode=001-spilled-last-summer
+ *   npm run content-studio:render -- --episode=001-spilled-last-summer
  *
  * Requires system ffmpeg. Does not alter Next.js bundling.
  */
@@ -114,15 +114,23 @@ function buildShotFilter(shot, episode, brand) {
   parts.push(`color=c=0x${bg}:s=1080x1920:d=${shot.durationSec}:r=${fps}`);
 
   if (shot.endCard) {
-    const line1 = escapeDrawtext(brand.name || "MaidLinx");
-    const line2 = escapeDrawtext(brand.tagline || "Your Clean Connection.");
-    const line3 = escapeDrawtext(brand.url || "maidlinx.com");
-    return [
-      `color=c=0x111827:s=1080x1920:d=${shot.durationSec}:r=${fps}`,
-      `drawtext=text='${line1}':fontcolor=0xFFFFFF:fontsize=72:x=(w-text_w)/2:y=(h/2)-120`,
-      `drawtext=text='${line2}':fontcolor=0x${accent}:fontsize=36:x=(w-text_w)/2:y=(h/2)-20`,
-      `drawtext=text='${line3}':fontcolor=0x9CA3AF:fontsize=32:x=(w-text_w)/2:y=(h/2)+50`,
-    ].join(",");
+    const lines =
+      Array.isArray(episode.endCard?.lines) && episode.endCard.lines.length
+        ? episode.endCard.lines
+        : [brand.name || "MaidLinx", brand.tagline || "Your Clean Connection.", brand.url || "maidlinx.com"];
+    // Stack title (+ brand lines) centered; first line = episode title when present
+    const draw = lines.map((raw, i) => {
+      const text = escapeDrawtext(raw);
+      const n = lines.length;
+      const baseY = Math.round(960 - (n - 1) * 40);
+      const y = baseY + i * 80;
+      const isTitle = i === 0 && n >= 4;
+      const isBrand = (n >= 4 && i === 1) || (n < 4 && i === 0);
+      const fontsize = isTitle ? 40 : isBrand ? 64 : 34;
+      const color = isBrand ? "0xFFFFFF" : i === n - 2 || (n >= 4 && i === 2) ? `0x${accent}` : "0x9CA3AF";
+      return `drawtext=text='${text}':fontcolor=${color}:fontsize=${fontsize}:x=(w-text_w)/2:y=${y}`;
+    });
+    return [`color=c=0x111827:s=1080x1920:d=${shot.durationSec}:r=${fps}`, ...draw].join(",");
   }
 
   let vf = parts[0];
@@ -247,7 +255,7 @@ function resolveStill(shot, episodeDir, root) {
 }
 
 function main() {
-  const episodeId = arg("episode", "001-spilled-last-night");
+  const episodeId = arg("episode", "001-spilled-last-summer");
   const episodePath = join(STUDIO, "episodes", episodeId, "episode.json");
   if (!existsSync(episodePath)) {
     console.error(`Episode not found: ${episodePath}`);

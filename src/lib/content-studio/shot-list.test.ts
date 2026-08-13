@@ -27,8 +27,8 @@ describe("content-studio shot-list", () => {
   });
 
   it("slugifies titles", () => {
-    expect(slugifyTitle("I Know What You Spilled Last Night")).toBe(
-      "i-know-what-you-spilled-last-night",
+    expect(slugifyTitle("I KNOW WHAT YOU SPILLED LAST SUMMER")).toBe(
+      "i-know-what-you-spilled-last-summer",
     );
   });
 });

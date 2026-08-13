@@ -112,15 +112,52 @@ export default async function ContentStudioEpisodePage({
               />
             </div>
           </section>
+
+          {episode.assetRequirements && episode.assetRequirements.length > 0 && (
+            <section className="rounded-xl border border-border bg-surface p-5 shadow-card">
+              <h2 className="font-display text-lg font-semibold">Asset requirements</h2>
+              <ul className="mt-3 space-y-3 text-sm">
+                {episode.assetRequirements.map((a) => (
+                  <li key={a.id}>
+                    <div className="font-medium text-ink">{a.id}</div>
+                    <div className="text-xs text-ink-muted">
+                      shots: {a.shotIds.join(", ")}
+                    </div>
+                    <p className="mt-1 text-ink">{a.description}</p>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
         </div>
 
         <aside className="space-y-4">
           <RenderPanel episodeSlug={episode.slug} />
           <div className="rounded-xl border border-border bg-ink p-5 text-white">
             <p className="font-display text-lg font-semibold">End card</p>
-            <p className="mt-4 text-2xl font-semibold tracking-tight">MaidLinx</p>
-            <p className="mt-1 text-accent">Your Clean Connection.</p>
-            <p className="mt-1 text-sm text-white/60">maidlinx.com</p>
+            {(episode.endCard?.lines?.length
+              ? episode.endCard.lines
+              : ["MaidLinx", "Your Clean Connection.", "maidlinx.com"]
+            ).map((line, i, arr) => {
+              const isBrand = arr.length >= 4 ? i === 1 : i === 0;
+              const isAccent = arr.length >= 4 ? i === 2 : i === 1;
+              return (
+                <p
+                  key={`${line}-${i}`}
+                  className={
+                    i === 0
+                      ? "mt-4 text-sm font-semibold tracking-wide"
+                      : isBrand
+                        ? "mt-3 text-2xl font-semibold tracking-tight"
+                        : isAccent
+                          ? "mt-1 text-accent"
+                          : "mt-1 text-sm text-white/60"
+                  }
+                >
+                  {line}
+                </p>
+              );
+            })}
           </div>
           <div className="rounded-xl border border-border bg-surface p-4 text-xs text-ink-muted">
             Attach stills under{" "}
