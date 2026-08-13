@@ -122,6 +122,8 @@ export const routes = {
   adminLogs: "/admin/logs",
   adminPermissions: "/admin/permissions",
   adminAudit: "/admin/audit",
+  adminContentStudio: "/admin/content-studio",
+  ownerContentStudio: "/admin/content-studio",
   profile: "/dashboard/profile",
   legal: {
     privacy: "/legal/privacy",

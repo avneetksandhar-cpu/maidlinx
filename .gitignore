@@ -46,3 +46,17 @@ next-env.d.ts
 # supabase
 .branches
 .temp
+
+# content studio renders / uploads (keep folder markers)
+/content-studio/renders/*
+!/content-studio/renders/.gitkeep
+/content-studio/thumbnails/*
+!/content-studio/thumbnails/.gitkeep
+/content-studio/characters/*/references/*
+!/content-studio/characters/*/references/.gitkeep
+/content-studio/episodes/*/assets/*
+!/content-studio/episodes/*/assets/.gitkeep
+/content-studio/audio/sfx/*
+!/content-studio/audio/sfx/.gitkeep
+/content-studio/audio/bgm/*
+!/content-studio/audio/bgm/.gitkeep

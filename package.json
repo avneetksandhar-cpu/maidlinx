@@ -10,7 +10,9 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "db:types": "supabase gen types typescript --local > src/types/database.types.ts"
+    "db:types": "supabase gen types typescript --local > src/types/database.types.ts",
+    "content-studio:render": "node scripts/content-studio/render.mjs",
+    "content-studio:render:ep01": "node scripts/content-studio/render.mjs --episode=001-spilled-last-night"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

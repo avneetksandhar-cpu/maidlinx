@@ -14,6 +14,7 @@ const LINKS = [
   { href: routes.ownerCleaners, label: "Cleaners", short: "Cap" },
   { href: routes.ownerActivity, label: "Activity", short: "Act" },
   { href: `${routes.owner}#controls`, label: "AI / Pause", short: "AI" },
+  { href: routes.adminContentStudio, label: "Content Studio", short: "Studio" },
   { href: routes.admin, label: "Ops admin", short: "Admin" },
 ] as const;
 

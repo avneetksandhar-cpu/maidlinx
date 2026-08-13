@@ -1,0 +1,19 @@
+{
+  "id": "caller",
+  "name": "The Caller",
+  "role": "Mysterious recurring unseen antagonist",
+  "voice": "Distinctive, low, knowing — primarily off-screen",
+  "look": {
+    "hair": "Unseen / silhouette only",
+    "wardrobe": "Shadow, phone UI, text bubbles",
+    "era": "Thriller motif"
+  },
+  "personality": [
+    "Omniscient about the mess",
+    "Never fully revealed",
+    "Recurs across episodes"
+  ],
+  "consistencyNotes": "Prefer phone UI, shadows, and VO. Do not fully show the face in V1.",
+  "referenceDir": "characters/caller/references",
+  "referenceImages": []
+}
