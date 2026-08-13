@@ -19,8 +19,9 @@ import { ServiceTierSelector } from "@/components/booking/service-tier-selector"
 import { getServiceBySlug, isQuoteOnlyService } from "@/config/services";
 import { getPropertyType, type PropertyTypeId } from "@/config/property-types";
 import type { ServiceTier } from "@/config/service-tiers";
-import { siteConfig } from "@/config/site";
 import { resolveServiceArea } from "@/lib/service-area";
+import { resolveWaitlistReason } from "@/lib/markets/booking-availability";
+import { WaitlistSignup } from "@/components/waitlist/waitlist-signup";
 import {
   BOOKING_FLOW_STEPS,
   BOOKING_MATCHING_STEP,
@@ -245,6 +246,17 @@ export function BookingForm({ state, onChange, mode, className, startAtProperty 
       }
       if (!state.marketId || state.inServiceArea === false) {
         setGlobalError("This address is outside MaidLinx service markets.");
+        return false;
+      }
+      if (resolveWaitlistReason({
+        line1: state.line1,
+        postalCode: state.postalCode,
+        inServiceArea: state.inServiceArea,
+        marketId: state.marketId,
+      }) === "booking_disabled") {
+        setGlobalError(
+          "Booking isn’t open in this market yet — join the waitlist below to get notified.",
+        );
         return false;
       }
     }
@@ -511,27 +523,27 @@ export function BookingForm({ state, onChange, mode, className, startAtProperty 
 
   const mobileFooterVisible = isMobileWizard && step >= 1 && step <= CONTACT_STEP;
 
-  const marketBanner =
-    state.marketName && state.inServiceArea ? (
-      <p className="rounded-xl bg-accent/5 px-4 py-2 text-sm text-ink">
-        Great — MaidLinx is available in{" "}
-        <span className="font-medium">{state.marketName}</span>.
-      </p>
-    ) : state.line1 && state.postalCode && state.inServiceArea === false ? (
-      <div className="space-y-2 rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-950">
-        <p>We&apos;re not in your area yet.</p>
-        <p className="text-amber-900/90">
-          Paid booking is unavailable here.{" "}
-          <a
-            className="font-medium underline underline-offset-2"
-            href={`${siteConfig.links.support}?subject=MaidLinx%20waitlist`}
-          >
-            Join the waitlist
-          </a>{" "}
-          and we&apos;ll notify you when we expand.
-        </p>
-      </div>
-    ) : null;
+  const waitlistReason = resolveWaitlistReason({
+    line1: state.line1,
+    postalCode: state.postalCode,
+    inServiceArea: state.inServiceArea,
+    marketId: state.marketId,
+  });
+
+  const marketBanner = waitlistReason ? (
+    <WaitlistSignup
+      reason={waitlistReason}
+      marketId={state.marketId}
+      marketName={state.marketName}
+      source="booking_form"
+      page="/book"
+    />
+  ) : state.marketName && state.inServiceArea ? (
+    <p className="rounded-xl bg-accent/5 px-4 py-2 text-sm text-ink">
+      Great — MaidLinx is available in{" "}
+      <span className="font-medium">{state.marketName}</span>.
+    </p>
+  ) : null;
 
   const stepTitle = BOOKING_FLOW_STEPS.find((s) => s.id === Math.min(step, 7))?.label;
 

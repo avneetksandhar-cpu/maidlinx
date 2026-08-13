@@ -36,7 +36,7 @@
 ## Next
 
 1. **HUMAN (Phase 1 STOP):** Enter REAL cleaner ops at `/owner/cleaners/[id]` for `ba902d50-…` (market, zones, services, availability). See `LAUNCH_GATE.md` Phase 1 STOP. Do not enable markets until coverage ready.  
-2. **HUMAN:** Apply remaining local migrations as needed (`00029`–`00032`); smoke `/owner/cleaners` + BOOK→PAY only after a market’s booking flag is ON.  
+2. **HUMAN:** Apply remaining local migrations as needed (`00029`–`00033`); smoke `/owner/cleaners` + BOOK→PAY only after a market’s booking flag is ON. Waitlist needs `00033_launch_waitlist`.  
 3. Keep Stripe LIVE off until explicit founder approval.  
 4. Dual-market + owner ops: `company/AGENT_REPORTS/2026-08-12-launch-phase1-cleaner-ops.md`.  
 5. **Out today:** AI agents, pricing engine continuation, fabricated cleaners.

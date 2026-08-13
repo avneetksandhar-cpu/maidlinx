@@ -30,6 +30,12 @@ function bookingAccessHeaders(accessToken?: string | null): HeadersInit {
 async function parseJson<T>(response: Response): Promise<T> {
   const payload = await response.json();
   if (!response.ok) {
+    if (payload.code === "BOOKING_DISABLED") {
+      throw new Error(
+        payload.error ??
+          "Booking isn’t open in this market yet. Join the waitlist to get notified.",
+      );
+    }
     throw new Error(payload.error ?? "Request failed.");
   }
   return payload.data as T;

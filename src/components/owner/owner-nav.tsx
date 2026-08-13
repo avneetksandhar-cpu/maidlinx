@@ -11,6 +11,7 @@ const LINKS = [
   { href: routes.ownerOpportunities, label: "Opportunities", short: "Opps" },
   { href: routes.ownerExceptions, label: "Exceptions", short: "Exc" },
   { href: routes.ownerSales, label: "Sales", short: "Sales" },
+  { href: routes.ownerWaitlist, label: "Waitlist", short: "Wait" },
   { href: routes.ownerCleaners, label: "Cleaners", short: "Cap" },
   { href: routes.ownerActivity, label: "Activity", short: "Act" },
   { href: `${routes.owner}#controls`, label: "AI / Pause", short: "AI" },

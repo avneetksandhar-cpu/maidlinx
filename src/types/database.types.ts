@@ -2199,6 +2199,36 @@ export type Database = {
         };
         Relationships: [];
       };
+      launch_waitlist: {
+        Row: {
+          id: string;
+          email: string;
+          name: string | null;
+          market_id: string | null;
+          source: string | null;
+          page: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          email: string;
+          name?: string | null;
+          market_id?: string | null;
+          source?: string | null;
+          page?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          email?: string;
+          name?: string | null;
+          market_id?: string | null;
+          source?: string | null;
+          page?: string | null;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;

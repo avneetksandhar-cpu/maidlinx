@@ -122,6 +122,8 @@ Prior proven booking still completed: `21c3fe01-110e-4552-b21b-1778553b1c6f`.
 
 **Booking create:** fails closed with `403 BOOKING_DISABLED` while `booking_enabled=false` (both markets). Address→market→currency still resolves for preview.
 
+**Launch waitlist (branch tip):** When out of area or `booking_enabled=false`, customers can leave email via `WaitlistSignup` (homepage hero + `/book/address` + booking form). Persisted in `public.launch_waitlist` (migration `00033`). API `POST /api/waitlist` (rate-limited). Owner view `/owner/waitlist`. Optional confirmation via existing `EMAIL_PROVIDER` / Resend (log mode OK). **HUMAN_ACTION_REQUIRED:** apply `00033_launch_waitlist`. **NEW_COST $0.** Stripe LIVE untouched. Report: `company/AGENT_REPORTS/2026-08-12-launch-waitlist.md`.
+
 **Supply UX:** Arrival windows default `available=true` when `supplyByWindow` omitted — do not treat as proven capacity.
 
 **Payout / Stripe LIVE:** unchanged OFF. No new paid products.

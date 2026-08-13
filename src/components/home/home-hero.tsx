@@ -8,12 +8,14 @@ import { MapPreview } from "@/components/home/map-preview";
 import { BookingPreview } from "@/components/home/booking-preview";
 import { TrustBar } from "@/components/home/trust-bar";
 import type { BookingState } from "@/lib/bookings/booking-state";
+import type { WaitlistReason } from "@/lib/markets/booking-availability";
 
 interface HomeHeroProps {
   state: BookingState;
   onAddressChange: (value: Partial<BookingState>) => void;
   onAddressSelected: (value: Partial<BookingState>) => void;
   onFindCleaners: () => void;
+  waitlistReason?: WaitlistReason | null;
 }
 
 export function HomeHero({
@@ -21,6 +23,7 @@ export function HomeHero({
   onAddressChange,
   onAddressSelected,
   onFindCleaners,
+  waitlistReason = null,
 }: HomeHeroProps) {
   return (
     <section className="relative overflow-hidden bg-[var(--maidlinx-bg)]">
@@ -67,7 +70,7 @@ export function HomeHero({
                 onChange={onAddressChange}
                 onAddressSelected={onAddressSelected}
                 onFindCleaners={onFindCleaners}
-                outOfArea={Boolean(state.line1 && state.inServiceArea === false)}
+                waitlistReason={waitlistReason}
               />
               <PopularServices />
               <TrustCard />

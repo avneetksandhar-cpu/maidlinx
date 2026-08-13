@@ -2,15 +2,16 @@
 
 import { ChevronRight } from "lucide-react";
 import { AddressAutocomplete } from "@/components/booking/address-autocomplete";
-import { siteConfig } from "@/config/site";
+import { WaitlistSignup } from "@/components/waitlist/waitlist-signup";
 import type { BookingState } from "@/lib/bookings/booking-state";
+import type { WaitlistReason } from "@/lib/markets/booking-availability";
 
 interface HeroSearchProps {
   value: BookingState;
   onChange: (value: Partial<BookingState>) => void;
   onAddressSelected: (value: Partial<BookingState>) => void;
   onFindCleaners: () => void;
-  outOfArea?: boolean;
+  waitlistReason?: WaitlistReason | null;
 }
 
 export function HeroSearch({
@@ -18,7 +19,7 @@ export function HeroSearch({
   onChange,
   onAddressSelected,
   onFindCleaners,
-  outOfArea = false,
+  waitlistReason = null,
 }: HeroSearchProps) {
   return (
     <div className="space-y-4">
@@ -32,26 +33,25 @@ export function HeroSearch({
         className="home-hero-search"
       />
 
-      <button
-        type="button"
-        onClick={onFindCleaners}
-        className="inline-flex h-[56px] w-full items-center justify-center gap-2 rounded-[14px] bg-[var(--maidlinx-green)] px-6 text-base font-semibold text-white transition-colors hover:bg-[var(--maidlinx-green-dark)] sm:h-[58px] sm:w-[260px]"
-      >
-        Find cleaners
-        <ChevronRight className="size-5" aria-hidden />
-      </button>
-
-      {outOfArea ? (
-        <p className="text-sm text-[var(--maidlinx-muted)]">
-          We&apos;re not in your area yet.{" "}
-          <a
-            className="font-medium text-[var(--maidlinx-green)] underline-offset-2 hover:underline"
-            href={`${siteConfig.links.support}?subject=MaidLinx%20waitlist`}
-          >
-            Join the waitlist
-          </a>
-        </p>
-      ) : null}
+      {!waitlistReason ? (
+        <button
+          type="button"
+          onClick={onFindCleaners}
+          className="inline-flex h-[56px] w-full items-center justify-center gap-2 rounded-[14px] bg-[var(--maidlinx-green)] px-6 text-base font-semibold text-white transition-colors hover:bg-[var(--maidlinx-green-dark)] sm:h-[58px] sm:w-[260px]"
+        >
+          Find cleaners
+          <ChevronRight className="size-5" aria-hidden />
+        </button>
+      ) : (
+        <WaitlistSignup
+          reason={waitlistReason}
+          marketId={value.marketId}
+          marketName={value.marketName}
+          source="homepage_hero"
+          page="/"
+          variant="compact"
+        />
+      )}
     </div>
   );
 }
