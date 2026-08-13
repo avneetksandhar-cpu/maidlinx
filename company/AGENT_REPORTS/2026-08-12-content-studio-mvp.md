@@ -62,5 +62,24 @@ Scripted fiction disclaimer — not a customer testimonial. No franchise IP.
 
 1. `brew install ffmpeg` (or equivalent) to export MP4  
 2. Drop character reference stills into `content-studio/characters/*/references/` (or upload in UI)  
-3. Optional: episode stills under `content-studio/episodes/001-spilled-last-summer/assets/` and set `shot.still` paths  
+3. **BLOCKED Ep.01 render:** supply under-couch mystery spill still at  
+   `content-studio/episodes/001-spilled-last-summer/assets/couch-mystery-spill.jpg`  
+   (collage had kitchen/floor spills only — not faked)  
 4. Optional BGM/SFX under `content-studio/audio/`
+
+## Asset ingest (2026-08-12)
+
+Founder storyboard collage → `assets/storyboard-source.jpg` + crops. Wired `shot.still` for all beats except `s04` / `couch-mystery-spill`.
+
+| Asset | Status |
+|-------|--------|
+| lexi-pj-condo-night | OK (crop) |
+| phone-text-unknown-summer | OK (UNKNOWN CALLER **call UI**, not SMS) |
+| couch-mystery-spill | **MISSING** |
+| nia-doorbell-arrival | OK substitute (Nia scrubbing; no doorbell panel) |
+| clean-montage-beats | OK (crop strip) |
+| immaculate-listing-reveal | OK (crop) |
+| lexi-relax-oven-look | OK (Lexi on couch plate) |
+| end-card | OK (regenerated: summer title + maidlinx.com) |
+
+`npm run content-studio:render:ep01` **not run** until MISSING still exists.

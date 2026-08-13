@@ -56,6 +56,10 @@ next-env.d.ts
 !/content-studio/characters/*/references/.gitkeep
 /content-studio/episodes/*/assets/*
 !/content-studio/episodes/*/assets/.gitkeep
+!/content-studio/episodes/*/assets/*.jpg
+!/content-studio/episodes/*/assets/*.jpeg
+!/content-studio/episodes/*/assets/*.png
+!/content-studio/episodes/*/assets/*.webp
 /content-studio/audio/sfx/*
 !/content-studio/audio/sfx/.gitkeep
 /content-studio/audio/bgm/*

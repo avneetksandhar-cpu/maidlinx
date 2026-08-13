@@ -55,6 +55,12 @@ export interface ContentEpisode {
     shotIds: string[];
     description: string;
   }>;
+  assetIngest?: {
+    source?: string;
+    date?: string;
+    notes?: string[];
+    missing?: string[];
+  };
 }
 
 export interface ContentCharacter {
