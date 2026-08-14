@@ -10,9 +10,11 @@ This repo is a **two-sided cleaning marketplace** (customers ↔ cleaners) with 
 | [`company/CURRENT_SPRINT.md`](company/CURRENT_SPRINT.md) | Active sprint + gates |
 | [`company/LAUNCH_GATE.md`](company/LAUNCH_GATE.md) | Launch evidence (TEST vs LIVE) |
 | [`company/DECISIONS.md`](company/DECISIONS.md) | Decision log |
+| [`company/GROWTH_OPERATING_SYSTEM.md`](company/GROWTH_OPERATING_SYSTEM.md) | Standing growth/ops/economics OS (five questions + bottleneck protocol) |
+| [`company/GROWTH_BACKLOG.md`](company/GROWTH_BACKLOG.md) | Prioritized growth backlog (metric / cheap test / measure / success) |
 | [`company/AGENT_REPORTS/`](company/AGENT_REPORTS/) | Role reports after significant work |
 
-Read the board before expanding scope.
+Read the board before expanding scope. Current verified growth constraint: **SUPPLY** (FL primary; GTA deferred) — see Growth OS.
 
 **Scope rule (updated 2026-08-12):** Do not expand customer/booking/payment surface until CRITICAL launch P0s pass. Launch Gate P0 = **0** (controlled TEST YES; real-money NO). **Exception (Product):** AI Revenue Director V0 is approved as **internal** `/owner` platform work after P0 clear — modular server-side only; must not weaken booking/payment/webhook/consent/Sentry.
 
@@ -56,3 +58,13 @@ Never sacrifice payment or security for speed or growth.
 - No destructive DB / production changes without explicit human approval.  
 - No Stripe LIVE / wallets LIVE without founder approval.  
 - No autonomous price/payout/refund/campaign execution (RED).  
+
+<!-- BEGIN:nextjs-agent-rules -->
+
+# This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+
+<!-- END:nextjs-agent-rules -->

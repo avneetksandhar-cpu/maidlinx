@@ -2,6 +2,13 @@
 
 Format: date · decision · owner · rationale · status
 
+## 2026-08-14 — Growth Operating System + FL-primary supply constraint
+
+- **Decision:** Encode founder operating model in `company/GROWTH_OPERATING_SYSTEM.md` + prioritized `company/GROWTH_BACKLOG.md`. Cursor/agents act as growth/product/ops/economics engine (five questions on every action; bottleneck-first). **Current verified constraint = SUPPLY** (`BOOKABLE_CLEANERS=0`, markets CLOSED, Stripe LIVE OFF). **SOUTH_FLORIDA** is the primary geo experiment; **TORONTO_GTA** is a separate deferred experiment (0 GTA FB posts after pivot). Organic FL recruitment first (8 groups posted); **paid ads LATER** after organic proves app→bookable conversion. Demand work only after bookable ≥ 2 in one FL zone. No invented metrics; no booking/Stripe LIVE enablement from this decision.
+- **Owner:** Founder + Growth / Product
+- **Rationale:** Highest leverage is bookable supply in one area, not marketing activity or dual-geo spray. Board must make the constraint and backlog explicit for all agents.
+- **Status:** Accepted
+
 ## 2026-08-12 — Owner Command vCenter (extend foundation)
 
 - **Decision:** Build zero-cost Owner Command vCenter inside existing `/owner` + `src/lib/owner/` extending `00029`/`00030` via migration `00031`. Real-data dashboard, editable $100K/$1M targets, deterministic opportunity engine (persist to `ai_recommendations`, no auto-send), customer NBA profiles, cleaner capacity, B2B CRM shell, exceptions inbox, activity timeline, founder interventions. No paid LLM, no second app, no Stripe LIVE, no autonomous campaigns. Deploy only after migrations + BOOK→PAY smoke (founder call; default ship to PR).

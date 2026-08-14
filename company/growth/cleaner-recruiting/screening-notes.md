@@ -1,12 +1,13 @@
-# Screening notes — founder checklist (GTA)
+# Screening notes — founder checklist (South Florida)
 
 Quick fit screen for applicants from the **MaidLinx Cleaner Application**: https://maidlinx.com/earn.  
 This is an **operational** checklist for MaidLinx founders/ops — **not** legal advice, **not** a background-check product claim, and **not** an employment decision framework.
 
-**Funnel before return to launch:** **10+ applications → 5 screened → 3 strong → 2+ bookable** in the **same** initial area.  
+**Primary market:** South Florida (Miami-Dade / Broward / Palm Beach). **Second market later:** Toronto GTA.  
+**Funnel before return to launch:** **10+ applications → 5 screened → 3 strong → 2+ bookable** in the **same** initial South Florida area.  
 **Outcomes:** Application → Screened → Strong → Bookable only after zones/services/availability/ops are complete.
 
-**Explicit:** Leave customer booking OFF and Stripe LIVE OFF until that supply exists. Do **not** enable `booking_enabled` or activate cleaner `ba902d50` from recruiting alone.
+**Explicit:** Leave customer booking OFF and Stripe LIVE OFF until that supply exists. Do **not** enable `booking_enabled` or activate cleaner `ba902d50` from recruiting alone. Do **not** invent cleaner data.
 
 ---
 
@@ -18,12 +19,12 @@ Look for clear yes signals across most of these:
 |------|---------------------------|
 | Experience | Prior residential cleaning (homes/condos); can describe a typical job |
 | Supplies | Owns or can bring basic supplies / vacuum as needed for their style of work |
-| Transport | Reliable way to reach jobs in the target zone (car preferred for many GTA areas; honest about transit limits) |
-| Zones | Lives/works near the **initial** focus area (Toronto / Brampton / Mississauga depth); willing to start narrow, not “all GTA” |
+| Transport | Reliable way to reach jobs in the target zone (car preferred across much of South Florida; honest about limits) |
+| Zones | Lives/works near the **initial** focus area (Miami-Dade / Broward / Palm Beach depth); willing to start narrow, not “all of Florida” |
 | Reliability | Communicates clearly; shows up on time historically; realistic about schedule |
 | Role clarity | Understands **independent contractor**, flexible bookings, **no guaranteed volume** |
 
-Optional pluses (nice, not mandatory claims): references from past clients, already insured for their own work, bilingual if relevant to the zone.
+Optional pluses (nice, not mandatory claims): references from past clients, already insured for their own work, bilingual (EN/ES) if relevant to the zone.
 
 ---
 
@@ -46,7 +47,7 @@ When unsure: **park** (friendly “we’ll keep your application on file”) rat
 ## Screen call / message (5–10 min)
 
 1. Confirm they applied via the **MaidLinx Cleaner Application** at https://maidlinx.com/earn.  
-2. Preferred GTA areas / first zone fit (Toronto / Brampton / Mississauga depth).  
+2. Preferred South Florida areas / first zone fit (Miami-Dade / Broward / Palm Beach depth).  
 3. Experience + supplies + transport (plain language).  
 4. Availability windows (days/times) — note only; not a commitment of jobs.  
 5. Restate: independent contractor; no guaranteed income or job count; approval ≠ immediate bookings.  
