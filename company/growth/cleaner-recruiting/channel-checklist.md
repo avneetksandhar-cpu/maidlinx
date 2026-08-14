@@ -1,11 +1,16 @@
 # Channel checklist — GTA cleaner recruiting
 
-Use with `post-copy.md`. Application: https://maidlinx.com/earn  
-Goal: feed the funnel (20 → 8 → 5 → 3 → ≥2 bookable in **one** initial zone). Do not open booking markets or Stripe LIVE from this workstream.
+Use with `post-copy.md`. Direct every applicant to the **MaidLinx Cleaner Application**: https://maidlinx.com/earn  
 
-## Facebook (first)
+**Tonight’s focus only:** Facebook GTA cleaning/job groups → Kijiji → direct outreach to independents in Toronto / Brampton / Mississauga.  
 
-Post only where group rules allow contractor / cleaner / job-related posts. Prefer local over mega-GTA spam.
+Goal: **10+ applications → 5 screened → 3 strong → 2+ bookable** in **one** initial area.  
+
+**Explicit:** Leave customer booking OFF and Stripe LIVE OFF until that supply exists. Do not enable `booking_enabled` or activate cleaner `ba902d50` from this workstream.
+
+## Facebook GTA cleaning / job groups (tonight — first)
+
+Post only where group rules allow contractor / cleaner / job-related posts. Prefer local Toronto / Brampton / Mississauga over mega-GTA spam.
 
 **Search / join targets (examples — verify still active & rules before posting):**
 - Cleaning jobs / house cleaners (Toronto, Peel, York)
@@ -17,35 +22,38 @@ Post only where group rules allow contractor / cleaner / job-related posts. Pref
 **Per-group checklist**
 - [ ] Read group rules (no “hiring employees” if banned; no external links if restricted)
 - [ ] Use founder lead or Variant A from `post-copy.md`
-- [ ] Include https://maidlinx.com/earn
+- [ ] Name the **MaidLinx Cleaner Application** and include https://maidlinx.com/earn
 - [ ] Include IC + no guaranteed income disclaimers
 - [ ] One post per group; don’t duplicate-spam same day
 - [ ] Log group name + date + link to post (simple spreadsheet is enough)
 
-## Kijiji (second)
+## Kijiji (tonight — second)
 
 - Prefer **Services** or **Jobs** categories that fit contractor / cleaning help — follow Kijiji listing rules
 - Avoid language that sounds like W-2 employment (“salary,” “full-time hire,” “we employ”)
 - Use Variant B; keep title honest (e.g. “Independent cleaners — MaidLinx GTA platform”)
+- Point to the **MaidLinx Cleaner Application**: https://maidlinx.com/earn
 - Caveat: Kijiji can attract high volume / low fit — screen harder with `screening-notes.md`
 - Refresh listing if it ages out; don’t over-repost and get flagged
 
-## Indeed (later)
+## Direct outreach to independents — Toronto / Brampton / Mississauga (tonight — third)
 
-- Wait until Facebook + Kijiji produce a baseline of applicants (aim: first ~10–20 from organic channels)
-- Then consider a paid/organic Indeed post using the same IC + no-guarantee language
-- Do not invent wage ranges or “guaranteed weekly bookings”
-
-## Direct outreach to independents
-
-- Find cleaners already advertising (Kijiji Services, FB Marketplace, local flyers, Nextdoor if used)
+- Find cleaners already advertising in Toronto, Brampton, or Mississauga (Kijiji Services, FB Marketplace, local flyers, Nextdoor if used)
 - Short respectful DM (Variant C) — one message, no pressure follow-up spam
+- Always include **MaidLinx Cleaner Application** + https://maidlinx.com/earn
 - Do **not** imply MaidLinx will steal their clients or guarantee more work than they have today
 - Track: name/channel → replied? → applied? → promising?
+
+## Indeed (later — not tonight)
+
+- Wait until Facebook + Kijiji + direct outreach produce a baseline (aim: first ~10+ applications)
+- Then consider a paid/organic Indeed post using the same IC + no-guarantee language and **MaidLinx Cleaner Application** link
+- Do not invent wage ranges or “guaranteed weekly bookings”
 
 ## Anti-patterns
 
 - Promising “steady work,” “guaranteed clients,” or employee benefits
 - Activating or publicly naming cleaner `ba902d50` as capacity
-- Enabling `booking_enabled` because applicants showed up
+- Enabling `booking_enabled` or Stripe LIVE because applicants showed up
+- Opening customer booking before **2+ bookable** cleaners exist in the same area
 - Posting GTA-wide while you still need depth in one zone

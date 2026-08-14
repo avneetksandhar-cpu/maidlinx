@@ -1,28 +1,37 @@
 # GTA cleaner recruiting kit
 
 **Status:** READY_TO_RECRUIT YES (recruitment audit)  
-**Application URL:** https://maidlinx.com/earn  
+**Application:** **MaidLinx Cleaner Application** — https://maidlinx.com/earn  
 **Market focus:** TORONTO_GTA — first initial zone only (do not spray GTA-wide until coverage exists)  
 **Hard rules:** Do not activate cleaner `ba902d50`. Do not enable `booking_enabled`. Do not turn on Stripe LIVE. Do not invent job or income guarantees.
 
-## Funnel target (same initial zone)
+## Tonight’s focus (do these first)
+
+1. **Facebook GTA cleaning / job groups** — Toronto, Brampton, Mississauga cleaning-job and local job/community groups  
+2. **Kijiji** — Services / Jobs listings (follow platform rules; IC language only)  
+3. **Direct outreach to independents** — cleaners already advertising in Toronto / Brampton / Mississauga  
+
+Defer Indeed and broad GTA spray until these three produce a baseline of applicants.
+
+## Funnel target before return to launch
 
 | Stage | Count | Meaning |
 |-------|------:|---------|
-| Applicants | **20** | Applied via https://maidlinx.com/earn |
-| Promising | **8** | Pass quick fit (experience, supplies, transport, zone, reliability signal) |
+| Applications | **10+** | Submitted via **MaidLinx Cleaner Application** (https://maidlinx.com/earn) |
 | Screened | **5** | Founder/ops short screen complete |
-| Approved | **3** | Platform approval path complete (not auto-bookable) |
-| Bookable in same zone | **≥2** | Min redundancy before any market open discussion |
+| Strong | **3** | Clear fit: experience, supplies, transport, same-area zones, IC clarity |
+| Bookable in same area | **2+** | Min redundancy in one initial zone before any market-open discussion |
 
-Redundancy rationale: one bookable cleaner is not coverage. Launch/ops need **at least two** independently bookable cleaners in the **same** initial zone so one no-show, illness, or schedule conflict does not strand customers. Prefer depth in one zone over thin spread across the GTA.
+Redundancy rationale: one bookable cleaner is not coverage. Need **at least two** independently bookable cleaners in the **same** initial area so one no-show, illness, or conflict does not strand customers. Prefer depth in one zone over thin spread across the GTA.
+
+**Explicit gate:** Leave **customer booking OFF** (`booking_enabled` off) and **Stripe LIVE OFF** until this supply target exists. Recruiting alone does not open markets or real-money payments.
 
 ## Channels (order)
 
-1. **Facebook groups** — local cleaning-job, house-cleaner, Brampton / Mississauga / Toronto job & community groups (see `channel-checklist.md`)
+1. **Facebook groups** — GTA cleaning/job groups (Toronto / Brampton / Mississauga) — see `channel-checklist.md`
 2. **Kijiji** — Services / Jobs (read platform rules; avoid misleading “hiring” language)
-3. **Indeed** — later, after organic posts produce a baseline of applicants
-4. **Direct outreach** — independents already advertising locally (respectful, no spam)
+3. **Direct outreach** — independents in Toronto / Brampton / Mississauga (respectful, no spam)
+4. **Indeed** — later, after tonight’s channels produce a baseline of applicants
 
 ## Legal / product posture (non-negotiable in copy)
 
@@ -35,12 +44,13 @@ Redundancy rationale: one bookable cleaner is not coverage. Launch/ops need **at
 
 | File | Use |
 |------|-----|
-| `post-copy.md` | Founder lead post + short FB/Kijiji/DM variants (URL baked in) |
-| `channel-checklist.md` | Where to post / outreach tips |
+| `post-copy.md` | Founder lead post + short FB/Kijiji/DM variants (**MaidLinx Cleaner Application** + URL) |
+| `channel-checklist.md` | Tonight’s channels + where to post / outreach tips |
 | `screening-notes.md` | Promising vs reject checklist for founder |
 
 ## After posts go live
 
-1. Track applicant count toward 20 → 8 → 5 → 3 → ≥2 bookable in one zone.  
-2. Keep markets closed (`booking_enabled` off) until coverage gate is actually met.  
-3. Do not treat approved status alone as bookable — availability, zones, services, and ops completeness still required.
+1. Track toward **10+ applications → 5 screened → 3 strong → 2+ bookable** in one area.  
+2. Keep customer booking and Stripe LIVE off until that supply gate is actually met.  
+3. Do not treat approved status alone as bookable — availability, zones, services, and ops completeness still required.  
+4. Always direct applicants to the **MaidLinx Cleaner Application**: https://maidlinx.com/earn
