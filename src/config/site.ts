@@ -10,11 +10,13 @@ function resolveSiteUrl(): string {
 
 export const siteConfig = {
   name: "MaidLinx",
+  /** Default document + social title (open-graph / Twitter). */
+  title: "MaidLinx | Your Clean Connection",
   description:
-    "Book cleaning on demand in Toronto/GTA and South Florida. Enter your address, pick a service and time, and confirm online.",
+    "Book trusted home cleaning in minutes. Simple online booking for one-time, deep, move-in/move-out and recurring cleaning.",
   url: resolveSiteUrl(),
-  /** App Router file convention: `src/app/opengraph-image.tsx` (1200×630). */
-  ogImage: "/opengraph-image",
+  /** Static 1200×630 social preview image in `public/`. */
+  ogImage: "/og/maidlinx-og.png",
   /** Customer-facing support / contact inbox. */
   email: "info@maidlinx.com",
   links: {

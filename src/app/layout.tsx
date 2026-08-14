@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { DM_Sans } from "next/font/google";
 import { AppProviders } from "@/components/providers/app-providers";
 import { ServiceWorkerRegister } from "@/components/pwa/service-worker-register";
-import { getSiteUrl } from "@/config/env";
+import { getMetadataSiteUrl } from "@/config/env";
 import { siteConfig } from "@/config/site";
 import "@/styles/globals.css";
 
@@ -12,10 +12,13 @@ const dmSans = DM_Sans({
   display: "swap",
 });
 
+const siteUrl = getMetadataSiteUrl();
+const ogImageUrl = siteConfig.ogImage;
+
 export const metadata: Metadata = {
-  metadataBase: new URL(getSiteUrl()),
+  metadataBase: new URL(siteUrl),
   title: {
-    default: `${siteConfig.name} | Book Cleaning On Demand`,
+    default: siteConfig.title,
     template: `%s | ${siteConfig.name}`,
   },
   description: siteConfig.description,
@@ -32,11 +35,25 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: getSiteUrl(),
+    url: siteUrl,
     siteName: siteConfig.name,
-    title: siteConfig.name,
+    title: siteConfig.title,
     description: siteConfig.description,
-    images: [{ url: "/brand/maidlinx-logo.png" }],
+    images: [
+      {
+        url: ogImageUrl,
+        width: 1200,
+        height: 630,
+        alt: "MaidLinx — A cleaner home. A few taps away.",
+        type: "image/png",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: siteConfig.title,
+    description: siteConfig.description,
+    images: [ogImageUrl],
   },
   robots: {
     index: true,
