@@ -1,15 +1,16 @@
 # Current sprint
 
 **Branch:** `split/o-launch-gate` (PR #16)  
-**Date:** 2026-08-12  
-**Mode:** Post–Launch Gate P0 clear · AI OS Phase 0 COMPLETE · Foundation COMPLETE · Owner Command vCenter SHIPPED (local)
+**Date:** 2026-08-14  
+**Mode:** Marketplace launch re-audit (NOT Content Studio) · Stripe TEST lifecycle re-proven · coverage RED
 
 ## Gates
 
 | Gate | Status | Note |
 |------|--------|------|
-| Launch Gate P0 | **0 remaining** | Re-audit 2026-08-12T22:58Z — see `LAUNCH_GATE.md` |
-| READY FOR CONTROLLED TEST LAUNCH | **YES** | Fresh Stripe TEST lifecycle on booking `140b7aaa-…` |
+| Launch Gate P0 (code/payment) | **0 remaining** | Re-audit 2026-08-14 — see `LAUNCH_GATE.md` |
+| Ops before open booking | **BOOKABLE=0** | Do not enable markets until coverage ready |
+| READY FOR CONTROLLED TEST LAUNCH | **YES** | Fresh Stripe TEST lifecycle on booking `6f487969-…` |
 | READY FOR REAL-MONEY LAUNCH | **NO** | Stripe LIVE disabled — hard rule |
 | Production SHA | `ca3c88f` | Live `sentry=true` (apex + www) |
 | AI OS Phase 0 audit | **COMPLETE** | `company/AI_OS_PHASE0_AUDIT.md` |

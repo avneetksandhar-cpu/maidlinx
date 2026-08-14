@@ -42,7 +42,7 @@ export function HomeHero({
           <div className="animate-[fadeIn_0.35s_ease]">
             <div className="inline-flex items-center gap-2 rounded-full bg-[var(--maidlinx-mint)] px-3.5 py-1.5 text-sm font-medium text-[var(--maidlinx-green)]">
               <Users className="size-4" strokeWidth={1.75} aria-hidden />
-              Trusted cleaning professionals
+              Cleaning professionals near you
             </div>
 
             <h1 className="relative mt-5 max-w-[16ch] text-[2.875rem] leading-[0.98] font-bold tracking-tight text-[var(--maidlinx-ink)] sm:text-[3.5rem] lg:text-[4.75rem]">

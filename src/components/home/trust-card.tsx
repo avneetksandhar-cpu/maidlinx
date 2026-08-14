@@ -3,8 +3,8 @@ import { Calendar, ShieldCheck, Star } from "lucide-react";
 const ITEMS = [
   {
     icon: ShieldCheck,
-    title: "Verified professionals",
-    description: "Pros are verified before joining",
+    title: "Screened professionals",
+    description: "Pros complete MaidLinx onboarding before jobs",
   },
   {
     icon: Star,

@@ -21,7 +21,7 @@ export function BookingPreview() {
         </span>
         <div className="min-w-0 flex-1">
           <p className="text-sm font-semibold text-[var(--maidlinx-ink)]">MaidLinx Pro</p>
-          <p className="text-xs text-[var(--maidlinx-muted)]">Verified Pro</p>
+          <p className="text-xs text-[var(--maidlinx-muted)]">MaidLinx Pro</p>
         </div>
         <div className="relative flex size-14 items-center justify-center rounded-xl bg-[var(--maidlinx-mint-soft)]" aria-hidden>
           <Car className="size-6 text-[var(--maidlinx-green)]" strokeWidth={1.5} />
