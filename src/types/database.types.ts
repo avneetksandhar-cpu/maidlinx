@@ -850,6 +850,8 @@ export type Database = {
           quote_id: string | null;
           coupon_code: string | null;
           idempotency_key: string | null;
+          legal_consent_accepted_at: string | null;
+          legal_consent_policy_version: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -934,6 +936,8 @@ export type Database = {
           quote_id?: string | null;
           coupon_code?: string | null;
           idempotency_key?: string | null;
+          legal_consent_accepted_at?: string | null;
+          legal_consent_policy_version?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -1018,6 +1022,8 @@ export type Database = {
           quote_id?: string | null;
           coupon_code?: string | null;
           idempotency_key?: string | null;
+          legal_consent_accepted_at?: string | null;
+          legal_consent_policy_version?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -1306,6 +1312,191 @@ export type Database = {
         Row: Record<string, unknown>;
         Insert: Record<string, unknown>;
         Update: Record<string, unknown>;
+        Relationships: [];
+      };
+      ai_audit_log: {
+        Row: {
+          id: string;
+          agent_id: string;
+          action: string;
+          permission_level: string;
+          actor_profile_id: string | null;
+          entity_type: string | null;
+          entity_id: string | null;
+          summary: string | null;
+          metadata: Json;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          agent_id: string;
+          action: string;
+          permission_level: string;
+          actor_profile_id?: string | null;
+          entity_type?: string | null;
+          entity_id?: string | null;
+          summary?: string | null;
+          metadata?: Json;
+          created_at?: string;
+        };
+        Update: Record<string, unknown>;
+        Relationships: [];
+      };
+      ai_action_approvals: {
+        Row: {
+          id: string;
+          agent_id: string;
+          action: string;
+          permission_level: string;
+          status: string;
+          requested_by_profile_id: string | null;
+          decided_by_profile_id: string | null;
+          entity_type: string | null;
+          entity_id: string | null;
+          summary: string;
+          payload: Json;
+          decided_at: string | null;
+          created_at: string;
+        };
+        Insert: Record<string, unknown>;
+        Update: Record<string, unknown>;
+        Relationships: [];
+      };
+      business_events: {
+        Row: {
+          id: string;
+          event_type: string;
+          entity_type: string;
+          entity_id: string;
+          idempotency_key: string;
+          actor_type: string | null;
+          actor_id: string | null;
+          source: string;
+          payload: Json;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          event_type: string;
+          entity_type: string;
+          entity_id: string;
+          idempotency_key: string;
+          actor_type?: string | null;
+          actor_id?: string | null;
+          source?: string;
+          payload?: Json;
+          created_at?: string;
+        };
+        Update: Record<string, unknown>;
+        Relationships: [];
+      };
+      ai_recommendations: {
+        Row: {
+          id: string;
+          agent_id: string;
+          recommendation_type: string;
+          permission_level: string;
+          status: string;
+          title: string;
+          summary: string | null;
+          entity_type: string | null;
+          entity_id: string | null;
+          potential_cents_estimate: number | null;
+          confidence: number | null;
+          evidence: string | null;
+          payload: Json;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: Record<string, unknown>;
+        Update: Record<string, unknown>;
+        Relationships: [];
+      };
+      ai_decisions: {
+        Row: {
+          id: string;
+          agent_id: string;
+          decision_type: string;
+          permission_level: string;
+          recommendation_id: string | null;
+          decided_by: string;
+          decided_by_profile_id: string | null;
+          outcome: string;
+          summary: string;
+          payload: Json;
+          created_at: string;
+        };
+        Insert: Record<string, unknown>;
+        Update: Record<string, unknown>;
+        Relationships: [];
+      };
+      ai_actions: {
+        Row: {
+          id: string;
+          agent_id: string;
+          action: string;
+          permission_level: string;
+          status: string;
+          decision_id: string | null;
+          approval_id: string | null;
+          entity_type: string | null;
+          entity_id: string | null;
+          summary: string;
+          simulation: boolean;
+          payload: Json;
+          error: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: Record<string, unknown>;
+        Update: Record<string, unknown>;
+        Relationships: [];
+      };
+      ai_exceptions: {
+        Row: {
+          id: string;
+          agent_id: string | null;
+          exception_type: string;
+          severity: string;
+          status: string;
+          entity_type: string | null;
+          entity_id: string | null;
+          summary: string;
+          payload: Json;
+          created_at: string;
+          resolved_at: string | null;
+        };
+        Insert: Record<string, unknown>;
+        Update: Record<string, unknown>;
+        Relationships: [];
+      };
+      ai_feature_flags: {
+        Row: {
+          key: string;
+          enabled: boolean;
+          description: string | null;
+          metadata: Json;
+          updated_by_profile_id: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          key: string;
+          enabled?: boolean;
+          description?: string | null;
+          metadata?: Json;
+          updated_by_profile_id?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          key?: string;
+          enabled?: boolean;
+          description?: string | null;
+          metadata?: Json;
+          updated_by_profile_id?: string | null;
+          updated_at?: string;
+        };
         Relationships: [];
       };
       admin_permissions: {
@@ -2004,6 +2195,36 @@ export type Database = {
           booking_id?: string;
           claimed_by?: string;
           guest_email?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      launch_waitlist: {
+        Row: {
+          id: string;
+          email: string;
+          name: string | null;
+          market_id: string | null;
+          source: string | null;
+          page: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          email: string;
+          name?: string | null;
+          market_id?: string | null;
+          source?: string | null;
+          page?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          email?: string;
+          name?: string | null;
+          market_id?: string | null;
+          source?: string | null;
+          page?: string | null;
           created_at?: string;
         };
         Relationships: [];

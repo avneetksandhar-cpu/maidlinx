@@ -3,6 +3,7 @@ import { emitBookingEvent } from "@/lib/bookings/events";
 import { resolveSchedule } from "@/lib/bookings/schedule";
 import { estimateTravelMinutes } from "@/lib/eta";
 import { resolveMarketOrThrow } from "@/lib/markets/eligibility";
+import { assertMarketBookingEnabled } from "@/lib/markets/flags";
 import { estimateServiceDurationMinutes, resolveCatalogService } from "@/lib/services/catalog";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { PriceBreakdown } from "@/lib/pricing/calculate";
@@ -79,6 +80,8 @@ export interface StoredBooking {
   zone_id: string | null;
   quote_requested: boolean;
   estimated_eta_minutes: number | null;
+  legal_consent_accepted_at: string | null;
+  legal_consent_policy_version: string | null;
   cleaner: StoredBookingCleaner | null;
   created_at: string;
 }
@@ -137,6 +140,12 @@ function mapRow(
       row.estimated_eta_minutes !== undefined && row.estimated_eta_minutes !== null
         ? Number(row.estimated_eta_minutes)
         : null,
+    legal_consent_accepted_at: row.legal_consent_accepted_at
+      ? String(row.legal_consent_accepted_at)
+      : null,
+    legal_consent_policy_version: row.legal_consent_policy_version
+      ? String(row.legal_consent_policy_version)
+      : null,
     cleaner,
     created_at: String(row.created_at),
   };
@@ -237,6 +246,7 @@ export async function insertBooking(
     state: input.state,
     country: input.country,
   });
+  assertMarketBookingEnabled(marketResolve.market?.id);
   const catalogService = resolveCatalogService(input.serviceType);
   const quoteOnly =
     Boolean(pricing.quoteOnly) || catalogService?.pricingModel === "quote";
@@ -459,6 +469,25 @@ export async function attachPaymentIntent(
   const { error } = await supabase
     .from("bookings")
     .update({ stripe_payment_intent_id: paymentIntentId })
+    .eq("id", bookingId);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+}
+
+/** Persist checkout legal consent (idempotent for same policy version). */
+export async function recordLegalConsent(
+  bookingId: string,
+  policyVersion: string,
+): Promise<void> {
+  const supabase = createAdminClient();
+  const { error } = await supabase
+    .from("bookings")
+    .update({
+      legal_consent_accepted_at: new Date().toISOString(),
+      legal_consent_policy_version: policyVersion,
+    } as never)
     .eq("id", bookingId);
 
   if (error) {

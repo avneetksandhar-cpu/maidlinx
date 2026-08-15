@@ -1,0 +1,430 @@
+{
+  "id": "001-spilled-last-summer",
+  "slug": "001-spilled-last-summer",
+  "title": "I KNOW WHAT YOU SPILLED LAST SUMMER",
+  "genre": "Original mini horror-comedy",
+  "hook": "An UNKNOWN text knows exactly what Lexi spilled \u2014 and where it dried.",
+  "durationSeconds": 15,
+  "width": 1080,
+  "height": 1920,
+  "aspectRatio": "9:16",
+  "fps": 30,
+  "platform": "tiktok",
+  "characters": [
+    "lexi",
+    "nia",
+    "caller"
+  ],
+  "location": "Luxury condo at night",
+  "story": "Lexi gets a chilling UNKNOWN text about last summer's spill. She finds dried mystery residue under the couch and screams \u2014 at the stain, not an intruder. Nia from MaidLinx arrives, restores the condo to premium listing quality, then the UNKNOWN mentions the oven. Original MaidLinx fiction \u2014 no franchise IP.",
+  "cta": "Book cleaning on demand at maidlinx.com",
+  "disclaimer": "Original scripted fiction. Not a customer testimonial. No copyrighted characters, actor likenesses, movie footage, logos, dialogue, or music from existing horror franchises.",
+  "dialogue": [
+    {
+      "speaker": "UNKNOWN",
+      "line": "I know what you spilled last summer."
+    },
+    {
+      "speaker": "Lexi",
+      "line": "What?"
+    },
+    {
+      "speaker": "UNKNOWN",
+      "line": "Check under your couch."
+    },
+    {
+      "speaker": "Nia",
+      "line": "Girl."
+    },
+    {
+      "speaker": "UNKNOWN",
+      "line": "I know about the oven too."
+    },
+    {
+      "speaker": "Nia",
+      "line": "I'm gonna need overtime."
+    }
+  ],
+  "assetRequirements": [
+    {
+      "id": "lexi-pj-condo-night",
+      "shotIds": [
+        "s01",
+        "s02"
+      ],
+      "description": "Luxury condo night interior. Lexi in black hoodie (Bratz board plate; not pink satin), phone lit \u2014 preserve Lexi face/hair/jewelry identity."
+    },
+    {
+      "id": "phone-text-unknown-summer",
+      "shotIds": [
+        "s01",
+        "s03",
+        "s12"
+      ],
+      "description": "Phone UI NEW MESSAGE from UNKNOWN (generic bubble, no franchise logos). Summer spill line on glitter pink phone."
+    },
+    {
+      "id": "couch-mystery-spill",
+      "shotIds": [
+        "s04"
+      ],
+      "description": "Old dried mystery spill under couch. Lexi on floor with cloth \u2014 joke is horror at the stain, not an intruder."
+    },
+    {
+      "id": "nia-doorbell-arrival",
+      "shotIds": [
+        "s05"
+      ],
+      "description": "Nia in MaidLinx uniform + supplies at door 2503. Preserve Nia visual identity."
+    },
+    {
+      "id": "nia-reaction",
+      "shotIds": [
+        "s06"
+      ],
+      "description": "Nia deadpan reaction inside condo (Boss Moves Only neon) \u2014 Girl."
+    },
+    {
+      "id": "clean-montage-beats",
+      "shotIds": [
+        "s07",
+        "s08",
+        "s09"
+      ],
+      "description": "Nia carpet extract / clean action plate with MaidLinx caddy \u2014 montage Ken Burns across spray/scrub/extract beats."
+    },
+    {
+      "id": "immaculate-listing-reveal",
+      "shotIds": [
+        "s10"
+      ],
+      "description": "Immaculate luxury condo reveal \u2014 premium listing energy, Good Vibes Only neon (original board art)."
+    },
+    {
+      "id": "lexi-relax-oven-look",
+      "shotIds": [
+        "s11",
+        "s12",
+        "s13"
+      ],
+      "description": "Lexi on couch with phone; oven callback text bubble: I know about the oven too."
+    },
+    {
+      "id": "end-card",
+      "shotIds": [
+        "s15"
+      ],
+      "description": "Brand end card plate (or color): title + MaidLinx + tagline + maidlinx.com. Original graphics only."
+    }
+  ],
+  "audio": {
+    "bgm": null,
+    "sfx": {
+      "phoneBuzz": null,
+      "doorbell": null,
+      "screamSting": null,
+      "whoosh": null
+    },
+    "notes": "Original SFX/BGM only under content-studio/audio/. No franchise horror stings or licensed tracks. Null = silent + burned-in captions."
+  },
+  "endCard": {
+    "lines": [
+      "I KNOW WHAT YOU SPILLED LAST SUMMER",
+      "MAIDLINX",
+      "Your Clean Connection.",
+      "maidlinx.com"
+    ],
+    "durationSeconds": 0.75
+  },
+  "captions": {
+    "tiktok": "She thought last summer was over\u2026 \ud83d\udc40\n\nI KNOW WHAT YOU SPILLED LAST SUMMER \u2014 Episode 01\nOriginal MaidLinx mini horror-comedy (scripted fiction, not a review).\n\nBook on-demand cleaning \u2192 maidlinx.com\nYour Clean Connection.\n\n#MaidLinx #CleaningTok #CondoClean #HorrorComedy",
+    "instagram": "I KNOW WHAT YOU SPILLED LAST SUMMER \u2728\n\nScripted MaidLinx short \u2014 Lexi, Nia, and one very informed UNKNOWN.\nNot a customer testimonial.\n\nYour Clean Connection. maidlinx.com",
+    "youtubeShortsTitle": "I KNOW WHAT YOU SPILLED LAST SUMMER | MaidLinx Short (Ep. 01)"
+  },
+  "shots": [
+    {
+      "id": "s01",
+      "index": 1,
+      "startSec": 0,
+      "durationSec": 1.2,
+      "label": "Text from UNKNOWN",
+      "visual": "Luxury condo night. Lexi in black hoodie (Bratz board). Phone buzz \u2014 UNKNOWN text: \u201cI know what you spilled last summer.\u201d",
+      "still": "assets/phone-text-unknown-summer.jpg",
+      "background": "#0B1220",
+      "movement": "kenburns-in",
+      "transition": "hard",
+      "overlay": "UNKNOWN",
+      "subtitle": "I know what you spilled last summer.",
+      "speaker": "UNKNOWN",
+      "characters": [
+        "lexi",
+        "caller"
+      ],
+      "sfx": "phoneBuzz"
+    },
+    {
+      "id": "s02",
+      "index": 2,
+      "startSec": 1.2,
+      "durationSec": 0.8,
+      "label": "Lexi What?",
+      "visual": "Close on Lexi \u2014 black hoodie, confused glam reaction",
+      "still": "assets/lexi-pj-condo-night.jpg",
+      "background": "#1A1020",
+      "movement": "zoom-in",
+      "transition": "hard",
+      "overlay": null,
+      "subtitle": "What?",
+      "speaker": "Lexi",
+      "characters": [
+        "lexi"
+      ]
+    },
+    {
+      "id": "s03",
+      "index": 3,
+      "startSec": 2.0,
+      "durationSec": 1.0,
+      "label": "Check under couch",
+      "visual": "Phone UI again \u2014 UNKNOWN instructs Lexi to check under the couch",
+      "still": "assets/phone-text-unknown-summer.jpg",
+      "background": "#151018",
+      "movement": "pan-up",
+      "transition": "hard",
+      "overlay": null,
+      "subtitle": "Check under your couch.",
+      "speaker": "UNKNOWN",
+      "characters": [
+        "lexi",
+        "caller"
+      ]
+    },
+    {
+      "id": "s04",
+      "index": 4,
+      "startSec": 3.0,
+      "durationSec": 2.0,
+      "label": "Spill scream",
+      "visual": "Lexi looks under couch, finds old dried mystery spill \u2014 disgust + scream. Joke: horrified by the spill, not an intruder.",
+      "still": "assets/couch-mystery-spill.jpg",
+      "background": "#3A2018",
+      "movement": "shake",
+      "transition": "hard",
+      "overlay": "THE SPILL",
+      "subtitle": null,
+      "characters": [
+        "lexi"
+      ],
+      "sfx": "screamSting"
+    },
+    {
+      "id": "s05",
+      "index": 5,
+      "startSec": 5.0,
+      "durationSec": 1.0,
+      "label": "Doorbell / Nia arrives",
+      "visual": "Doorbell. Lexi opens door. Nia in navy MaidLinx uniform with supplies.",
+      "still": "assets/nia-doorbell-arrival.jpg",
+      "background": "#0F2A28",
+      "movement": "kenburns-in",
+      "transition": "hard",
+      "overlay": "Nia \u00b7 MaidLinx",
+      "subtitle": null,
+      "characters": [
+        "lexi",
+        "nia"
+      ],
+      "sfx": "doorbell"
+    },
+    {
+      "id": "s06",
+      "index": 6,
+      "startSec": 6.0,
+      "durationSec": 1.0,
+      "label": "Girl.",
+      "visual": "Nia looks at Lexi, the spill, then the camera \u2014 deadpan",
+      "still": "assets/nia-reaction.jpg",
+      "background": "#12302C",
+      "movement": "none",
+      "transition": "hard",
+      "overlay": null,
+      "subtitle": "Girl.",
+      "speaker": "Nia",
+      "characters": [
+        "nia",
+        "lexi"
+      ]
+    },
+    {
+      "id": "s07",
+      "index": 7,
+      "startSec": 7.0,
+      "durationSec": 1.0,
+      "label": "Montage \u2014 spray / scrub",
+      "visual": "Fast clean: spray + scrub on the mystery spill zone",
+      "still": "assets/clean-montage-beats.jpg",
+      "background": "#0E3A36",
+      "movement": "kenburns-in",
+      "transition": "hard",
+      "overlay": "Spray \u00b7 Scrub",
+      "subtitle": null,
+      "characters": [
+        "nia"
+      ],
+      "sfx": "whoosh"
+    },
+    {
+      "id": "s08",
+      "index": 8,
+      "startSec": 8.0,
+      "durationSec": 1.0,
+      "label": "Montage \u2014 extract / wipe",
+      "visual": "Extract + wipe \u2014 satisfying residue lift",
+      "still": "assets/clean-montage-beats.jpg",
+      "background": "#0C4540",
+      "movement": "zoom-in",
+      "transition": "hard",
+      "overlay": "Extract \u00b7 Wipe",
+      "subtitle": null,
+      "characters": [
+        "nia"
+      ]
+    },
+    {
+      "id": "s09",
+      "index": 9,
+      "startSec": 9.0,
+      "durationSec": 1.0,
+      "label": "Montage \u2014 vacuum / reset / polish",
+      "visual": "Vacuum, reset pillows, polish countertop \u2014 kinetic tidy",
+      "still": "assets/clean-montage-beats.jpg",
+      "background": "#0A5048",
+      "movement": "kenburns-out",
+      "transition": "hard",
+      "overlay": "Vacuum \u00b7 Reset \u00b7 Polish",
+      "subtitle": null,
+      "characters": [
+        "nia"
+      ]
+    },
+    {
+      "id": "s10",
+      "index": 10,
+      "startSec": 10.0,
+      "durationSec": 1.0,
+      "label": "Immaculate reveal",
+      "visual": "Immaculate luxury condo reveal \u2014 premium Zillow/MLS listing energy",
+      "still": "assets/immaculate-listing-reveal.jpg",
+      "background": "#F4F7F6",
+      "movement": "kenburns-out",
+      "transition": "hard",
+      "overlay": "Listing-ready.",
+      "subtitle": null,
+      "textColor": "#111827",
+      "characters": [
+        "nia",
+        "lexi"
+      ]
+    },
+    {
+      "id": "s11",
+      "index": 11,
+      "startSec": 11.0,
+      "durationSec": 1.0,
+      "label": "Lexi relaxes",
+      "visual": "Lexi on the clean couch with phone \u2014 glam calm; oven tease setup",
+      "still": "assets/lexi-relax-oven-look.jpg",
+      "background": "#E8EEF0",
+      "movement": "none",
+      "transition": "hard",
+      "overlay": null,
+      "subtitle": null,
+      "textColor": "#111827",
+      "characters": [
+        "lexi"
+      ]
+    },
+    {
+      "id": "s12",
+      "index": 12,
+      "startSec": 12.0,
+      "durationSec": 1.2,
+      "label": "Oven callback",
+      "visual": "Phone buzzes. UNKNOWN: oven too. Lexi looks toward the oven.",
+      "still": "assets/phone-text-unknown-summer.jpg",
+      "background": "#120C18",
+      "movement": "zoom-in",
+      "transition": "hard",
+      "overlay": null,
+      "subtitle": "I know about the oven too.",
+      "speaker": "UNKNOWN",
+      "characters": [
+        "lexi",
+        "caller"
+      ],
+      "sfx": "phoneBuzz"
+    },
+    {
+      "id": "s13",
+      "index": 13,
+      "startSec": 13.2,
+      "durationSec": 0.8,
+      "label": "Overtime",
+      "visual": "Lexi frozen mid-look at oven; Nia offscreen deadpan",
+      "still": "assets/lexi-relax-oven-look.jpg",
+      "background": "#1A1020",
+      "movement": "none",
+      "transition": "hard",
+      "overlay": null,
+      "subtitle": "I'm gonna need overtime.",
+      "speaker": "Nia",
+      "characters": [
+        "lexi",
+        "nia"
+      ]
+    },
+    {
+      "id": "s14",
+      "index": 14,
+      "startSec": 14.0,
+      "durationSec": 0.25,
+      "label": "Cut to black",
+      "visual": "Hard cut black",
+      "still": null,
+      "background": "#000000",
+      "movement": "none",
+      "transition": "hard",
+      "overlay": null,
+      "subtitle": null,
+      "characters": []
+    },
+    {
+      "id": "s15",
+      "index": 15,
+      "startSec": 14.25,
+      "durationSec": 0.75,
+      "label": "End card",
+      "visual": "End card: I KNOW WHAT YOU SPILLED LAST SUMMER / MAIDLINX / Your Clean Connection. / maidlinx.com",
+      "still": "assets/end-card.jpg",
+      "background": "#111827",
+      "movement": "none",
+      "transition": "hard",
+      "overlay": null,
+      "subtitle": null,
+      "endCard": true,
+      "characters": []
+    }
+  ],
+  "assetIngest": {
+    "source": "assets/storyboard-bratz-source.jpg",
+    "priorSource": "assets/storyboard-source.jpg",
+    "date": "2026-08-12",
+    "notes": [
+      "Authoritative board: Bratz_epi_1 collage (cartoon/Bratz style) \u2014 replaced prior photoreal plates for style consistency.",
+      "Panel map: 1 lexi-pj-condo-night (black hoodie), 2 phone-text NEW MESSAGE, 3 couch-mystery-spill (REQUIRED), 4 nia-doorbell door 2503, 5 nia-reaction, 6 clean-montage extract, 7 immaculate-listing-reveal, 8 lexi-relax-oven-look oven tease.",
+      "end-card kept (SUMMER title + MAIDLINX + maidlinx.com brand plate).",
+      "s14 cut-to-black intentionally still=null."
+    ],
+    "missing": []
+  }
+}

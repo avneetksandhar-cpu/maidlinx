@@ -158,6 +158,7 @@ describe("Matching foundation — operational factors only", () => {
     cancelledJobsByProfileId: new Map(),
     favoriteProfileIds: new Set(),
     repeatProfileIds: new Set(),
+    requireStrictMarketplace: false,
   };
 
   function cleaner(overrides: Partial<MatchCleaner> = {}): MatchCleaner {

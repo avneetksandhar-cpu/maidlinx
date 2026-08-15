@@ -108,10 +108,11 @@ export async function dispatchAcceptanceStats(limit = 200): Promise<{
     };
   }
 
-  const sampleSize = data.length;
-  const accepted = data.filter((r) => r.outcome === "accepted").length;
-  const declined = data.filter((r) => r.outcome === "declined").length;
-  const expired = data.filter((r) => r.outcome === "expired").length;
+  const rows = data as Array<{ outcome?: string }>;
+  const sampleSize = rows.length;
+  const accepted = rows.filter((r) => r.outcome === "accepted").length;
+  const declined = rows.filter((r) => r.outcome === "declined").length;
+  const expired = rows.filter((r) => r.outcome === "expired").length;
   const offeredLike = accepted + declined + expired;
 
   return {

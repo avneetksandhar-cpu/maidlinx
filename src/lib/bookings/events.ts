@@ -6,6 +6,7 @@
 import { createAdminClient, hasAdminEnv } from "@/lib/supabase/admin";
 import type { Json } from "@/types/database.types";
 import type { BookingStatus } from "@/lib/bookings/status";
+import { mirrorCriticalBookingEvent } from "@/lib/events/business-events";
 
 export type BookingEventActorType = "system" | "customer" | "cleaner" | "admin" | "guest";
 
@@ -145,28 +146,38 @@ export async function emitBookingEvent(input: EmitInput): Promise<void> {
       payload: normalized.payload as Json,
     });
 
-    if (!primary.error) return;
-
-    // Fallback: Phase 1 columns (actor_role / metadata).
-    if (/actor_type|payload|schema cache|column/i.test(primary.error.message)) {
-      const fallback = await supabase.from("booking_events").insert({
-        booking_id: normalized.bookingId,
-        event_type: normalized.eventType,
-        actor_id: normalized.actorId,
-        actor_role: normalized.actorType,
-        metadata: normalized.payload as Json,
-      });
-      if (fallback.error && !/booking_events|does not exist/i.test(fallback.error.message)) {
-        console.error("[booking_events]", fallback.error.message);
+    if (primary.error) {
+      // Fallback: Phase 1 columns (actor_role / metadata).
+      if (/actor_type|payload|schema cache|column/i.test(primary.error.message)) {
+        const fallback = await supabase.from("booking_events").insert({
+          booking_id: normalized.bookingId,
+          event_type: normalized.eventType,
+          actor_id: normalized.actorId,
+          actor_role: normalized.actorType,
+          metadata: normalized.payload as Json,
+        });
+        if (fallback.error && !/booking_events|does not exist/i.test(fallback.error.message)) {
+          console.error("[booking_events]", fallback.error.message);
+        }
+      } else if (!/booking_events|does not exist/i.test(primary.error.message)) {
+        console.error("[booking_events]", primary.error.message);
       }
-      return;
-    }
-
-    if (!/booking_events|does not exist/i.test(primary.error.message)) {
-      console.error("[booking_events]", primary.error.message);
     }
   } catch (error) {
     console.error("[booking_events] emit failed", error);
+  }
+
+  // Soft-fail mirror for AI OS — never blocks booking path.
+  try {
+    await mirrorCriticalBookingEvent({
+      eventType: normalized.eventType,
+      bookingId: normalized.bookingId,
+      actorType: normalized.actorType,
+      actorId: normalized.actorId,
+      payload: normalized.payload,
+    });
+  } catch {
+    /* ignore */
   }
 }
 

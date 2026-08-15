@@ -13,7 +13,21 @@ export interface MarketConfig {
   country: "CA" | "US";
   currency: "CAD" | "USD";
   timezone: string;
+  /**
+   * Market exists in product geo config (zones / currency / catalog).
+   * Does NOT mean customers may book or that ads are open.
+   */
   active: boolean;
+  /**
+   * Customers may create quotes/bookings in this market.
+   * Independent per market; default OFF until founder enables after coverage.
+   */
+  bookingEnabled: boolean;
+  /**
+   * Market open for customer acquisition / ads.
+   * Independent of bookingEnabled (TEST booking can exist without launch).
+   */
+  launchEnabled: boolean;
   center: { latitude: number; longitude: number };
   /** Provinces / states this market covers (uppercase). */
   regions: string[];
@@ -39,7 +53,10 @@ export const MARKETS: MarketConfig[] = [
     country: "CA",
     currency: "CAD",
     timezone: "America/Toronto",
+    // Geo configured; booking/launch stay OFF until coverage + founder enable.
     active: true,
+    bookingEnabled: false,
+    launchEnabled: false,
     center: { latitude: 43.6532, longitude: -79.3832 },
     regions: ["ON"],
   },
@@ -52,6 +69,8 @@ export const MARKETS: MarketConfig[] = [
     currency: "USD",
     timezone: "America/New_York",
     active: true,
+    bookingEnabled: false,
+    launchEnabled: false,
     center: { latitude: 26.1224, longitude: -80.1373 },
     regions: ["FL"],
   },
@@ -63,8 +82,10 @@ export const MARKETS: MarketConfig[] = [
     country: "US",
     currency: "USD",
     timezone: "America/New_York",
-    // Not customer-facing until ops enables booking here.
+    // Outside launch set — keep fully dark.
     active: false,
+    bookingEnabled: false,
+    launchEnabled: false,
     center: { latitude: 40.7128, longitude: -74.006 },
     regions: ["NY"],
   },
@@ -76,12 +97,21 @@ export const MARKETS: MarketConfig[] = [
     country: "US",
     currency: "USD",
     timezone: "America/Los_Angeles",
-    // Not customer-facing until ops enables booking here.
     active: false,
+    bookingEnabled: false,
+    launchEnabled: false,
     center: { latitude: 34.0522, longitude: -118.2437 },
     regions: ["CA"],
   },
 ];
+
+/** Launch regions only — never expand customer booking outside this set without Product. */
+export const LAUNCH_MARKET_IDS = ["TORONTO_GTA", "SOUTH_FLORIDA"] as const;
+export type LaunchMarketId = (typeof LAUNCH_MARKET_IDS)[number];
+
+export function isLaunchMarketId(id: string | null | undefined): id is LaunchMarketId {
+  return Boolean(id && (LAUNCH_MARKET_IDS as readonly string[]).includes(id));
+}
 
 export const SERVICE_ZONES: ServiceZoneConfig[] = [
   // --- Toronto / Greater Toronto Area (CAD) ---

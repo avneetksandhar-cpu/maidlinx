@@ -32,6 +32,43 @@ async function getDbClient() {
   return createClient();
 }
 
+function isBootstrapAdminEmail(email: string): boolean {
+  const bootstrapEmail = process.env.ADMIN_BOOTSTRAP_EMAIL?.toLowerCase()?.trim();
+  return Boolean(bootstrapEmail && email.toLowerCase() === bootstrapEmail);
+}
+
+/**
+ * Server-only: promote the configured ADMIN_BOOTSTRAP_EMAIL profile to admin.
+ * Does not weaken middleware — /owner and /admin still require an authenticated admin role.
+ * Uses service role only; never trusts client/metadata role claims.
+ */
+export async function promoteBootstrapAdminIfNeeded(input: {
+  userId: string;
+  email: string;
+  profile: AuthProfile;
+}): Promise<AuthProfile> {
+  if (!isBootstrapAdminEmail(input.email) || input.profile.role === "admin") {
+    return input.profile;
+  }
+  if (!hasAdminEnv()) {
+    return input.profile;
+  }
+
+  const supabase = createAdminClient();
+  const { data, error } = await supabase
+    .from("profiles")
+    .update({ role: "admin" } as never)
+    .eq("id", input.userId)
+    .select("id, role, first_name, last_name, phone, avatar_url")
+    .maybeSingle();
+
+  if (error || !data) {
+    return input.profile;
+  }
+
+  return mapProfile(data as Record<string, unknown>);
+}
+
 export async function ensureProfileForUser(input: EnsureProfileInput): Promise<AuthProfile> {
   const supabase = await getDbClient();
 
@@ -56,18 +93,21 @@ export async function ensureProfileForUser(input: EnsureProfileInput): Promise<A
       await supabase.from("profiles").update(updates as never).eq("id", input.userId);
     }
 
-    return mapProfile({ ...existing, ...updates });
+    const profile = mapProfile({ ...existing, ...updates });
+    return promoteBootstrapAdminIfNeeded({
+      userId: input.userId,
+      email: input.email,
+      profile,
+    });
   }
 
   // Never allow client/metadata self-assignment of admin.
-  const bootstrapEmail = process.env.ADMIN_BOOTSTRAP_EMAIL?.toLowerCase();
   const requestedRole = normalizeRole(input.role ?? null);
-  const role: UserRole =
-    bootstrapEmail && input.email.toLowerCase() === bootstrapEmail
-      ? "admin"
-      : requestedRole === "cleaner"
-        ? "cleaner"
-        : "customer";
+  const role: UserRole = isBootstrapAdminEmail(input.email)
+    ? "admin"
+    : requestedRole === "cleaner"
+      ? "cleaner"
+      : "customer";
 
   const { data: created, error: createError } = await supabase
     .from("profiles")

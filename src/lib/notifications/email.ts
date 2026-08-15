@@ -3,18 +3,29 @@ export interface SendEmailParams {
   subject: string;
   html: string;
   text?: string;
+  replyTo?: string;
+  /** Optional override; defaults to RESEND_FROM_EMAIL / EMAIL_FROM / locked mail subdomain. */
+  from?: string;
 }
 
-export async function sendEmail(params: SendEmailParams): Promise<void> {
+export interface SendEmailResult {
+  id?: string;
+  provider: string;
+}
+
+const LOCKED_FROM = "MaidLinx <bookings@mail.maidlinx.com>";
+
+export async function sendEmail(params: SendEmailParams): Promise<SendEmailResult> {
   const provider = process.env.EMAIL_PROVIDER ?? "log";
 
   if (provider === "log") {
     console.log("[email]", {
       to: params.to,
       subject: params.subject,
+      replyTo: params.replyTo,
       text: params.text ?? params.html.replace(/<[^>]+>/g, " "),
     });
-    return;
+    return { provider: "log" };
   }
 
   if (provider === "resend") {
@@ -22,10 +33,15 @@ export async function sendEmail(params: SendEmailParams): Promise<void> {
     if (!apiKey) {
       console.warn("[email] RESEND_API_KEY missing — logging instead.");
       console.log("[email]", params);
-      return;
+      return { provider: "log" };
     }
 
-    const from = process.env.EMAIL_FROM ?? "MaidLinx <bookings@maidlinx.com>";
+    const from =
+      params.from ||
+      process.env.RESEND_FROM_EMAIL ||
+      process.env.EMAIL_FROM ||
+      LOCKED_FROM;
+
     const response = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
@@ -38,6 +54,7 @@ export async function sendEmail(params: SendEmailParams): Promise<void> {
         subject: params.subject,
         html: params.html,
         text: params.text,
+        ...(params.replyTo ? { reply_to: params.replyTo } : {}),
       }),
     });
 
@@ -46,9 +63,11 @@ export async function sendEmail(params: SendEmailParams): Promise<void> {
       throw new Error(`Resend error (${response.status}): ${body}`);
     }
 
-    return;
+    const data = (await response.json()) as { id?: string };
+    return { provider: "resend", id: data.id };
   }
 
   console.warn(`[email] Unknown EMAIL_PROVIDER "${provider}" — logging instead.`);
   console.log("[email]", params);
+  return { provider: "log" };
 }

@@ -86,6 +86,7 @@ async function SettingsContent() {
       <CapabilitiesForm
         initialServiceIds={capabilities?.serviceIds ?? []}
         initialZoneIds={capabilities?.zoneIds ?? []}
+        initialMarketId={capabilities?.marketId ?? null}
         hasVehicle={capabilities?.hasVehicle ?? false}
         travelRadiusKm={capabilities?.travelRadiusKm ?? profile.serviceRadiusKm}
         services={catalogServicesForUi()}
