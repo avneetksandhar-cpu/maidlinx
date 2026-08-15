@@ -14,7 +14,7 @@ This repo is a **two-sided cleaning marketplace** (customers ↔ cleaners) with 
 | [`company/GROWTH_BACKLOG.md`](company/GROWTH_BACKLOG.md) | Prioritized growth backlog (metric / cheap test / measure / success) |
 | [`company/AGENT_REPORTS/`](company/AGENT_REPORTS/) | Role reports after significant work |
 
-Read the board before expanding scope. Current verified growth constraint: **SUPPLY** (FL primary; GTA deferred) — see Growth OS.
+Read the board before expanding scope. Current verified growth constraint: **SUPPLY** (**GTA ACTIVE** · **FL ACTIVE**, separate experiments; BOOKABLE=0; Stripe LIVE OFF; no paid ads assumed) — see Growth OS.
 
 **Scope rule (updated 2026-08-12):** Do not expand customer/booking/payment surface until CRITICAL launch P0s pass. Launch Gate P0 = **0** (controlled TEST YES; real-money NO). **Exception (Product):** AI Revenue Director V0 is approved as **internal** `/owner` platform work after P0 clear — modular server-side only; must not weaken booking/payment/webhook/consent/Sentry.
 

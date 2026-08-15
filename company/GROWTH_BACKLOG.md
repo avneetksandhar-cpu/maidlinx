@@ -1,69 +1,128 @@
 # MaidLinx Growth Backlog
 
-**Updated:** 2026-08-14  
+**Updated:** 2026-08-14 (dual-geo ACTIVE)  
 **OS:** [`GROWTH_OPERATING_SYSTEM.md`](GROWTH_OPERATING_SYSTEM.md)  
-**Constraint:** **SUPPLY** — `BOOKABLE_CLEANERS = 0` · markets CLOSED · Stripe LIVE OFF · FL primary
+**Constraint:** **SUPPLY** — `BOOKABLE_CLEANERS = 0` · markets CLOSED · Stripe LIVE OFF · **GTA ACTIVE** · **FL ACTIVE** (separate funnels)  
+**NO_PAID_ADS_ASSUMED:** true
 
 Every item: **metric** · **cheap test** · **measure** · **success path**.  
-Paid ads marked **LATER** until organic proves.
+Paid ads marked **LATER** until organic proves. Do not blend GTA + FL vanity totals.
 
 ---
 
-## NOW — P0 Supply (SOUTH_FLORIDA)
+## NOW — P0 Supply A (SOUTH_FLORIDA) — ACTIVE
 
-### P0-1 — Drive FL applications via organic Facebook (continue)
-
-| Field | Content |
-|-------|---------|
-| **Metric** | Applications to https://maidlinx.com/earn (FL) |
-| **Cheap test** | Keep posting/engaging in FL cleaning/job groups (8 already posted; expand only if groups allow). Use kit in `company/growth/cleaner-recruiting/`. |
-| **Measure** | App count + which group/channel (manual log OK). Target: **10+** apps. |
-| **Success path** | Move to screening cadence (P0-2). Do not open booking. |
-| **Status** | IN PROGRESS — 8 FL groups posted; no paid ads |
-
-### P0-2 — Screen toward strong FL fits
+### P0-FL-1 — Drive FL applications via organic Facebook (continue)
 
 | Field | Content |
 |-------|---------|
-| **Metric** | Screened count; strong-fit count |
-| **Cheap test** | Founder/ops short screen per `screening-notes.md` (experience, supplies, transport, zone, IC clarity). |
-| **Measure** | **5 screened → 3 strong** (funnel target). |
-| **Success path** | Ops-complete strongest candidates (P0-3). Reject politely; no fake “approved for launch.” |
+| **Metric** | Applications to https://maidlinx.com/earn attributed FL |
+| **Cheap test** | Keep posting/engaging in FL cleaning/job groups (8 already posted; expand only if groups allow). Kit: `company/growth/cleaner-recruiting/`. |
+| **Measure** | App count + source log. Target: **10+** FL apps. |
+| **Success path** | Screening cadence (P0-FL-2). Do not open booking. |
+| **Status** | IN PROGRESS — 8 FL organic groups posted; no paid ads |
+
+### P0-FL-2 — Screen toward strong FL fits
+
+| Field | Content |
+|-------|---------|
+| **Metric** | Screened count; strong-fit count (FL) |
+| **Cheap test** | Founder/ops short screen per `screening-notes.md`. |
+| **Measure** | **5 screened → 3 strong**. |
+| **Success path** | Ops-complete strongest (P0-FL-3). |
 | **Status** | WAITING on applications |
 
-### P0-3 — Ops-complete → bookable in one FL zone
+### P0-FL-3 — Ops-complete → bookable in one FL zone
 
 | Field | Content |
 |-------|---------|
 | **Metric** | `BOOKABLE_CLEANERS` in one SOUTH_FLORIDA zone (≥2) |
-| **Cheap test** | Enter real market/zones/services/availability at `/owner/cleaners/[id]` for strong applicants only. Do not invent data for `ba902d50` market if unknown. |
-| **Measure** | Marketplace eligibility truth (approved + active + market + zone + service + availability). Target: **2+ bookable same area**. |
-| **Success path** | Unlock P1 liquidity proof. Markets stay CLOSED until founder decides. |
-| **Status** | BLOCKED on P0-1/P0-2 |
+| **Cheap test** | Enter real market/zones/services/availability at `/owner/cleaners/[id]` for strong applicants only. Do not invent data for `ba902d50` if market unknown. |
+| **Measure** | Marketplace eligibility truth. Target: **2+ bookable same area**. |
+| **Success path** | Unlock FL P1 liquidity proof. Markets stay CLOSED until founder decides. |
+| **Status** | BLOCKED on P0-FL-1/2 |
 
-### P0-4 — Optional organic FL channels (Craigslist / direct outreach)
+### P0-FL-4 — Optional organic FL channels (Craigslist / DMs / referrals)
 
 | Field | Content |
 |-------|---------|
-| **Metric** | Incremental `/earn` applications |
-| **Cheap test** | IC-safe listings + respectful DMs to independents already advertising in Miami-Dade / Broward / Palm Beach. |
-| **Measure** | Apps attributed to channel vs FB-only baseline. |
-| **Success path** | Double down on channels that convert; kill ones that don’t. |
-| **Status** | READY after/alongside FB |
+| **Metric** | Incremental `/earn` applications (FL source) |
+| **Cheap test** | IC-safe listings + respectful DMs to independents in Miami-Dade / Broward / Palm Beach. |
+| **Measure** | Apps by channel vs FB-only baseline. |
+| **Success path** | Double down on converting channels. |
+| **Status** | READY alongside FB |
 
 ---
 
-## NEXT — P1 Liquidity proof (after bookable ≥ 2 same FL zone)
+## NOW — P0 Supply B (TORONTO_GTA) — ACTIVE
 
-### P1-1 — Controlled TEST jobs in one FL zone (Stripe TEST only)
+### P0-GTA-1 — Publish organic GTA Facebook posts (retry after composer failures)
+
+| Field | Content |
+|-------|---------|
+| **Metric** | GTA organic FB groups published (honest count); then `/earn` apps attributed GTA |
+| **Cheap test** | Retry/fix 5–10 GTA cleaning/job groups with prepared copy. Prefer **show-before-post** / founder approval. Do not spam. |
+| **Measure** | Posts published ≠ 0; then apps. Target: **10+** GTA apps (same funnel). |
+| **Success path** | Screening (P0-GTA-2). Keep separate from FL totals. |
+| **Status** | **RECOMMENDED / NEEDS HUMAN APPROVAL** — 0 GTA posts published; copy + shortlist prepared |
+
+### P0-GTA-2 — Screen toward strong GTA fits
+
+| Field | Content |
+|-------|---------|
+| **Metric** | Screened / strong (GTA) |
+| **Cheap test** | Same screening notes; GTA zone focus (Toronto / Brampton / Mississauga depth). |
+| **Measure** | **5 screened → 3 strong**. |
+| **Success path** | Ops-complete (P0-GTA-3). |
+| **Status** | WAITING on applications |
+
+### P0-GTA-3 — Ops-complete → bookable in one GTA zone
+
+| Field | Content |
+|-------|---------|
+| **Metric** | `BOOKABLE_CLEANERS` in one TORONTO_GTA zone (≥2) |
+| **Cheap test** | Real ops completeness only for verified GTA applicants. |
+| **Measure** | **2+ bookable same area**. |
+| **Success path** | Unlock GTA P1 liquidity proof (independent of FL). |
+| **Status** | BLOCKED on P0-GTA-1/2 |
+
+### P0-GTA-4 — Kijiji + GTA DMs / referrals
+
+| Field | Content |
+|-------|---------|
+| **Metric** | Incremental GTA `/earn` applications |
+| **Cheap test** | Kijiji IC-safe listing + respectful DMs to independents already advertising in GTA. |
+| **Measure** | Apps by channel. |
+| **Success path** | Scale channels that convert; kill those that don’t. |
+| **Status** | READY alongside / after first FB posts |
+
+---
+
+## Shared P0 — Attribution hygiene
+
+### P0-ATTR-1 — Applicant source tracker (markdown)
+
+| Field | Content |
+|-------|---------|
+| **Metric** | % of apps with known market + channel |
+| **Cheap test** | Manual log in `company/growth/applicant-source-tracker.md` (no new dashboard). |
+| **Measure** | Rows filled when apps arrive; UNKNOWN allowed. |
+| **Success path** | Know which free channel converts before any paid spend. |
+| **Status** | READY |
+
+---
+
+## NEXT — P1 Liquidity proof (after bookable ≥ 2 in that market)
+
+### P1-1 — Controlled TEST jobs in the first ready market (Stripe TEST only)
 
 | Field | Content |
 |-------|---------|
 | **Metric** | Completed TEST bookings; offer→accept→complete |
-| **Cheap test** | Founder-enable `booking_enabled` for SOUTH_FLORIDA only in TEST; run 1–2 controlled jobs. Stripe LIVE stays OFF. |
+| **Cheap test** | Founder-enable `booking_enabled` for **one** market only in TEST; 1–2 controlled jobs. Stripe LIVE stays OFF. |
 | **Measure** | Lifecycle PASS with real bookable cleaners; no stranded customers. |
 | **Success path** | Decide demand thaw (P2) vs more supply depth. |
-| **Status** | GATED on P0-3 |
+| **Status** | GATED on P0-FL-3 **or** P0-GTA-3 |
 
 ### P1-2 — Matching reliability check
 
@@ -77,43 +136,27 @@ Paid ads marked **LATER** until organic proves.
 
 ---
 
-## LATER — P2 Demand (only after bookable ≥ 2)
+## LATER — P2 Demand (only after bookable ≥ 2 in that market)
 
-### P2-1 — FL customer waitlist / soft interest (no open market required)
+### P2-1 — Customer waitlist / soft interest (no open market required)
 
 | Field | Content |
 |-------|---------|
-| **Metric** | Waitlist / interest signups in FL geo |
-| **Cheap test** | Existing waitlist path if migration applied; organic posts pointing to waitlist — not paid. |
+| **Metric** | Waitlist / interest signups by geo |
+| **Cheap test** | Existing waitlist path if migration applied; organic posts — not paid. |
 | **Measure** | Signups; do not treat as revenue. |
 | **Success path** | Warm list for when booking opens. |
 | **Status** | LATER — do not prioritize over supply |
 
-### P2-2 — Open FL customer booking (founder RED)
+### P2-2 — Open customer booking (founder RED)
 
 | Field | Content |
 |-------|---------|
 | **Metric** | Paid bookings (still Stripe TEST until LIVE approved); fill rate |
-| **Cheap test** | Enable `booking_enabled` for SOUTH_FLORIDA only after coverage GREEN (≥2 bookable). |
+| **Cheap test** | Enable `booking_enabled` for **one** market after coverage GREEN (≥2 bookable). |
 | **Measure** | Bookings created, paid, completed, cleaner utilization. |
 | **Success path** | Retention loop; then consider Stripe LIVE (separate RED). |
 | **Status** | LATER — founder only |
-
----
-
-## LATER — P3 TORONTO_GTA (separate experiment)
-
-GTA is **not** cancelled — it is **second**. Do not mix GTA vanity metrics with FL.
-
-### P3-1 — Resume GTA organic supply when FL has depth
-
-| Field | Content |
-|-------|---------|
-| **Metric** | GTA applications → bookable in one GTA zone |
-| **Cheap test** | Same kit patterns; swap geography; 0 GTA FB posts published as of 2026-08-14 pivot. |
-| **Measure** | Separate funnel from FL. Same 10→5→3→2+ target in one area. |
-| **Success path** | Independent GTA liquidity proof. |
-| **Status** | DEFERRED — FL primary |
 
 ---
 
@@ -124,10 +167,10 @@ GTA is **not** cancelled — it is **second**. Do not mix GTA vanity metrics wit
 | Field | Content |
 |-------|---------|
 | **Metric** | Cost per application; cost per bookable cleaner |
-| **Cheap test** | Small capped budget **only after** organic FL shows nonzero app→screen→bookable conversion. |
+| **Cheap test** | Small capped budget **only after** organic shows nonzero app→screen→bookable conversion in a market. |
 | **Measure** | CPA vs organic baseline; kill if worse unit economics. |
 | **Success path** | Scale channels with proven CPA to bookable. |
-| **Status** | **LATER — blocked until organic proves** |
+| **Status** | **LATER — blocked until organic proves · NO_PAID_ADS_ASSUMED** |
 
 ### L-ADS-2 — Paid customer demand ads
 
@@ -146,8 +189,9 @@ GTA is **not** cancelled — it is **second**. Do not mix GTA vanity metrics wit
 - New growth dashboards / product features “for marketing”
 - Stripe LIVE / Connect LIVE / wallet LIVE
 - Enabling `booking_enabled` with BOOKABLE=0
-- Fabricating cleaners or application counts
-- Broad multi-city or GTA+FL simultaneous spray
+- Fabricating cleaners, applications, posts, leads, or revenue
+- Reporting organic as paid
+- Paid recruitment ads (not in use; not assumed)
 - AI campaign auto-send
 
 ---
@@ -155,5 +199,5 @@ GTA is **not** cancelled — it is **second**. Do not mix GTA vanity metrics wit
 ## How to refresh this file
 
 1. Re-read verified constraint in `GROWTH_OPERATING_SYSTEM.md`.
-2. Re-rank: supply → liquidity → demand → retention → geo #2 → paid.
+2. Re-rank: supply (both ACTIVE geos, separate) → liquidity → demand → retention → paid.
 3. Every new item must include metric / cheap test / measure / success path.

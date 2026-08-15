@@ -1,69 +1,66 @@
-# Channel checklist — South Florida cleaner recruiting
+# Channel checklist — dual-geo cleaner recruiting (ACTIVE)
 
 Use with `post-copy.md`. Direct every applicant to the **MaidLinx Cleaner Application**: https://maidlinx.com/earn  
 
-**Tonight’s focus only:** Facebook South Florida cleaning/job groups → local listings → direct outreach to independents in Miami-Dade / Broward / Palm Beach.  
+**GTA = ACTIVE** · **FL = ACTIVE** — track separately. Organic only unless founder explicitly approves paid.  
+Goal per market: **10+ applications → 5 screened → 3 strong → 2+ bookable** in **one** initial area.  
 
-**Second market later:** Toronto GTA (do not prioritize GTA posts while South Florida is primary).  
+**Explicit:** Leave customer booking OFF and Stripe LIVE OFF. Do not invent cleaner data. Do not activate `ba902d50` as capacity.
 
-Goal: **10+ applications → 5 screened → 3 strong → 2+ bookable** in **one** initial South Florida area.  
+## Facebook — South Florida (continue)
 
-**Explicit:** Leave customer booking OFF and Stripe LIVE OFF until that supply exists. Do not enable `booking_enabled` or activate cleaner `ba902d50` from this workstream. Do not invent cleaner data.
-
-## Facebook South Florida cleaning / job groups (tonight — first)
-
-Post only where group rules allow contractor / cleaner / job-related posts. Prefer local Miami / Fort Lauderdale / Broward / Palm Beach / Miami-Dade over mega statewide spam.
-
-**Search / join targets (examples — verify still active & rules before posting):**
-- Cleaning jobs / house cleaners (Miami, Miami-Dade, Broward, Fort Lauderdale, Palm Beach)
-- South Florida / South FL job & community groups that allow service/IC posts
-- Fort Lauderdale / Hollywood / Boca / West Palm Beach local job groups (if rules allow)
-- Newcomer / women’s work networks that allow IC service posts (only if rules allow; no misleading “hiring”)
+**Status:** 8 organic groups already published (2026-08-14). Engage replies; expand only if rules allow.
 
 **Per-group checklist**
-- [ ] Read group rules (no “hiring employees” if banned; no external links if restricted)
-- [ ] Use founder lead or Variant A from `post-copy.md`
-- [ ] Name the **MaidLinx Cleaner Application** and include https://maidlinx.com/earn
-- [ ] Include IC + no guaranteed income disclaimers
-- [ ] One post per group; don’t duplicate-spam same day
-- [ ] Log group name + date + link to post (simple spreadsheet is enough)
-- [ ] **Show groups + final post to founder before publishing**
+- [ ] Read group rules
+- [ ] Use FL copy from `post-copy.md`
+- [ ] Name **MaidLinx Cleaner Application** + https://maidlinx.com/earn
+- [ ] IC + no guaranteed income
+- [ ] One post per group; don’t duplicate-spam
+- [ ] Log in `../applicant-source-tracker.md`
 
-## Local listings (tonight — second)
+## Facebook — Toronto GTA (retry / first publish)
 
-- Prefer **Services** or **Jobs** categories that fit contractor / cleaning help — follow platform rules
-- Avoid language that sounds like W-2 employment (“salary,” “full-time hire,” “we employ”)
-- Use Variant B; keep title honest (e.g. “Independent cleaners — MaidLinx South Florida platform”)
-- Point to the **MaidLinx Cleaner Application**: https://maidlinx.com/earn
-- Screen harder with `screening-notes.md` if volume is low-fit
-- Refresh listing if it ages out; don’t over-repost and get flagged
+**Status:** 0 published (composer failures previously). Prepared pack: `GTA_FB_READY_FOR_APPROVAL.md` — **NEEDS HUMAN APPROVAL**.
 
-## Direct outreach to independents — Miami-Dade / Broward / Palm Beach (tonight — third)
+**Per-group checklist**
+- [ ] Founder approved copy + shortlist
+- [ ] Read group rules
+- [ ] Use GTA copy from `post-copy.md`
+- [ ] Name **MaidLinx Cleaner Application** + https://maidlinx.com/earn
+- [ ] IC + no guaranteed income
+- [ ] Cap wave ≤8 groups; one post each
+- [ ] Log publish only after real success (do not fabricate)
 
-- Find cleaners already advertising locally (Craigslist Services, FB Marketplace, Nextdoor if used)
-- Short respectful DM (Variant C) — one message, no pressure follow-up spam
-- Always include **MaidLinx Cleaner Application** + https://maidlinx.com/earn
-- Do **not** imply MaidLinx will steal their clients or guarantee more work than they have today
-- Track: name/channel → replied? → applied? → promising?
+Prefer Toronto / Brampton / Mississauga cleaning/job groups over mega-GTA or out-of-geo.
 
-## Indeed (later — not tonight)
+## Kijiji (GTA)
 
-- Wait until Facebook + local listings + direct outreach produce a baseline (aim: first ~10+ applications)
-- Then consider a paid/organic Indeed post using the same IC + no-guarantee language and **MaidLinx Cleaner Application** link
-- Do not invent wage ranges or “guaranteed weekly bookings”
+- Services / Jobs categories that fit contractor / cleaning help
+- Variant GTA Kijiji; honest IC language
+- Screen harder if volume is low-fit
 
-## Toronto GTA (later — second market)
+## Local listings (FL)
 
-- Same checklist patterns when Product reopens GTA recruiting
-- Swap geography in `post-copy.md` variants; keep CTA + IC + no-guarantee rules identical
-- Do not run GTA and South Florida spray in the same night until one market has depth
+- Craigslist / similar FL-allowed channels
+- Variant FL local listings; avoid W-2 “hiring” language
+
+## Direct outreach / DMs / referrals (both)
+
+- Short respectful DM (geo-matched variant)
+- One message; no pressure spam
+- Always include **MaidLinx Cleaner Application** + URL
+- Track reply → apply → promising?
+
+## Indeed / paid Meta (later)
+
+- **Not now.** Wait until organic proves app→screen→bookable in a market.
 
 ## Anti-patterns
 
-- Promising “steady work,” “guaranteed clients,” or employee benefits
+- Promising steady work / guaranteed clients / employee benefits
 - Inventing cleaner availability, zones, or capacity
-- Activating or publicly naming cleaner `ba902d50` as capacity
 - Enabling `booking_enabled` or Stripe LIVE because applicants showed up
-- Opening customer booking before **2+ bookable** cleaners exist in the same area
-- Posting tri-county-wide while you still need depth in one zone
-- Continuing Toronto/GTA posts while South Florida is the primary market
+- Blending FL + GTA into one vanity post/app count
+- Reporting organic as paid
+- Cross-posting the same thread into wrong-geo groups

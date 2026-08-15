@@ -2,12 +2,19 @@
 
 Format: date · decision · owner · rationale · status
 
-## 2026-08-14 — Growth Operating System + FL-primary supply constraint
+## 2026-08-14 — Dual-geo supply ACTIVE (GTA + FL) — correct FL-only deferral
 
-- **Decision:** Encode founder operating model in `company/GROWTH_OPERATING_SYSTEM.md` + prioritized `company/GROWTH_BACKLOG.md`. Cursor/agents act as growth/product/ops/economics engine (five questions on every action; bottleneck-first). **Current verified constraint = SUPPLY** (`BOOKABLE_CLEANERS=0`, markets CLOSED, Stripe LIVE OFF). **SOUTH_FLORIDA** is the primary geo experiment; **TORONTO_GTA** is a separate deferred experiment (0 GTA FB posts after pivot). Organic FL recruitment first (8 groups posted); **paid ads LATER** after organic proves app→bookable conversion. Demand work only after bookable ≥ 2 in one FL zone. No invented metrics; no booking/Stripe LIVE enablement from this decision.
-- **Owner:** Founder + Growth / Product
-- **Rationale:** Highest leverage is bookable supply in one area, not marketing activity or dual-geo spray. Board must make the constraint and backlog explicit for all agents.
+- **Decision:** **TORONTO_GTA** and **SOUTH_FLORIDA** recruitment are both **ACTIVE** as **separate** supply experiments (not FL-primary with GTA deferred). Track funnels independently; do not blend vanity totals. Free channels only (FB groups, Kijiji, DMs, referrals, partnerships, SEO/content, direct outreach). **NO_PAID_ADS_ASSUMED.** GTA organic FB = 0 (composer failures — retry/fix is valid; prefer founder approval / show-before-post). FL organic FB = 8 published. Constraint remains **SUPPLY** (`BOOKABLE_CLEANERS=0`, markets CLOSED, Stripe LIVE OFF) until a market reaches ≥2 bookable in one zone. Update Growth OS + backlog + weekly loop accordingly.
+- **Owner:** Founder + Growth / Product / Ops
+- **Rationale:** Corrected operating context — both geos should run parallel organic supply tests without waiting for FL depth first, while still forbidding blended metrics, paid ads, and premature market open.
 - **Status:** Accepted
+
+## 2026-08-14 — Growth Operating System + supply constraint (superseded geo posture)
+
+- **Decision:** Encode founder operating model in `company/GROWTH_OPERATING_SYSTEM.md` + prioritized `company/GROWTH_BACKLOG.md`. Cursor/agents act as growth/product/ops/economics engine (five questions on every action; bottleneck-first). **Current verified constraint = SUPPLY** (`BOOKABLE_CLEANERS=0`, markets CLOSED, Stripe LIVE OFF). Organic recruitment first; **paid ads LATER** after organic proves app→bookable conversion. Demand work only after bookable ≥ 2 in one zone of a market. No invented metrics; no booking/Stripe LIVE enablement from this decision. *(Geo posture originally said FL-primary / GTA deferred — superseded same day by dual-geo ACTIVE decision above.)*
+- **Owner:** Founder + Growth / Product
+- **Rationale:** Highest leverage is bookable supply in one area per market, not marketing activity. Board must make the constraint and backlog explicit for all agents.
+- **Status:** Accepted (geo posture superseded 2026-08-14 dual-ACTIVE)
 
 ## 2026-08-12 — Owner Command vCenter (extend foundation)
 
