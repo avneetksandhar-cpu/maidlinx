@@ -21,6 +21,12 @@ function homeForRole(role: UserRole): string {
   return "/account";
 }
 
+/** Matches ADMIN_BOOTSTRAP_EMAIL so promoteBootstrapAdminIfNeeded can run server-side. */
+function isBootstrapAdminEmail(email: string | null | undefined): boolean {
+  const bootstrap = process.env.ADMIN_BOOTSTRAP_EMAIL?.toLowerCase()?.trim();
+  return Boolean(bootstrap && email?.toLowerCase() === bootstrap);
+}
+
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
 
@@ -108,13 +114,15 @@ export async function updateSession(request: NextRequest) {
       return NextResponse.redirect(redirectUrl);
     }
 
-    if (matchesPrefix(pathname, ADMIN_PREFIXES) && role !== "admin") {
+    const bootstrapAdmin = isBootstrapAdminEmail(user.email);
+
+    if (matchesPrefix(pathname, ADMIN_PREFIXES) && role !== "admin" && !bootstrapAdmin) {
       const redirectUrl = request.nextUrl.clone();
       redirectUrl.pathname = homeForRole(role);
       return NextResponse.redirect(redirectUrl);
     }
 
-    if (matchesPrefix(pathname, ADMIN_API_PREFIXES) && role !== "admin") {
+    if (matchesPrefix(pathname, ADMIN_API_PREFIXES) && role !== "admin" && !bootstrapAdmin) {
       return NextResponse.json({ error: "Forbidden." }, { status: 403 });
     }
 

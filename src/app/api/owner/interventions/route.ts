@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { requireOwnerSession } from "@/lib/ai/session";
+import { getOwnerSessionOrNull } from "@/lib/ai/session";
 import {
   listFounderInterventions,
   recordFounderIntervention,
@@ -16,21 +16,32 @@ const CreateSchema = z.object({
 });
 
 export async function GET() {
+  const owner = await getOwnerSessionOrNull();
+  if (!owner) {
+    return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
+  }
+
   try {
-    await requireOwnerSession();
     const [items, trend] = await Promise.all([
       listFounderInterventions(40),
       getInterventionWeeklyTrend(8),
     ]);
     return NextResponse.json({ items, trend });
-  } catch {
-    return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
+  } catch (error) {
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "Failed to load interventions." },
+      { status: 500 },
+    );
   }
 }
 
 export async function POST(request: Request) {
+  const owner = await getOwnerSessionOrNull();
+  if (!owner) {
+    return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
+  }
+
   try {
-    const owner = await requireOwnerSession();
     const body = CreateSchema.safeParse(await request.json());
     if (!body.success) {
       return NextResponse.json({ error: "Invalid payload." }, { status: 400 });
@@ -46,7 +57,10 @@ export async function POST(request: Request) {
     }
 
     return NextResponse.json({ ok: true, id: result.id });
-  } catch {
-    return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
+  } catch (error) {
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "Create failed." },
+      { status: 500 },
+    );
   }
 }

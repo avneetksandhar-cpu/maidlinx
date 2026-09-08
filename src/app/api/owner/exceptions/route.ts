@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { requireOwnerSession } from "@/lib/ai/session";
+import { getOwnerSessionOrNull } from "@/lib/ai/session";
 import {
   listOpenAiExceptions,
   updateAiExceptionStatus,
@@ -14,18 +14,29 @@ const PatchSchema = z.object({
 });
 
 export async function GET() {
+  const owner = await getOwnerSessionOrNull();
+  if (!owner) {
+    return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
+  }
+
   try {
-    await requireOwnerSession();
     const inbox = await listOpenAiExceptions(100);
     return NextResponse.json(inbox);
-  } catch {
-    return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
+  } catch (error) {
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "Failed to load exceptions." },
+      { status: 500 },
+    );
   }
 }
 
 export async function PATCH(request: Request) {
+  const owner = await getOwnerSessionOrNull();
+  if (!owner) {
+    return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
+  }
+
   try {
-    const owner = await requireOwnerSession();
     const body = PatchSchema.safeParse(await request.json());
     if (!body.success) {
       return NextResponse.json({ error: "Invalid payload." }, { status: 400 });
@@ -59,7 +70,10 @@ export async function PATCH(request: Request) {
     }
 
     return NextResponse.json({ ok: true });
-  } catch {
-    return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
+  } catch (error) {
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "Update failed." },
+      { status: 500 },
+    );
   }
 }

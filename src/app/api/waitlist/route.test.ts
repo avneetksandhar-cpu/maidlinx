@@ -19,6 +19,7 @@ vi.mock("@/lib/waitlist/notify", () => ({
 }));
 
 vi.mock("@/lib/ai/session", () => ({
+  getOwnerSessionOrNull: vi.fn(async () => ({ id: "admin" })),
   requireOwnerSession: vi.fn(async () => ({ id: "admin" })),
 }));
 

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { jsonError, jsonSuccess } from "@/lib/api/response";
+import { adminCatchStatus, jsonError, jsonSuccess } from "@/lib/api/response";
 import { requireAdminApiPermission } from "@/lib/admin/session";
 import {
   loadOwnerCleanerOps,
@@ -49,7 +49,7 @@ export async function GET(
   } catch (error) {
     return jsonError(
       error instanceof Error ? error.message : "Unable to load cleaner.",
-      403,
+      adminCatchStatus(error),
     );
   }
 }

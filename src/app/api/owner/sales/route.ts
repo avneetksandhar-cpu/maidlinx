@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { requireOwnerSession } from "@/lib/ai/session";
+import { getOwnerSessionOrNull } from "@/lib/ai/session";
 import {
   createSalesLead,
   listSalesLeads,
@@ -38,18 +38,29 @@ const PatchSchema = z.object({
 });
 
 export async function GET() {
+  const owner = await getOwnerSessionOrNull();
+  if (!owner) {
+    return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
+  }
+
   try {
-    await requireOwnerSession();
     const leads = await listSalesLeads(100);
     return NextResponse.json(leads);
-  } catch {
-    return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
+  } catch (error) {
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "Failed to list leads." },
+      { status: 500 },
+    );
   }
 }
 
 export async function POST(request: Request) {
+  const owner = await getOwnerSessionOrNull();
+  if (!owner) {
+    return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
+  }
+
   try {
-    const owner = await requireOwnerSession();
     const body = CreateSchema.safeParse(await request.json());
     if (!body.success) {
       return NextResponse.json({ error: "Invalid lead payload." }, { status: 400 });
@@ -76,14 +87,21 @@ export async function POST(request: Request) {
     });
 
     return NextResponse.json({ ok: true, id: result.id });
-  } catch {
-    return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
+  } catch (error) {
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "Create failed." },
+      { status: 500 },
+    );
   }
 }
 
 export async function PATCH(request: Request) {
+  const owner = await getOwnerSessionOrNull();
+  if (!owner) {
+    return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
+  }
+
   try {
-    const owner = await requireOwnerSession();
     const body = PatchSchema.safeParse(await request.json());
     if (!body.success) {
       return NextResponse.json({ error: "Invalid patch payload." }, { status: 400 });
@@ -107,7 +125,10 @@ export async function PATCH(request: Request) {
     });
 
     return NextResponse.json({ ok: true });
-  } catch {
-    return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
+  } catch (error) {
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "Update failed." },
+      { status: 500 },
+    );
   }
 }

@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { jsonError, jsonSuccess } from "@/lib/api/response";
 import { checkRateLimit, clientIpFromRequest } from "@/lib/api/rate-limit";
-import { requireOwnerSession } from "@/lib/ai/session";
+import { getOwnerSessionOrNull } from "@/lib/ai/session";
 import { waitlistSignupSchema } from "@/lib/waitlist/schema";
 import { joinLaunchWaitlist, listLaunchWaitlist } from "@/lib/waitlist/repository";
 import { sendWaitlistConfirmationEmail } from "@/lib/waitlist/notify";
@@ -51,9 +51,8 @@ export async function POST(request: Request) {
 }
 
 export async function GET(request: Request) {
-  try {
-    await requireOwnerSession();
-  } catch {
+  const owner = await getOwnerSessionOrNull();
+  if (!owner) {
     return jsonError("Admin access required.", 401, "UNAUTHORIZED");
   }
 
@@ -61,11 +60,18 @@ export async function GET(request: Request) {
   const limitParsed = z.coerce.number().int().min(1).max(500).safeParse(url.searchParams.get("limit") ?? 100);
   const limit = limitParsed.success ? limitParsed.data : 100;
 
-  const list = await listLaunchWaitlist(limit);
-  return jsonSuccess({
-    count: list.count,
-    items: list.items,
-    available: list.available,
-    gapReason: list.gapReason ?? null,
-  });
+  try {
+    const list = await listLaunchWaitlist(limit);
+    return jsonSuccess({
+      count: list.count,
+      items: list.items,
+      available: list.available,
+      gapReason: list.gapReason ?? null,
+    });
+  } catch (error) {
+    return jsonError(
+      error instanceof Error ? error.message : "Failed to load waitlist.",
+      500,
+    );
+  }
 }
