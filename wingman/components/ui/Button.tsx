@@ -15,18 +15,18 @@ export type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
 
 const variantStyles: Record<ButtonVariant, string> = {
   primary:
-    "bg-accent text-black font-semibold hover:bg-accent-hover active:scale-[0.98] shadow-[0_0_20px_rgba(201,169,98,0.15)] hover:shadow-[0_0_28px_rgba(201,169,98,0.25)]",
+    "rounded-full bg-[#FF2B8A] text-white hover:bg-[#ff4a9c] active:scale-[0.99]",
   secondary:
-    "bg-surface-elevated text-ink border border-border hover:border-border-subtle hover:bg-surface",
-  ghost: "bg-transparent text-ink-muted hover:text-ink hover:bg-white/5",
+    "rounded-full bg-transparent text-ink border border-white/20 hover:border-white/40 active:scale-[0.99]",
+  ghost: "bg-transparent text-ink-muted hover:text-ink active:scale-[0.99]",
   outline:
-    "bg-transparent text-ink border border-white/30 hover:border-white/60 hover:bg-white/5",
+    "rounded-full bg-transparent text-ink border border-white/20 hover:border-[#FF2B8A]/60 active:scale-[0.99]",
 };
 
 const sizeStyles: Record<ButtonSize, string> = {
-  sm: "h-9 px-4 text-sm rounded-md",
-  md: "h-12 px-6 text-sm rounded-lg",
-  lg: "h-14 px-8 text-base rounded-lg",
+  sm: "h-10 px-5 text-sm font-semibold",
+  md: "h-12 px-6 text-[0.95rem] font-semibold",
+  lg: "h-14 px-8 text-[0.95rem] font-semibold tracking-normal",
 };
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
@@ -48,7 +48,8 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         ref={ref}
         disabled={disabled || loading}
         className={cn(
-          "inline-flex items-center justify-center gap-2 transition-all duration-200",
+          "inline-flex items-center justify-center gap-2 transition-[transform,background-color,box-shadow] duration-200",
+          "motion-reduce:transition-none motion-reduce:active:translate-y-0 motion-reduce:active:scale-100",
           "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background",
           "disabled:pointer-events-none disabled:opacity-50",
           variantStyles[variant],
@@ -59,7 +60,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         {...props}
       >
         {loading ? (
-          <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+          <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent motion-reduce:animate-none" />
         ) : null}
         {children}
       </button>

@@ -1,11 +1,11 @@
-import { SplashScreen } from "@/components/app/SplashScreen";
+import { OnboardingFlow } from "@/features/onboarding";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Wingman",
-  description: "Private access to Miami's finest experiences.",
+  description: "Miami is better with the right connection.",
 };
 
-export default function SplashPage() {
-  return <SplashScreen />;
+export default function LandingPage() {
+  return <OnboardingFlow />;
 }

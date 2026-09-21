@@ -1,15 +1,10 @@
-import { AppStubPage } from "@/components/layout/AppStubPage";
+import { MessagesScreen } from "@/features/messages/components/MessagesScreen";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Messages — Wingman",
+  title: "Chat — Wingman",
 };
 
 export default function MessagesPage() {
-  return (
-    <AppStubPage
-      title="Messages"
-      description="Connect with hosts and concierge. Coming soon."
-    />
-  );
+  return <MessagesScreen />;
 }
