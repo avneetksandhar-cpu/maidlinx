@@ -11,6 +11,8 @@ They are **not**:
 
 `events.image_usage_verified` stays **false** for these files. That column is only for a photo whose rights cover that specific listing (official venue press kit, Ticketmaster Discovery image on an authorized host, operator-supplied licensed asset). Unauthorized or third-party scrapes are not stored.
 
+Venue photographs in `venues/` are of that building, under the license named in `lib/photos/venues.ts`. They are not a photo of tonight’s event. Lincoln’s Beard and ZeyZey have no licensed photograph on file.
+
 License pages:
 
 - [Unsplash License](https://unsplash.com/license) — free commercial use; attribution appreciated
@@ -19,6 +21,8 @@ License pages:
 | File | Mood | Photographer | Source | License |
 | --- | --- | --- | --- | --- |
 | `miami-night.jpg` | Miami skyline at night | Rolando Yera | https://unsplash.com/photos/SHMLtIv2dDQ | Unsplash |
+| `login-opening.jpg` | Login background. Crop of a photo supplied for the opening screen. Not a Wingman, customer, or venue. | Supplied for the login screen | — | Founder-supplied |
+| `miami-river-night.jpg` | Brickell Avenue Bridge over the Miami River at night. Landing only. Not Kiki on the River and not a reservation. | Neil Williamson | https://commons.wikimedia.org/wiki/File:Brickell_Avenue_Bridge_at_night_with_bascule_span_open_(2017).jpg | CC BY-SA 2.0 |
 | `club-interior.jpg` | Bar / pour | See Unsplash photo page | https://unsplash.com/photos/photo-1566417713940-fe7c737a9ef2 | Unsplash |
 | `club-lights.jpg` | Club lighting / DJ deck | Connor Wang | https://unsplash.com/photos/v4sukvt_bR8 | Unsplash |
 | `nightlife-crowd.jpg` | Nightlife energy (crowd, no venue claim) | See Unsplash photo page | https://unsplash.com/photos/photo-1514525253161-7a46d19cd819 | Unsplash |

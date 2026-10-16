@@ -20,16 +20,10 @@ type AppHeaderProps = {
 };
 
 const menuLinks = [
-  { href: "/home", label: "Discover" },
-  { href: "/experiences", label: "Wingman Experience" },
-  { href: "/cart", label: "Cart" },
-  { href: "/events", label: "Explore" },
-  { href: "/venues", label: "Rooms" },
-  { href: "/bookings", label: "Trips" },
-  { href: "/messages", label: "Chat" },
-  { href: "/wingmen", label: "Wingmen" },
-  { href: "/venues/apply", label: "List your venue" },
-  { href: "/profile", label: "Account" },
+  { href: "/discover", label: "Discover" },
+  { href: "/about", label: "About Wingman" },
+  { href: "/bookings", label: "Tonight" },
+  { href: "/profile", label: "Profile" },
 ];
 
 export function AppHeader({
@@ -73,7 +67,7 @@ export function AppHeader({
               onClick={handleBack}
               aria-label="Go back"
               className={cn(
-                "press-spring flex h-10 w-10 items-center justify-center rounded-full transition-colors",
+                "press-spring flex h-11 w-11 items-center justify-center rounded-full transition-colors",
                 tone === "light"
                   ? "text-neutral-700 hover:bg-neutral-100 hover:text-neutral-950"
                   : "text-ink-muted hover:bg-surface hover:text-ink",
@@ -103,7 +97,7 @@ export function AppHeader({
             {title}
           </h1>
         ) : (
-          <Link href="/home" className="flex flex-1 items-center justify-center" aria-label="Wingman home">
+          <Link href="/discover" className="flex flex-1 items-center justify-center" aria-label="Discover">
             <WingmanWordmark logoSize={26} />
           </Link>
         )}
