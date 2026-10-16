@@ -1,4 +1,4 @@
-import { OnboardingFlow } from "@/features/onboarding";
+import { LandingSplash } from "@/features/onboarding/components/LandingSplash";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -7,5 +7,11 @@ export const metadata: Metadata = {
 };
 
 export default function LandingPage() {
-  return <OnboardingFlow />;
+  return (
+    <>
+      <link rel="preload" as="image" href="/photos/login-opening.jpg" />
+      <link rel="preload" as="image" href="/brand/logo.png" />
+      <LandingSplash />
+    </>
+  );
 }
