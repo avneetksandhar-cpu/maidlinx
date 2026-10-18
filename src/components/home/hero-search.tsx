@@ -3,6 +3,7 @@
 import { ChevronRight } from "lucide-react";
 import { AddressAutocomplete } from "@/components/booking/address-autocomplete";
 import { WaitlistSignup } from "@/components/waitlist/waitlist-signup";
+import { Button } from "@/components/ui";
 import type { BookingState } from "@/lib/bookings/booking-state";
 import type { WaitlistReason } from "@/lib/markets/booking-availability";
 
@@ -34,14 +35,15 @@ export function HeroSearch({
       />
 
       {!waitlistReason ? (
-        <button
+        <Button
           type="button"
+          variant="primary"
           onClick={onFindCleaners}
-          className="inline-flex h-[56px] w-full items-center justify-center gap-2 rounded-[14px] bg-[var(--maidlinx-green)] px-6 text-base font-semibold text-white transition-colors hover:bg-[var(--maidlinx-green-dark)] sm:h-[58px] sm:w-[260px]"
+          className="h-[56px] w-full rounded-[14px] px-6 text-base font-semibold sm:h-[58px] sm:w-[260px]"
         >
           Find cleaners
           <ChevronRight className="size-5" aria-hidden />
-        </button>
+        </Button>
       ) : (
         <WaitlistSignup
           reason={waitlistReason}

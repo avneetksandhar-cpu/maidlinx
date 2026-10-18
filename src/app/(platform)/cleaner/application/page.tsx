@@ -11,7 +11,7 @@ async function Content() {
     <>
       <ProHeader
         title="Cleaner application"
-        description="Join the MaidLinx Verified network. No government-ID images or SSN collected here."
+        description="Individual or cleaning company. Insurance attestation required. No government-ID images or SSN here."
       />
       <CleanerApplicationForm initialEmail={email} />
     </>

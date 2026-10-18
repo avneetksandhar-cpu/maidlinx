@@ -145,7 +145,7 @@ function NavLinks({
       <Link
         href={routes.book}
         onClick={onNavigate}
-        className="mt-4 flex items-center justify-center gap-2 rounded-full bg-ink px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-neutral-800"
+        className="mt-4 flex items-center justify-center gap-2 rounded-xl bg-accent px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-accent-hover"
       >
         Book a clean
       </Link>

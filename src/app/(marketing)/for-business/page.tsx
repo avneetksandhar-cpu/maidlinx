@@ -1,31 +1,33 @@
 import Link from "next/link";
 import { Container, Heading, Button } from "@/components/ui";
+import { BusinessLeadForm } from "@/components/marketing/business-lead-form";
 import { routes } from "@/config/site";
 
 export const metadata = {
   title: "Business Cleaning",
   description:
-    "Book office, retail, restaurant, and commercial cleaning on demand with MaidLinx.",
+    "Request office, retail, restaurant, and commercial cleaning with MaidLinx. B2B leads go to our sales CRM.",
 };
 
 export default function ForBusinessPage() {
   return (
     <main id="main-content" className="bg-background">
-      <Container className="py-14 sm:py-20">
+      <Container className="py-12 sm:py-16">
         <p className="text-xs font-semibold tracking-[0.18em] text-accent uppercase">
           Business
         </p>
-        <Heading as="h1" className="mt-3 max-w-xl text-4xl sm:text-5xl">
+        <Heading as="h1" className="mt-3 max-w-xl font-display text-4xl sm:text-5xl">
           Cleaning for workplaces.
         </Heading>
         <p className="mt-4 max-w-lg text-base text-ink-muted sm:text-lg">
-          Offices, retail, restaurants, and other commercial spaces — book online with an
-          upfront estimate in Toronto/GTA and South Florida.
+          Offices, retail, restaurants, property managers, and short-term rentals — request
+          cleaning and our team follows up. Or book an office clean online when your market is
+          open.
         </p>
-        <div className="mt-8 flex flex-wrap gap-3">
+        <div className="mt-6 flex flex-wrap gap-3">
           <Link href={`${routes.book}?service=office`}>
-            <Button variant="accent" size="lg" className="h-12 rounded-lg px-6 font-semibold">
-              Get started
+            <Button variant="primary" size="lg" className="h-12 rounded-lg px-6 font-semibold">
+              Book office clean
             </Button>
           </Link>
           <Link href={routes.home}>
@@ -34,6 +36,8 @@ export default function ForBusinessPage() {
             </Button>
           </Link>
         </div>
+
+        <BusinessLeadForm />
       </Container>
     </main>
   );

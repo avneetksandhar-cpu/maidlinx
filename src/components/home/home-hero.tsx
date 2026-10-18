@@ -42,13 +42,13 @@ export function HomeHero({
           <div className="animate-[fadeIn_0.35s_ease]">
             <div className="inline-flex items-center gap-2 rounded-full bg-[var(--maidlinx-mint)] px-3.5 py-1.5 text-sm font-medium text-[var(--maidlinx-green)]">
               <Users className="size-4" strokeWidth={1.75} aria-hidden />
-              Cleaning professionals near you
+              Request · Match · Track
             </div>
 
-            <h1 className="relative mt-5 max-w-[16ch] text-[2.875rem] leading-[0.98] font-bold tracking-tight text-[var(--maidlinx-ink)] sm:text-[3.5rem] lg:text-[4.75rem]">
-              Cleaning,
+            <h1 className="relative mt-5 max-w-[16ch] font-display text-[2.875rem] leading-[0.98] font-bold tracking-tight text-[var(--maidlinx-ink)] sm:text-[3.5rem] lg:text-[4.75rem]">
+              MaidLinx
               <br />
-              <span className="text-[var(--maidlinx-green)]">on demand.</span>
+              <span className="text-[var(--maidlinx-green)]">cleaning, on demand.</span>
               <span className="absolute top-2 right-0 hidden text-[var(--maidlinx-green)]/50 sm:inline-flex lg:right-[-1.5rem]" aria-hidden>
                 <Sparkles className="size-5 lg:size-6" strokeWidth={1.5} />
               </span>
@@ -61,7 +61,7 @@ export function HomeHero({
             </h1>
 
             <p className="mt-4 max-w-[520px] text-lg leading-relaxed text-[var(--maidlinx-muted)] sm:text-[1.25rem]">
-              Book trusted cleaning professionals in minutes.
+              Book a clean in minutes — like a ride, for your home or workplace.
             </p>
 
             <div className="mt-7 max-w-xl space-y-6">

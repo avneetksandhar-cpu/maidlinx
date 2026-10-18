@@ -1,7 +1,28 @@
 @import "tailwindcss";
 
+/*
+  MaidLinx brand teal
+  - Logo fill (mark/lockup): #08E0D4 — bright cyan; decorative only (poor white-text contrast)
+  - Primary UI / buttons:   #0d9488 — logo-family teal with WCAG-safe white text
+  - Hover / pressed:        #0f766e
+*/
+:root {
+  --maidlinx-logo-teal: #08e0d4;
+  --maidlinx-green: #0d9488;
+  --maidlinx-green-dark: #0f766e;
+  --maidlinx-mint: #f0fdfa;
+  --maidlinx-mint-soft: #ccfbf1;
+  --maidlinx-bg: #fafafa;
+  --maidlinx-ink: #111827;
+  --maidlinx-text: #111827;
+  --maidlinx-muted: #6b7280;
+  --maidlinx-border: #e5e7eb;
+  --shadow-soft: 0 1px 2px rgb(17 24 39 / 0.04);
+  --shadow-card: 0 1px 3px rgb(17 24 39 / 0.05), 0 4px 12px rgb(17 24 39 / 0.04);
+}
+
 @theme {
-  /* MaidLinx — bright premium: white/off-white, near-black, turquoise accent */
+  /* MaidLinx — bright premium: white/off-white, near-black, logo teal accent */
   --color-background: #fafafa;
   --color-surface: #ffffff;
   --color-ink: #111827;
@@ -19,7 +40,7 @@
   --color-success: #059669;
   --color-error: #dc2626;
 
-  /* Legacy aliases */
+  /* Legacy aliases — map gold → brand teal (do not reintroduce non-teal primaries) */
   --color-surface-muted: #f4f5f7;
   --color-surface-elevated: #ffffff;
   --color-gold: #0d9488;

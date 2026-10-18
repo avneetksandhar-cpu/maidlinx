@@ -1,5 +1,7 @@
 /**
  * Cleaner application payload — no SSN, no government-ID images, no protected-class fields.
+ * Supports insured individuals and insured cleaning companies (subcontractors).
+ * Insurance is attestation + document URL/status for ops review — never auto-verified.
  */
 
 import { z } from "zod";
@@ -7,9 +9,19 @@ import { createAdminClient, hasAdminEnv } from "@/lib/supabase/admin";
 import type { Json } from "@/types/database.types";
 import { writeCleanerPlatformAudit } from "@/lib/cleaners/platform-audit";
 
-export const cleanerApplicationSchema = z.object({
+const insuranceDocumentStatusSchema = z.enum([
+  "none",
+  "attested",
+  "uploaded",
+  "pending_review",
+]);
+
+/** Base fields shared by draft + submit. Attestations relaxed for drafts. */
+const cleanerApplicationBaseSchema = z.object({
+  applicantType: z.enum(["individual", "cleaning_company"]).default("individual"),
   legalFirstName: z.string().trim().min(1).max(80),
   legalLastName: z.string().trim().min(1).max(80),
+  companyName: z.string().trim().max(160).optional().nullable(),
   phone: z.string().trim().min(7).max(32),
   email: z.string().trim().email().max(160),
   city: z.string().trim().min(1).max(80),
@@ -21,13 +33,66 @@ export const cleanerApplicationSchema = z.object({
   languages: z.array(z.string().trim().min(1).max(40)).max(12).default([]),
   servicesInterested: z.array(z.string().trim().min(1).max(64)).max(20).default([]),
   bio: z.string().trim().max(800).optional().nullable(),
-  workAuthAttestation: z.literal(true),
-  accurateInfoAttestation: z.literal(true),
+  workAuthAttestation: z.boolean().optional(),
+  accurateInfoAttestation: z.boolean().optional(),
+  insuranceAttestation: z.boolean().optional(),
+  insuranceProvider: z.string().trim().max(120).optional().nullable(),
+  insuranceDocumentUrl: z.string().trim().max(500).optional().nullable(),
+  insuranceDocumentStatus: insuranceDocumentStatusSchema.optional().nullable(),
   emergencyContactName: z.string().trim().max(80).optional().nullable(),
   emergencyContactPhone: z.string().trim().max(32).optional().nullable(),
 });
 
+export const cleanerApplicationSchema = cleanerApplicationBaseSchema;
+
 export type CleanerApplication = z.infer<typeof cleanerApplicationSchema>;
+
+function resolveInsuranceStatus(app: {
+  insuranceAttestation?: boolean;
+  insuranceDocumentUrl?: string | null;
+  insuranceDocumentStatus?: string | null;
+}): "none" | "attested" | "uploaded" | "pending_review" {
+  const hasDoc = Boolean(app.insuranceDocumentUrl?.trim());
+  if (hasDoc) return "pending_review";
+  if (app.insuranceAttestation) return "attested";
+  if (app.insuranceDocumentStatus && app.insuranceDocumentStatus !== "none") {
+    return app.insuranceDocumentStatus as "attested" | "uploaded" | "pending_review";
+  }
+  return "none";
+}
+
+function normalizeApplication(parsed: CleanerApplication): CleanerApplication {
+  const companyName =
+    parsed.applicantType === "cleaning_company"
+      ? parsed.companyName?.trim() || null
+      : parsed.companyName?.trim() || null;
+  const insuranceDocumentUrl = parsed.insuranceDocumentUrl?.trim() || null;
+  return {
+    ...parsed,
+    companyName,
+    insuranceProvider: parsed.insuranceProvider?.trim() || null,
+    insuranceDocumentUrl,
+    insuranceDocumentStatus: resolveInsuranceStatus({
+      ...parsed,
+      insuranceDocumentUrl,
+    }),
+  };
+}
+
+function assertSubmitReady(app: CleanerApplication): void {
+  if (app.workAuthAttestation !== true) {
+    throw new Error("Work authorization attestation is required to submit.");
+  }
+  if (app.accurateInfoAttestation !== true) {
+    throw new Error("Accuracy attestation is required to submit.");
+  }
+  if (app.insuranceAttestation !== true) {
+    throw new Error("Insurance attestation is required to submit.");
+  }
+  if (app.applicantType === "cleaning_company" && !app.companyName?.trim()) {
+    throw new Error("Company name is required for cleaning company applicants.");
+  }
+}
 
 export async function saveCleanerApplication(input: {
   professionalId: string;
@@ -36,7 +101,9 @@ export async function saveCleanerApplication(input: {
   submit?: boolean;
 }): Promise<{ application: CleanerApplication; submittedAt: string | null }> {
   if (!hasAdminEnv()) throw new Error("Database not configured.");
-  const parsed = cleanerApplicationSchema.parse(input.application);
+  const parsed = normalizeApplication(cleanerApplicationSchema.parse(input.application));
+  if (input.submit) assertSubmitReady(parsed);
+
   const now = new Date().toISOString();
   const supabase = createAdminClient();
 
@@ -79,6 +146,9 @@ export async function saveCleanerApplication(input: {
       state: parsed.state,
       marketId: parsed.marketId ?? null,
       yearsExperience: parsed.yearsExperience,
+      applicantType: parsed.applicantType,
+      insuranceDocumentStatus: parsed.insuranceDocumentStatus ?? "none",
+      companyName: parsed.companyName ?? null,
     },
   });
 
@@ -104,5 +174,5 @@ export async function getCleanerApplication(
   if (!data) return null;
   const raw = (data as Record<string, unknown>).application;
   const parsed = cleanerApplicationSchema.safeParse(raw);
-  return parsed.success ? parsed.data : null;
+  return parsed.success ? normalizeApplication(parsed.data) : null;
 }

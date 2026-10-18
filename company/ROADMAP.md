@@ -18,6 +18,10 @@
 | AI OS Foundation | Events, audit tables, flags, pause, owner shell | **COMPLETE (local)** — see `AI_OS_FOUNDATION_REPORT.md` |
 | Owner Command vCenter | Real metrics, targets, opportunities, CRM, capacity, exceptions | **COMPLETE (local)** — see `AI_OS_OWNER_VCENTER_REPORT.md` |
 
+## Product framing (2026-10-18)
+
+MaidLinx = **Uber-like cleaning marketplace** (app shell: request → match → track → complete) with a strong **B2B sales** channel. Supply = insured **individuals** + insured **cleaning companies** as subcontractors. Primary UI teal = `#0d9488` (logo fill `#08E0D4`). Scoped UX only — no mega rewrite; Stripe LIVE OFF.
+
 ## Ranking goals
 
 1. Customers book easily  
@@ -32,9 +36,9 @@
 | Rank | Item | Notes |
 |------|------|-------|
 | 1 | Protect booking/pay/webhook/consent/Sentry | Never regress |
-| 2 | **Supply → bookable ≥2 same zone (GTA and/or FL)** | Highest leverage; dual ACTIVE; see `GROWTH_BACKLOG.md` P0 |
+| 2 | **Supply → bookable ≥2 same zone (GTA and/or FL)** | Highest leverage; dual ACTIVE; insured individual + company join paths |
 | 3 | Liquidity proof (Stripe TEST) | After bookable depth in that market; markets still founder-gated |
-| 4 | Demand thaw (per ready market) | Only after bookable ≥2; paid ads LATER |
+| 4 | Demand thaw (per ready market) + lean B2B capture | Only after bookable ≥2 for consumer ads; B2B leads OK lean |
 | 5 | **AI OS Foundation** | **Shipped (local)** |
 | 6 | Owner Command vCenter | **Shipped (local)** — extend, do not duplicate |
 | 7 | AI Revenue Director V0 | **Shipped + opportunity engine** |

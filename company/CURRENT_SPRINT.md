@@ -39,18 +39,24 @@
 - Dual-geo ACTIVE correction + weekly growth loop report
 - Lint / typecheck / 295 tests / production build green
 
+**In (2026-10-18 product slice — scoped)**
+- Product framing: Uber-like marketplace + dual insured supply + B2B priority (see `DECISIONS.md`)
+- `/earn` + cleaner application: individual vs cleaning company + insurance attestation/document fields (ops review; no fake verify)
+- App-style booking shell cues + logo-teal primary buttons site-wide (`#0d9488`)
+- Lean `/for-business` lead capture → `owner_sales_leads`
+
 **Out (still)**
 - Full Ops / Retention / Growth / Chief of Staff agent autonomy
 - Abandoned recovery campaigns auto-send, autonomous dispatch, CEO chat LLM, pricing experiments
 - Stripe LIVE, Connect LIVE, wallet LIVE
 - Paid ads (blocked until organic proves)
-- Mega route rewrite / new app
+- Mega route rewrite / new app / Content Studio changes
 
 ## Next
 
 1. **HUMAN (Growth P0-FL):** Continue FL organic → apps at https://maidlinx.com/earn → screen → ops-complete → **2+ bookable same FL zone**.  
 2. **HUMAN (Growth P0-GTA):** Approve + publish GTA organic FB (prepared: `company/growth/cleaner-recruiting/GTA_FB_READY_FOR_APPROVAL.md`) — currently **0** published.  
-3. **HUMAN (Phase 1 STOP):** Enter REAL cleaner ops only for verified applicants — do not invent market for `ba902d50-…`. Do not enable markets until coverage ready.  
-4. **HUMAN:** Apply remaining local migrations as needed (`00029`–`00033`); smoke `/owner/cleaners` + BOOK→PAY only after a market’s booking flag is ON.  
-5. Keep Stripe LIVE off until explicit founder approval. Demand work only after bookable ≥ 2 in that market.  
+3. **HUMAN (Phase 1 STOP):** Enter REAL cleaner ops only for verified applicants — do not invent market for `ba902d50-…`. Do not enable markets until coverage ready. Review insurance attestations on applications (individual + company).  
+4. **HUMAN:** Apply remaining local migrations as needed (`00029`–`00033`); smoke `/owner/cleaners` + BOOK→PAY only after a market’s booking flag is ON. Confirm `owner_sales_leads` (00031) for B2B web leads.  
+5. Keep Stripe LIVE off until explicit founder approval. Consumer demand work only after bookable ≥ 2 in that market.  
 6. **Out today:** AI agents, pricing engine continuation, fabricated cleaners/posts, paid ads.

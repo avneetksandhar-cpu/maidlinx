@@ -9,16 +9,12 @@ export function AuthControls() {
     <>
       <Link
         href={routes.signIn}
-        className="inline-flex h-10 items-center justify-center rounded-[12px] border border-[var(--maidlinx-border)] bg-white px-4 text-sm font-semibold text-[var(--maidlinx-text)] transition-colors hover:border-[var(--maidlinx-green)]/40 hover:text-[var(--maidlinx-green)]"
+        className="inline-flex h-10 items-center justify-center rounded-[12px] border border-accent/30 bg-white px-4 text-sm font-semibold text-accent transition-colors hover:border-accent hover:bg-accent-muted"
       >
         Log in
       </Link>
       <Link href={routes.book}>
-        <Button
-          variant="accent"
-          size="sm"
-          className="h-10 rounded-[12px] bg-[var(--maidlinx-green)] px-4 text-sm font-semibold hover:bg-[var(--maidlinx-green-dark)]"
-        >
+        <Button variant="primary" size="sm" className="h-10 rounded-[12px] px-4 text-sm font-semibold">
           Get started
         </Button>
       </Link>

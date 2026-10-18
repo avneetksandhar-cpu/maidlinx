@@ -2,10 +2,14 @@
 
 import { useState } from "react";
 import { Button, Input, Textarea } from "@/components/ui";
+import { routes } from "@/config/site";
+import Link from "next/link";
 
 const emptyForm = {
+  applicantType: "individual" as "individual" | "cleaning_company",
   legalFirstName: "",
   legalLastName: "",
+  companyName: "",
   phone: "",
   email: "",
   city: "",
@@ -19,6 +23,9 @@ const emptyForm = {
   bio: "",
   workAuthAttestation: false,
   accurateInfoAttestation: false,
+  insuranceAttestation: false,
+  insuranceProvider: "",
+  insuranceDocumentUrl: "",
   emergencyContactName: "",
   emergencyContactPhone: "",
 };
@@ -39,8 +46,11 @@ export function CleanerApplicationForm({
       const payload = {
         submit,
         application: {
+          applicantType: form.applicantType,
           legalFirstName: form.legalFirstName,
           legalLastName: form.legalLastName,
+          companyName:
+            form.applicantType === "cleaning_company" ? form.companyName || null : null,
           phone: form.phone,
           email: form.email,
           city: form.city,
@@ -60,6 +70,9 @@ export function CleanerApplicationForm({
           bio: form.bio || null,
           workAuthAttestation: form.workAuthAttestation ? true : undefined,
           accurateInfoAttestation: form.accurateInfoAttestation ? true : undefined,
+          insuranceAttestation: form.insuranceAttestation ? true : undefined,
+          insuranceProvider: form.insuranceProvider || null,
+          insuranceDocumentUrl: form.insuranceDocumentUrl || null,
           emergencyContactName: form.emergencyContactName || null,
           emergencyContactPhone: form.emergencyContactPhone || null,
         },
@@ -71,7 +84,11 @@ export function CleanerApplicationForm({
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error ?? "Save failed");
-      setStatus(submit ? "Application submitted for review." : "Draft saved.");
+      setStatus(
+        submit
+          ? "Application submitted for ops review (including insurance)."
+          : "Draft saved.",
+      );
     } catch (err) {
       setStatus(err instanceof Error ? err.message : "Unable to save.");
     } finally {
@@ -113,10 +130,52 @@ export function CleanerApplicationForm({
   return (
     <div className="space-y-4">
       <p className="text-sm text-ink-muted">
-        No SSN or government-ID uploads here. Identity verification is provider-based
-        (pending until connected) and reviewed by ops.
+        Apply as an insured individual cleaner or an insured cleaning company
+        (subcontractor). No SSN or government-ID uploads here. Insurance is attested and
+        reviewed by ops — not auto-verified.
       </p>
+
+      <fieldset className="space-y-2">
+        <legend className="text-sm font-medium text-ink">Applicant type</legend>
+        <div className="grid gap-2 sm:grid-cols-2">
+          {(
+            [
+              {
+                value: "individual" as const,
+                title: "Individual cleaner",
+                blurb: "Independent subcontractor with your own insurance",
+              },
+              {
+                value: "cleaning_company" as const,
+                title: "Cleaning company",
+                blurb: "Company joining as a subcontractor, with insurance",
+              },
+            ] as const
+          ).map((opt) => {
+            const selected = form.applicantType === opt.value;
+            return (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => setForm((f) => ({ ...f, applicantType: opt.value }))}
+                className={
+                  selected
+                    ? "rounded-xl border border-accent bg-accent-muted px-4 py-3 text-left transition-colors"
+                    : "rounded-xl border border-border bg-surface px-4 py-3 text-left transition-colors hover:border-accent/40"
+                }
+              >
+                <span className="block text-sm font-semibold text-ink">{opt.title}</span>
+                <span className="mt-0.5 block text-xs text-ink-muted">{opt.blurb}</span>
+              </button>
+            );
+          })}
+        </div>
+      </fieldset>
+
       <div className="grid gap-3 sm:grid-cols-2">
+        {form.applicantType === "cleaning_company"
+          ? field("companyName", "Company name")
+          : null}
         {field("legalFirstName", "Legal first name")}
         {field("legalLastName", "Legal last name")}
         {field("phone", "Phone")}
@@ -150,12 +209,44 @@ export function CleanerApplicationForm({
         {field("emergencyContactPhone", "Emergency contact phone (optional)")}
       </div>
 
+      <div className="space-y-3 rounded-xl border border-border bg-accent-muted/40 p-4">
+        <p className="text-sm font-semibold text-ink">Insurance (required)</p>
+        <p className="text-xs text-ink-muted">
+          Attest that you carry active liability insurance. Optionally add a certificate
+          link or storage path for ops review. This does not auto-verify coverage.
+        </p>
+        {field("insuranceProvider", "Insurance provider (optional)")}
+        {field(
+          "insuranceDocumentUrl",
+          "Insurance certificate URL or private storage path (optional)",
+        )}
+        <p className="text-xs text-ink-muted">
+          After signing in you can also register an insurance document under{" "}
+          <Link href={routes.cleanerDocuments} className="font-medium text-accent underline">
+            Documents
+          </Link>
+          .
+        </p>
+        <label className="flex items-start gap-2 text-sm text-ink">
+          <input
+            type="checkbox"
+            checked={form.insuranceAttestation}
+            onChange={(e) =>
+              setForm((f) => ({ ...f, insuranceAttestation: e.target.checked }))
+            }
+            className="mt-1 accent-accent"
+          />
+          I attest that I (or my company) carry active liability insurance covering cleaning
+          work in my service market, and I will provide proof for ops review when requested.
+        </label>
+      </div>
+
       <label className="flex items-start gap-2 text-sm text-ink">
         <input
           type="checkbox"
           checked={form.workAuthAttestation}
           onChange={(e) => setForm((f) => ({ ...f, workAuthAttestation: e.target.checked }))}
-          className="mt-1"
+          className="mt-1 accent-accent"
         />
         I attest I am legally authorized to work in my service market.
       </label>
@@ -166,7 +257,7 @@ export function CleanerApplicationForm({
           onChange={(e) =>
             setForm((f) => ({ ...f, accurateInfoAttestation: e.target.checked }))
           }
-          className="mt-1"
+          className="mt-1 accent-accent"
         />
         The information I provided is accurate to the best of my knowledge.
       </label>
@@ -177,7 +268,7 @@ export function CleanerApplicationForm({
         <Button type="button" variant="secondary" disabled={loading} onClick={() => save(false)}>
           Save draft
         </Button>
-        <Button type="button" disabled={loading} onClick={() => save(true)}>
+        <Button type="button" variant="primary" disabled={loading} onClick={() => save(true)}>
           Submit application
         </Button>
       </div>

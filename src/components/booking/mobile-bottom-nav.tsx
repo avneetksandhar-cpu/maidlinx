@@ -66,9 +66,9 @@ export function MobileBottomNav({ className, hidden = false }: MobileBottomNavPr
                 <span
                   className={cn(
                     "flex size-9 items-center justify-center rounded-full transition-colors",
-                    primary && "bg-accent text-white",
+                    primary && "bg-accent text-white shadow-soft",
                     primary && active && "bg-accent-hover",
-                    !primary && active && "bg-accent-muted",
+                    !primary && active && "bg-accent-muted text-accent",
                   )}
                 >
                   <Icon className="size-5" strokeWidth={primary ? 2.25 : 2} aria-hidden />

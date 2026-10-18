@@ -2,20 +2,20 @@ import { Container, Heading } from "@/components/ui";
 
 const steps = [
   {
-    title: "Enter your address",
-    description: "Tell us where — we match Pros nearby.",
+    title: "Request",
+    description: "Enter your address and choose the clean — like requesting a ride.",
   },
   {
-    title: "Choose your clean",
-    description: "Pick the service and any extras you need.",
+    title: "Match",
+    description: "We match an available MaidLinx Pro near you.",
   },
   {
-    title: "Pick a time",
-    description: "Select a date and arrival window that works.",
+    title: "Track",
+    description: "Follow job status from confirmed to on the way to in progress.",
   },
   {
-    title: "Relax",
-    description: "Pay securely. Your Pro handles the rest.",
+    title: "Complete",
+    description: "Pay securely. Rate the clean. Rebook when you need it again.",
   },
 ] as const;
 
@@ -26,6 +26,9 @@ export function HowItWorks() {
         <Heading as="h2" className="text-2xl sm:text-3xl">
           How it works
         </Heading>
+        <p className="mt-2 max-w-xl text-sm text-ink-muted sm:text-base">
+          Cleaning on demand — request, match, track, complete.
+        </p>
         <ol className="mt-10 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
           {steps.map((step, index) => (
             <li key={step.title}>

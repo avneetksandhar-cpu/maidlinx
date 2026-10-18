@@ -2,6 +2,13 @@
 
 Format: date · decision · owner · rationale · status
 
+## 2026-10-18 — Product vision: Uber-like cleaning marketplace + dual insured supply + B2B
+
+- **Decision:** MaidLinx is an **app-style cleaning marketplace** (request → match → track → complete), not a brochure site. **Supply** = (1) insured individual subcontractor cleaners and (2) insured cleaning companies joining as subcontractors — both require **insurance attestation + document metadata for ops review** (no fake verification). **B2B / commercial demand** is a priority channel (`/for-business` → owner CRM). UI primary actions use **logo-family teal** `#0d9488` (logo fill `#08E0D4` is decorative). Do **not** redesign the whole app; scoped UX + supply-join + lean B2B only. Stripe LIVE stays OFF. No invented cleaner ops data.
+- **Owner:** Founder / Product
+- **Rationale:** Growth constraint is SUPPLY (BOOKABLE=0); clearer insured join paths + app-feel booking + B2B lead capture advance liquidity without weakening booking/payment/`/owner` auth.
+- **Status:** Accepted
+
 ## 2026-08-14 — Dual-geo supply ACTIVE (GTA + FL) — correct FL-only deferral
 
 - **Decision:** **TORONTO_GTA** and **SOUTH_FLORIDA** recruitment are both **ACTIVE** as **separate** supply experiments (not FL-primary with GTA deferred). Track funnels independently; do not blend vanity totals. Free channels only (FB groups, Kijiji, DMs, referrals, partnerships, SEO/content, direct outreach). **NO_PAID_ADS_ASSUMED.** GTA organic FB = 0 (composer failures — retry/fix is valid; prefer founder approval / show-before-post). FL organic FB = 8 published. Constraint remains **SUPPLY** (`BOOKABLE_CLEANERS=0`, markets CLOSED, Stripe LIVE OFF) until a market reaches ≥2 bookable in one zone. Update Growth OS + backlog + weekly loop accordingly.

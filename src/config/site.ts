@@ -13,7 +13,7 @@ export const siteConfig = {
   /** Default document + social title (open-graph / Twitter). */
   title: "MaidLinx | Your Clean Connection",
   description:
-    "Book trusted home cleaning in minutes. Simple online booking for one-time, deep, move-in/move-out and recurring cleaning.",
+    "Uber-style cleaning marketplace. Book home or business cleans in minutes — request, match, track, complete.",
   url: resolveSiteUrl(),
   /** Static 1200×630 social preview image in `public/`. */
   ogImage: "/og/maidlinx-og.png",
