@@ -8,8 +8,8 @@ const AUTH_ROUTES = ["/sign-in", "/sign-up", "/forgot-password", "/reset-passwor
 const CUSTOMER_PREFIXES = ["/dashboard", "/account"];
 const CLEANER_PREFIXES = ["/cleaner", "/pro"];
 const CLEANER_API_PREFIXES = ["/api/cleaner", "/api/pro"];
-const ADMIN_PREFIXES = ["/admin"];
-const ADMIN_API_PREFIXES = ["/api/admin"];
+const ADMIN_PREFIXES = ["/admin", "/owner"];
+const ADMIN_API_PREFIXES = ["/api/admin", "/api/owner"];
 
 function matchesPrefix(pathname: string, prefixes: string[]): boolean {
   return prefixes.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));
@@ -19,6 +19,12 @@ function homeForRole(role: UserRole): string {
   if (role === "admin") return "/admin";
   if (role === "cleaner") return "/cleaner";
   return "/account";
+}
+
+/** Matches ADMIN_BOOTSTRAP_EMAIL so promoteBootstrapAdminIfNeeded can run server-side. */
+function isBootstrapAdminEmail(email: string | null | undefined): boolean {
+  const bootstrap = process.env.ADMIN_BOOTSTRAP_EMAIL?.toLowerCase()?.trim();
+  return Boolean(bootstrap && email?.toLowerCase() === bootstrap);
 }
 
 export async function updateSession(request: NextRequest) {
@@ -108,13 +114,15 @@ export async function updateSession(request: NextRequest) {
       return NextResponse.redirect(redirectUrl);
     }
 
-    if (matchesPrefix(pathname, ADMIN_PREFIXES) && role !== "admin") {
+    const bootstrapAdmin = isBootstrapAdminEmail(user.email);
+
+    if (matchesPrefix(pathname, ADMIN_PREFIXES) && role !== "admin" && !bootstrapAdmin) {
       const redirectUrl = request.nextUrl.clone();
       redirectUrl.pathname = homeForRole(role);
       return NextResponse.redirect(redirectUrl);
     }
 
-    if (matchesPrefix(pathname, ADMIN_API_PREFIXES) && role !== "admin") {
+    if (matchesPrefix(pathname, ADMIN_API_PREFIXES) && role !== "admin" && !bootstrapAdmin) {
       return NextResponse.json({ error: "Forbidden." }, { status: 403 });
     }
 

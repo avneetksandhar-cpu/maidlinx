@@ -107,12 +107,13 @@ export async function profitDashboardSummary(): Promise<{
     };
   }
 
-  const sampleSize = data.length;
-  const estimatedMarginCents = data.reduce(
+  const rows = data as Array<Record<string, unknown>>;
+  const sampleSize = rows.length;
+  const estimatedMarginCents = rows.reduce(
     (s, r) => s + Number(r.estimated_margin_cents ?? 0),
     0,
   );
-  const actualized = data.filter((r) => r.status === "actualized");
+  const actualized = rows.filter((r) => r.status === "actualized");
   const actualMarginCents = actualized.reduce(
     (s, r) => s + Number(r.actual_margin_cents ?? 0),
     0,

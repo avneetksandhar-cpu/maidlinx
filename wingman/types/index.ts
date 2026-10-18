@@ -1,16 +1,15 @@
-/** Placeholder until Supabase codegen is wired up. */
+import type { MembershipTier } from "@/lib/auth/types";
+
+/** Placeholder until generated DB types are wired up. */
 export type Database = Record<string, never>;
 
-export type MembershipTier = "guest" | "member" | "vip" | "black";
-
-export type User = {
-  id: string;
-  email: string | null;
-  fullName?: string | null;
-  avatarUrl?: string | null;
-  membershipTier: MembershipTier;
-  createdAt: string;
-};
+export type {
+  ApprovalStatus,
+  MembershipTier,
+  PermissionFlags,
+  UserRole,
+} from "@/lib/auth/types";
+export type { AuthUser as User } from "@/lib/auth/types";
 
 export type Host = {
   id: string;

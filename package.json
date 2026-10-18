@@ -3,17 +3,20 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack -p 3001",
+    "dev": "next dev --turbopack -p 3001 -H 127.0.0.1",
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "db:types": "supabase gen types typescript --local > src/types/database.types.ts"
+    "db:types": "supabase gen types typescript --local > src/types/database.types.ts",
+    "content-studio:render": "node scripts/content-studio/render.mjs",
+    "content-studio:render:ep01": "node scripts/content-studio/render.mjs --episode=001-spilled-last-summer"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
+    "@sentry/nextjs": "^10.70.0",
     "@stripe/react-stripe-js": "^3.10.0",
     "@stripe/stripe-js": "^7.9.0",
     "@supabase/ssr": "^0.8.0",

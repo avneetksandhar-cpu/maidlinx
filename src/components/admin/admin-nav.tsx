@@ -38,6 +38,12 @@ const NAV_GROUPS = [
       { href: routes.adminPricing, label: "Pricing", icon: TagIcon },
     ],
   },
+  {
+    label: "Growth",
+    items: [
+      { href: routes.adminContentStudio, label: "Content Studio", icon: FilmIcon },
+    ],
+  },
 ] as const;
 
 export function AdminNav() {
@@ -277,6 +283,14 @@ function ShieldIcon({ className }: { className?: string }) {
         strokeWidth="1.75"
         strokeLinejoin="round"
       />
+    </svg>
+  );
+}
+function FilmIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none">
+      <rect x="3" y="4" width="18" height="16" rx="2" stroke="currentColor" strokeWidth="1.75" />
+      <path d="M7 4v16M17 4v16M3 9h4M17 9h4M3 15h4M17 15h4" stroke="currentColor" strokeWidth="1.75" />
     </svg>
   );
 }

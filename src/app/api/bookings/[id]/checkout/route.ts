@@ -1,7 +1,15 @@
 import { BookingAccessError, assertBookingAccess } from "@/lib/bookings/access";
-import { getBookingById, attachPaymentIntent } from "@/lib/bookings/repository";
+import {
+  getBookingById,
+  attachPaymentIntent,
+  recordLegalConsent,
+} from "@/lib/bookings/repository";
 import { jsonError, jsonSuccess } from "@/lib/api/response";
 import { checkRateLimit, clientIpFromRequest } from "@/lib/api/rate-limit";
+import {
+  LEGAL_CONSENT_POLICY_VERSION,
+  isValidLegalConsent,
+} from "@/lib/legal/consent";
 import { calculateDepositCents, getDepositPercent } from "@/lib/payments/deposit";
 import { getStripeServer } from "@/lib/stripe/server";
 
@@ -24,21 +32,41 @@ export async function POST(request: Request, context: RouteContext) {
 
   try {
     const { id } = await context.params;
+    const headerToken = request.headers.get("x-booking-access-token");
+    let bodyToken: string | null = null;
+    let legalConsentAccepted: unknown = undefined;
+    let legalConsentPolicyVersion: unknown = undefined;
+    try {
+      const body = (await request.json()) as {
+        accessToken?: string;
+        legalConsentAccepted?: unknown;
+        legalConsentPolicyVersion?: unknown;
+      };
+      bodyToken = body.accessToken ?? null;
+      legalConsentAccepted = body.legalConsentAccepted;
+      legalConsentPolicyVersion = body.legalConsentPolicyVersion;
+    } catch {
+      bodyToken = null;
+    }
+
+    // Enforce consent before any booking lookup or Stripe work.
+    if (
+      !isValidLegalConsent({
+        legalConsentAccepted,
+        legalConsentPolicyVersion,
+      })
+    ) {
+      return jsonError(
+        "You must accept the Terms of Service and Privacy Policy before payment.",
+        400,
+        "LEGAL_CONSENT_REQUIRED",
+      );
+    }
+
     const booking = await getBookingById(id);
 
     if (!booking) {
       return jsonError("Booking not found.", 404);
-    }
-
-    const headerToken = request.headers.get("x-booking-access-token");
-    let bodyToken: string | null = null;
-    if (!headerToken) {
-      try {
-        const body = (await request.json()) as { accessToken?: string };
-        bodyToken = body.accessToken ?? null;
-      } catch {
-        bodyToken = null;
-      }
     }
 
     const accessToken = headerToken ?? bodyToken;
@@ -57,6 +85,8 @@ export async function POST(request: Request, context: RouteContext) {
       console.error("[checkout] STRIPE_SECRET_KEY missing");
       return jsonError("Payment is temporarily unavailable. Please try again shortly.", 503);
     }
+
+    await recordLegalConsent(booking.id, LEGAL_CONSENT_POLICY_VERSION);
 
     const depositPercent = getDepositPercent();
     const depositCents = calculateDepositCents(booking.total_cents);
@@ -82,6 +112,7 @@ export async function POST(request: Request, context: RouteContext) {
             depositPercent,
             paymentType,
             reused: true,
+            legalConsentPolicyVersion: LEGAL_CONSENT_POLICY_VERSION,
           });
         }
         if (existing.status === "succeeded") {
@@ -106,6 +137,7 @@ export async function POST(request: Request, context: RouteContext) {
           paymentType,
           depositPercent: String(depositPercent),
           totalCents: String(booking.total_cents),
+          legalConsentPolicyVersion: LEGAL_CONSENT_POLICY_VERSION,
         },
         receipt_email: booking.customer_email ?? undefined,
         description: `MaidLinx ${booking.service_type} cleaning ${paymentType}`,
@@ -131,6 +163,7 @@ export async function POST(request: Request, context: RouteContext) {
       depositPercent,
       paymentType,
       reused: false,
+      legalConsentPolicyVersion: LEGAL_CONSENT_POLICY_VERSION,
     });
   } catch (error) {
     if (error instanceof BookingAccessError) {

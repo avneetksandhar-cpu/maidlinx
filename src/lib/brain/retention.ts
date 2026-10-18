@@ -51,7 +51,7 @@ export async function retentionIntelligenceSummary(): Promise<RetentionIntel> {
   if (error || !data || data.length === 0) return empty;
 
   const byCustomer = new Map<string, { count: number; last: number }>();
-  for (const row of data) {
+  for (const row of data as Array<Record<string, unknown>>) {
     const cid = row.customer_id ? String(row.customer_id) : null;
     if (!cid) continue;
     const ts = new Date(String(row.completed_at ?? row.created_at)).getTime();

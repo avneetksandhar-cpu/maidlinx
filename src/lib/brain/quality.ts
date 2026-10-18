@@ -27,7 +27,8 @@ export async function raiseQualityReviewSignal(input: {
     .maybeSingle();
 
   if (error) return { id: null };
-  return { id: data?.id ? String(data.id) : null };
+  const row = data as { id?: string } | null;
+  return { id: row?.id ? String(row.id) : null };
 }
 
 /** Low ratings → REVIEW_SIGNAL only. */
@@ -66,7 +67,7 @@ export async function listOpenQualitySignals(limit = 50): Promise<
     .limit(limit);
 
   if (error || !data) return [];
-  return data.map((r) => ({
+  return (data as Array<Record<string, unknown>>).map((r) => ({
     id: String(r.id),
     signalCode: String(r.signal_code),
     severity: String(r.severity),

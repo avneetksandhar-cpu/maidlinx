@@ -19,10 +19,10 @@ import {
   BATHROOM_CENTS,
   BEDROOM_CENTS,
   PLATFORM_FEE_PERCENT,
-  SERVICE_BASE_CENTS,
   estimateDurationMinutes,
   squareFootageAdjustment,
 } from "@/lib/pricing/config";
+import { getServiceBaseCentsForMarket } from "@/lib/pricing/market-prices";
 import { DEFAULT_PRICING_RULES } from "@/lib/pricing/engine/defaults";
 import {
   NEUTRAL_SIGNALS,
@@ -174,7 +174,7 @@ export function runPricingEngine(input: RunPricingEngineInput): EngineQuoteResul
     return emptyQuoteOnly(currency, serviceLabel, quote, rules, marketId);
   }
 
-  const baseCents = SERVICE_BASE_CENTS[serviceType] ?? SERVICE_BASE_CENTS.standard;
+  const baseCents = getServiceBaseCentsForMarket(marketId, serviceType);
   const bedroomCents = quote.bedrooms * BEDROOM_CENTS;
   const bathroomCents = quote.bathrooms * BATHROOM_CENTS;
   const squareFootageCents = squareFootageAdjustment(quote.squareFootage);

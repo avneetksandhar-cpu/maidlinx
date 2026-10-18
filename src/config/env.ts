@@ -15,6 +15,8 @@ const serverSchema = z.object({
   TWILIO_FROM: z.string().min(1).optional(),
   DEPOSIT_PERCENT: z.coerce.number().min(1).max(100).optional(),
   SENTRY_DSN: z.string().url().optional(),
+  SENTRY_ENVIRONMENT: z.string().min(1).optional(),
+  SENTRY_RELEASE: z.string().min(1).optional(),
   ADMIN_BOOTSTRAP_EMAIL: z.string().email().optional(),
 });
 
@@ -27,6 +29,7 @@ const clientSchema = z.object({
   NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string().min(1).optional(),
   NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: z.string().min(1).optional(),
   NEXT_PUBLIC_DEPOSIT_PERCENT: z.coerce.number().min(1).max(100).optional(),
+  NEXT_PUBLIC_SENTRY_DSN: z.string().url().optional(),
 });
 
 export type ServerEnv = z.infer<typeof serverSchema>;
@@ -62,8 +65,11 @@ export function getClientEnv(): ClientEnv {
   return parsed.data;
 }
 
+/** Production public origin (OG/Twitter crawlers, canonical brand URL). */
+export const PRODUCTION_SITE_URL = "https://maidlinx.com";
+
 /**
- * Canonical site origin for metadata, sitemap, robots, and absolute OG URLs.
+ * Runtime site origin (auth redirects, Connect return URLs, local app links).
  * Prefer NEXT_PUBLIC_SITE_URL, then NEXT_PUBLIC_APP_URL.
  * Production fallback: https://maidlinx.com — local: http://localhost:3001
  */
@@ -72,14 +78,38 @@ export function getSiteUrl(): string {
     process.env.NEXT_PUBLIC_SITE_URL ??
     process.env.NEXT_PUBLIC_APP_URL ??
     (process.env.NODE_ENV === "production"
-      ? "https://maidlinx.com"
+      ? PRODUCTION_SITE_URL
       : "http://localhost:3001")
   );
+}
+
+/**
+ * Absolute origin for SEO / Open Graph / Twitter metadata.
+ * Never emits localhost — social crawlers need the production public URL even
+ * when local `.env` points NEXT_PUBLIC_* at http://localhost:3001.
+ */
+export function getMetadataSiteUrl(): string {
+  const configured =
+    nonEmpty(process.env.NEXT_PUBLIC_SITE_URL) ??
+    nonEmpty(process.env.NEXT_PUBLIC_APP_URL);
+  if (configured && !isLocalhostUrl(configured)) {
+    return configured.replace(/\/$/, "");
+  }
+  return PRODUCTION_SITE_URL;
 }
 
 function nonEmpty(value: string | undefined): string | undefined {
   const trimmed = value?.trim();
   return trimmed ? trimmed : undefined;
+}
+
+function isLocalhostUrl(url: string): boolean {
+  try {
+    const host = new URL(url).hostname;
+    return host === "localhost" || host === "127.0.0.1";
+  } catch {
+    return false;
+  }
 }
 
 /** Public Supabase URL for browser + server clients. */

@@ -20,6 +20,10 @@ function isOutOfServiceArea(error: unknown): boolean {
   return error instanceof Error && /not in a MaidLinx service area|outside MaidLinx/i.test(error.message);
 }
 
+function isBookingDisabled(error: unknown): boolean {
+  return error instanceof Error && /Booking is not enabled for this market/i.test(error.message);
+}
+
 export async function POST(request: Request) {
   const ip = clientIpFromRequest(request);
   const limit = checkRateLimit(`booking:quote:${ip}`, 60, 60_000);
@@ -96,6 +100,13 @@ export async function POST(request: Request) {
         error instanceof Error ? error.message : "This address is not in a MaidLinx service area.",
         422,
         "OUT_OF_SERVICE_AREA",
+      );
+    }
+    if (isBookingDisabled(error)) {
+      return jsonError(
+        error instanceof Error ? error.message : "Booking is not enabled for this market.",
+        403,
+        "BOOKING_DISABLED",
       );
     }
     return jsonError(

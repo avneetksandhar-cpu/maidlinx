@@ -53,7 +53,7 @@ export function CheckoutStep({ booking, accessToken, onSuccess }: CheckoutStepPr
       </div>
 
       <p className="mt-5 text-center text-xs text-ink-subtle">
-        Apple Pay &amp; Google Pay coming soon — use card checkout below.
+        Apple Pay, Google Pay, and Link available when your device supports them — card always works.
       </p>
 
       <div className="mt-4">
