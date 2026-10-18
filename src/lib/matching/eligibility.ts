@@ -1,6 +1,9 @@
 /**
  * Hard eligibility gates for Match Engine V1 — run BEFORE scoring.
  * Ineligible cleaners must never receive a match score.
+ *
+ * Default path uses authoritative marketplace eligibility (strict).
+ * Legacy soft-open behavior only when context.requireStrictMarketplace === false.
  */
 
 import {
@@ -8,6 +11,10 @@ import {
   resolveJobDurationMinutes,
 } from "@/lib/availability";
 import { isDateUnavailable } from "@/lib/cleaners/unavailable-dates";
+import {
+  checkMarketplaceCleanerEligibility,
+  type MarketplaceEligibilityReason,
+} from "@/lib/cleaners/marketplace-eligibility";
 import { MATCH_THRESHOLDS } from "@/lib/matching/config";
 import { arrivalWindowFromScheduledAt } from "@/lib/matching/calculateMatchScore";
 import { isInServiceArea, resolveDistance } from "@/lib/matching/geo";
@@ -30,7 +37,11 @@ export type EligibilityReasonCode =
   | "cannot_reach"
   | "requirements_not_met"
   | "outside_service_area"
-  | "gates_incomplete";
+  | "gates_incomplete"
+  | "onboarding_incomplete"
+  | "market_not_eligible"
+  | "service_not_supported"
+  | "missing_availability";
 
 export interface EligibilityResult {
   eligible: boolean;
@@ -155,14 +166,29 @@ function hasJobConflict(
   return !result.isAvailable;
 }
 
+function mapMarketplaceReasons(
+  reasons: MarketplaceEligibilityReason[],
+): EligibilityReasonCode[] {
+  return reasons as EligibilityReasonCode[];
+}
+
 /**
  * Deterministic eligibility check. Pure — no I/O.
+ * Strict marketplace gates are ON by default.
  */
 export function checkEligibility(
   booking: EligibilityBooking,
   cleaner: EligibilityCleaner,
   context: EligibilityContext,
 ): EligibilityResult {
+  if (context.requireStrictMarketplace !== false) {
+    const strict = checkMarketplaceCleanerEligibility({ booking, cleaner, context });
+    return {
+      eligible: strict.eligible,
+      reasons: mapMarketplaceReasons(strict.reasons),
+    };
+  }
+
   const reasons: EligibilityReasonCode[] = [];
 
   if (!cleaner.isActive) {

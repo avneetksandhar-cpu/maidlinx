@@ -1,4 +1,4 @@
-import { jsonError, jsonSuccess } from "@/lib/api/response";
+import { adminCatchStatus, jsonError, jsonSuccess } from "@/lib/api/response";
 import { requireAdminApiPermission } from "@/lib/admin/session";
 import { writeAuditLog } from "@/lib/admin/audit";
 import {
@@ -109,7 +109,7 @@ export async function GET(request: Request) {
       providers: getProviderConnectionState(),
     });
   } catch (error) {
-    return jsonError(error instanceof Error ? error.message : "Forbidden.", 403);
+    return jsonError(error instanceof Error ? error.message : "Forbidden.", adminCatchStatus(error));
   }
 }
 

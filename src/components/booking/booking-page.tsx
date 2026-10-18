@@ -10,6 +10,10 @@ import { buildAddressStatePatch } from "@/lib/bookings/booking-helpers";
 import { BOOKING_SCREEN_PATHS, isAddressComplete } from "@/lib/bookings/booking-routes";
 import { GoogleMapsProvider } from "@/components/booking/google-maps-provider";
 import { trackBookingEvent } from "@/lib/analytics/booking";
+import {
+  isMarketBookingOpen,
+  resolveWaitlistReason,
+} from "@/lib/markets/booking-availability";
 
 const HowItWorks = dynamic(
   () => import("@/components/marketing/how-it-works").then((mod) => mod.HowItWorks),
@@ -48,11 +52,22 @@ export function BookingPage({
   const { state, updateState } = useBookingState();
   const router = useRouter();
 
+  const waitlistReason = resolveWaitlistReason({
+    line1: state.line1,
+    postalCode: state.postalCode,
+    inServiceArea: state.inServiceArea,
+    marketId: state.marketId,
+  });
+
   const applyAddress = (value: Partial<BookingState>, autoAdvance = false) => {
     const next = buildAddressStatePatch(state, value);
     updateState(next);
 
-    if (autoAdvance && next.inServiceArea) {
+    if (
+      autoAdvance &&
+      next.inServiceArea &&
+      isMarketBookingOpen(next.marketId ?? state.marketId)
+    ) {
       trackBookingEvent("address_selected", {
         marketId: next.marketId ?? state.marketId,
         source: "homepage_hero",
@@ -62,7 +77,11 @@ export function BookingPage({
   };
 
   const findCleaners = () => {
-    if (isAddressComplete(state) && state.inServiceArea) {
+    if (
+      isAddressComplete(state) &&
+      state.inServiceArea &&
+      isMarketBookingOpen(state.marketId)
+    ) {
       trackBookingEvent("address_selected", {
         marketId: state.marketId,
         source: "homepage_find_cleaners",
@@ -81,6 +100,7 @@ export function BookingPage({
           onAddressChange={(value) => applyAddress(value)}
           onAddressSelected={(value) => applyAddress(value, true)}
           onFindCleaners={findCleaners}
+          waitlistReason={waitlistReason}
         />
       ) : null}
 

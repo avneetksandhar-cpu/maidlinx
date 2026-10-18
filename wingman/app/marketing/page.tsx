@@ -2,9 +2,9 @@ import { LandingPage } from "@/components/marketing/LandingPage";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Wingman — Private Access to Miami's Finest",
+  title: "Wingman — Your person in Miami",
   description:
-    "Access Miami's most exclusive experiences. Verified hosts, VIP dining, yacht charters, and members-only nightlife.",
+    "A trusted insider who knows your taste, organises the night, and helps when plans change. A request is not a reservation.",
 };
 
 export default function MarketingPage() {

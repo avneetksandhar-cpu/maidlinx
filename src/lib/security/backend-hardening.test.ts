@@ -220,6 +220,7 @@ describe("matching eligibility", () => {
         cancelledJobsByProfileId: new Map(),
         favoriteProfileIds: new Set(),
         repeatProfileIds: new Set(),
+        requireStrictMarketplace: false,
       },
     );
     expect(result.eligible).toBe(false);

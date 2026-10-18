@@ -55,6 +55,8 @@ export const photoTypeSchema = z.enum(["before", "after"]);
 export const updateCapabilitiesSchema = z.object({
   serviceIds: z.array(z.string()).max(50),
   zoneIds: z.array(z.string()).max(50),
+  /** Explicit home market — must be a launch market when set. */
+  marketId: z.enum(["TORONTO_GTA", "SOUTH_FLORIDA"]).nullable().optional(),
   hasVehicle: z.boolean().optional(),
   travelRadiusKm: z.coerce.number().min(5).max(100).nullable().optional(),
 });

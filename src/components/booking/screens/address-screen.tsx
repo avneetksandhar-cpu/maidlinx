@@ -8,7 +8,6 @@ import { ReturningCustomerBanner } from "@/components/booking/returning-customer
 import { SavedPlaceChips } from "@/components/booking/saved-place-chips";
 import { useBooking } from "@/components/booking/booking-provider";
 import { useBookingGuard } from "@/components/booking/use-booking-guard";
-import { siteConfig } from "@/config/site";
 import { BOOKING_SCREEN_PATHS } from "@/lib/bookings/booking-routes";
 import { isAddressComplete } from "@/lib/bookings/booking-routes";
 import { buildAddressStatePatch } from "@/lib/bookings/booking-helpers";
@@ -16,6 +15,11 @@ import { resolveServiceArea } from "@/lib/service-area";
 import type { BookingState } from "@/lib/bookings/booking-state";
 import { trackBookingEvent } from "@/lib/analytics/booking";
 import { usualCleanToBookingPatch, readUsualClean } from "@/lib/bookings/usual-clean";
+import {
+  isMarketBookingOpen,
+  resolveWaitlistReason,
+} from "@/lib/markets/booking-availability";
+import { WaitlistSignup } from "@/components/waitlist/waitlist-signup";
 
 export function AddressScreen() {
   const router = useRouter();
@@ -26,7 +30,11 @@ export function AddressScreen() {
     const next = buildAddressStatePatch(state, value);
     updateState(next);
 
-    if (autoAdvance && next.inServiceArea) {
+    if (
+      autoAdvance &&
+      next.inServiceArea &&
+      isMarketBookingOpen(next.marketId ?? state.marketId)
+    ) {
       trackBookingEvent("address_selected", {
         marketId: next.marketId ?? state.marketId,
         placeId: value.googlePlaceId,
@@ -34,6 +42,13 @@ export function AddressScreen() {
       router.push(BOOKING_SCREEN_PATHS.property);
     }
   };
+
+  const waitlistReason = resolveWaitlistReason({
+    line1: state.line1,
+    postalCode: state.postalCode,
+    inServiceArea: state.inServiceArea,
+    marketId: state.marketId,
+  });
 
   if (!hydrated || blocked) {
     return (
@@ -126,16 +141,14 @@ export function AddressScreen() {
           }}
         />
 
-        {state.line1 && state.postalCode && state.inServiceArea === false ? (
-          <p className="rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-950">
-            We&apos;re not in your area yet.{" "}
-            <a
-              className="font-medium underline underline-offset-2"
-              href={`${siteConfig.links.support}?subject=MaidLinx%20waitlist`}
-            >
-              Join the waitlist
-            </a>
-          </p>
+        {waitlistReason ? (
+          <WaitlistSignup
+            reason={waitlistReason}
+            marketId={state.marketId}
+            marketName={state.marketName}
+            source="booking_address"
+            page="/book/address"
+          />
         ) : state.marketName && state.inServiceArea ? (
           <p className="text-sm text-accent">Available in {state.marketName}</p>
         ) : null}

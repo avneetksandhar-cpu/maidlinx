@@ -10,11 +10,13 @@ function resolveSiteUrl(): string {
 
 export const siteConfig = {
   name: "MaidLinx",
+  /** Default document + social title (open-graph / Twitter). */
+  title: "MaidLinx | Your Clean Connection",
   description:
-    "Book cleaning on demand in Toronto/GTA and South Florida. Enter your address, pick a service and time, and confirm online.",
+    "Book trusted home cleaning in minutes. Simple online booking for one-time, deep, move-in/move-out and recurring cleaning.",
   url: resolveSiteUrl(),
-  /** App Router file convention: `src/app/opengraph-image.tsx` (1200×630). */
-  ogImage: "/opengraph-image",
+  /** Static 1200×630 social preview image in `public/`. */
+  ogImage: "/og/maidlinx-og.png",
   /** Customer-facing support / contact inbox. */
   email: "info@maidlinx.com",
   links: {
@@ -92,6 +94,15 @@ export const routes = {
   cleanerJob: (id: string) => `/cleaner/jobs/${id}`,
   proSettings: "/pro/settings",
   admin: "/admin",
+  owner: "/owner",
+  ownerOpportunities: "/owner/opportunities",
+  ownerCleaners: "/owner/cleaners",
+  ownerCleaner: (id: string) => `/owner/cleaners/${id}`,
+  ownerSales: "/owner/sales",
+  ownerWaitlist: "/owner/waitlist",
+  ownerExceptions: "/owner/exceptions",
+  ownerActivity: "/owner/activity",
+  ownerCustomer: (id: string) => `/owner/customers/${id}`,
   adminBookings: "/admin/bookings",
   adminCustomers: "/admin/customers",
   adminCleaners: "/admin/cleaners",
@@ -114,10 +125,15 @@ export const routes = {
   adminLogs: "/admin/logs",
   adminPermissions: "/admin/permissions",
   adminAudit: "/admin/audit",
+  adminContentStudio: "/admin/content-studio",
+  ownerContentStudio: "/admin/content-studio",
   profile: "/dashboard/profile",
   legal: {
     privacy: "/legal/privacy",
     terms: "/legal/terms",
     cleanerAgreement: "/legal/cleaner-agreement",
+    cancellation: "/legal/cancellation",
+    refund: "/legal/refund",
+    damage: "/legal/damage",
   },
 } as const;

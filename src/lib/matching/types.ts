@@ -76,10 +76,14 @@ export interface MatchCleaner {
   city: string | null;
   state: string | null;
   postalCode: string | null;
-  /** Service legacy types and/or service ids offered. Empty = unknown (legacy open). */
+  /** Service legacy types and/or service ids offered. Empty = not bookable under strict gates. */
   offeredServiceTypes?: string[];
-  /** Zone ids the cleaner covers. Empty = no zone restriction (radius only). */
+  /** Zone ids the cleaner covers. Empty = not bookable under strict gates. */
   zoneIds?: string[];
+  /** Explicit cleaner home market (may be null if only zones set). */
+  marketId?: string | null;
+  /** Ops approval flag when distinct from isVerified. */
+  approved?: boolean;
   hasVehicle?: boolean;
   qualifications?: string[];
   /** YYYY-MM-DD dates the cleaner blocked. */
@@ -113,6 +117,11 @@ export interface MatchContext {
   requireVerified?: boolean;
   /** When true, cleaners must be online (isOnline). Default true. */
   requireOnline?: boolean;
+  /**
+   * When true (default), use hard marketplace gates:
+   * market + zone + services + availability required (no soft-open legacy).
+   */
+  requireStrictMarketplace?: boolean;
   configOverride?: PartialMatchConfig;
 }
 

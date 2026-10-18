@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { BOOKING_SCREEN_PATHS, getBookingEntryPath } from "@/lib/bookings/booking-routes";
 import { readUsualClean } from "@/lib/bookings/usual-clean";
 import { useBooking } from "@/components/booking/booking-provider";
+import { isMarketBookingOpen } from "@/lib/markets/booking-availability";
 import { Suspense } from "react";
 
 function BookEntryInner() {
@@ -38,10 +39,23 @@ function BookEntryInner() {
     const hasUsual = Boolean(usual?.line1 && usual.serviceType);
     const target = getBookingEntryPath({ hasUsualClean: hasUsual });
 
-    // If draft already has a completed address, skip straight to property.
-    if (state.line1 && state.inServiceArea && state.marketId) {
+    // If draft already has a completed address and booking is open, skip to property.
+    if (
+      state.line1 &&
+      state.inServiceArea &&
+      state.marketId &&
+      isMarketBookingOpen(state.marketId)
+    ) {
       router.replace(
         qs ? `${BOOKING_SCREEN_PATHS.property}?${qs}` : BOOKING_SCREEN_PATHS.property,
+      );
+      return;
+    }
+
+    // Market known but booking closed (or out of area) — land on address for waitlist.
+    if (state.line1 && state.marketId && !isMarketBookingOpen(state.marketId)) {
+      router.replace(
+        qs ? `${BOOKING_SCREEN_PATHS.address}?${qs}` : BOOKING_SCREEN_PATHS.address,
       );
       return;
     }

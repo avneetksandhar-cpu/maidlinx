@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { jsonError, jsonSuccess } from "@/lib/api/response";
+import { adminCatchStatus, jsonError, jsonSuccess } from "@/lib/api/response";
 import { requireAdminApiPermission } from "@/lib/admin/session";
 import { writeAuditLog } from "@/lib/admin/audit";
 import { getPricingEngineMetrics } from "@/lib/admin/pricing-engine";
@@ -68,7 +68,7 @@ export async function GET(request: Request) {
 
     return jsonSuccess({ rules, metrics, experiments });
   } catch (error) {
-    return jsonError(error instanceof Error ? error.message : "Unable to load engine.", 403);
+    return jsonError(error instanceof Error ? error.message : "Unable to load engine.", adminCatchStatus(error));
   }
 }
 

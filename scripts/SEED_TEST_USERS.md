@@ -4,15 +4,23 @@ Migrations `00001`–`00014` must already be applied (`supabase db push`).
 
 ## Admin (preferred)
 
-1. Set in `.env.local`:
+1. Set in `.env.local` (and Vercel Production/Preview — server env only):
 
 ```bash
 ADMIN_BOOTSTRAP_EMAIL=you@example.com
 ```
 
 2. Restart `npm run dev`, then sign up / sign in with that email at `/sign-up`.
-3. On first login the app promotes that profile to `admin`.
-4. Open `/admin`.
+3. On login the app promotes that profile to `admin` (new rows + existing bootstrap email matches via service-role self-heal). Middleware still requires `profiles.role = admin` for `/admin` and `/owner` — no public bypass.
+4. Open `/admin` or `/owner` while signed in as that user.
+
+If the account already exists as `customer` and you cannot wait for a login self-heal, run once with service role / SQL Editor:
+
+```sql
+update public.users
+set role = 'admin', updated_at = now()
+where lower(email) = lower('you@example.com');
+```
 
 ## Cleaner (SQL after Auth user exists)
 

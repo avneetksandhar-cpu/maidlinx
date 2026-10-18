@@ -1,0 +1,22 @@
+# Local builds and deps — Vercel installs and builds on the server.
+# Needed because this folder is not the git root (maidlinx monorepo).
+node_modules
+.next
+.next-prod
+out
+coverage
+*.tsbuildinfo
+
+# iOS wrapper is a separate EAS project
+mobile
+
+# Secrets and local-only files
+.env
+.env.*
+.neon
+.vercel
+
+# Tests and ops docs are not needed to serve the app
+tests
+ops
+*.md

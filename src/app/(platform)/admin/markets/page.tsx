@@ -24,7 +24,9 @@ async function MarketsContent() {
               <th className="px-4 py-3 font-semibold">Currency</th>
               <th className="px-4 py-3 font-semibold">Timezone</th>
               <th className="px-4 py-3 font-semibold">Zones</th>
-              <th className="px-4 py-3 font-semibold">Status</th>
+              <th className="px-4 py-3 font-semibold">Configured</th>
+              <th className="px-4 py-3 font-semibold">Booking</th>
+              <th className="px-4 py-3 font-semibold">Launch</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
@@ -46,8 +48,14 @@ async function MarketsContent() {
                         : "bg-surface-muted text-ink-muted"
                     }`}
                   >
-                    {market.active ? "Active" : "Inactive"}
+                    {market.active ? "Configured" : "Inactive"}
                   </span>
+                </td>
+                <td className="px-4 py-3 text-ink-muted">
+                  {market.bookingEnabled ? "ON" : "OFF"}
+                </td>
+                <td className="px-4 py-3 text-ink-muted">
+                  {market.launchEnabled ? "ON" : "OFF"}
                 </td>
               </tr>
             ))}

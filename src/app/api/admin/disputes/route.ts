@@ -1,4 +1,4 @@
-import { jsonError, jsonSuccess } from "@/lib/api/response";
+import { adminCatchStatus, jsonError, jsonSuccess } from "@/lib/api/response";
 import { listDisputes, updateDispute } from "@/lib/admin/disputes";
 import { requireAdminApiPermission } from "@/lib/admin/session";
 import { updateDisputeSchema } from "@/lib/validations/admin";
@@ -10,7 +10,7 @@ export async function GET(request: Request) {
     const disputes = await listDisputes(status ?? undefined);
     return jsonSuccess({ disputes });
   } catch (error) {
-    return jsonError(error instanceof Error ? error.message : "Unable to load disputes.", 403);
+    return jsonError(error instanceof Error ? error.message : "Unable to load disputes.", adminCatchStatus(error));
   }
 }
 
