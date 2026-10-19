@@ -2,9 +2,8 @@
 
 import { useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronLeft } from "lucide-react";
-import { SiteLogo } from "@/components/brand/site-logo";
 import { Button } from "@/components/ui";
+import { AppHeader } from "@/components/mobile/app-header";
 import {
   BOOKING_SCREENS,
   BOOKING_SCREEN_PATHS,
@@ -133,35 +132,24 @@ export function BookingShell({
       )}
       style={{ fontFamily: "var(--ml-font-ios)" }}
     >
-      <header className="z-50 shrink-0 border-b border-[var(--ml-dark-border)]/80 bg-[var(--ml-dark-bg)]/95 backdrop-blur-md">
-        <div className="mx-auto flex h-12 w-full max-w-[680px] items-center justify-between gap-3 px-4 pt-[env(safe-area-inset-top)] sm:h-14">
-          <div className="flex min-w-0 items-center gap-1.5">
-            <button
-              type="button"
-              onClick={handleBack}
-              className="inline-flex size-10 items-center justify-center rounded-xl text-[var(--ml-dark-ink)] transition-colors duration-200 hover:bg-[var(--ml-dark-surface)] md:size-9"
-              aria-label={prev ? "Go back" : "Back to home"}
+      <div className="z-50 shrink-0">
+        <AppHeader
+          homeHref={routes.home}
+          onBack={handleBack}
+          logoVariant="mark"
+          trailing={
+            <a
+              href={siteConfig.links.support}
+              className="rounded-xl px-3 py-2 text-sm font-semibold text-[var(--ml-app-header-ink)] transition-colors hover:bg-black/10"
             >
-              <ChevronLeft className="size-5" strokeWidth={2.25} aria-hidden />
-            </button>
-            <SiteLogo
-              variant="mark"
-              tone="brand"
-              href={routes.home}
-              className="shrink-0"
-            />
-          </div>
-          <a
-            href={siteConfig.links.support}
-            className="rounded-xl px-3 py-2 text-sm font-medium text-[var(--ml-dark-ink-muted)] transition-colors duration-200 hover:bg-[var(--ml-dark-surface)] hover:text-[var(--ml-dark-ink)]"
-          >
-            Help
-          </a>
-        </div>
-        <div className="px-4 pb-2.5">
+              Help
+            </a>
+          }
+        />
+        <div className="border-b border-[var(--ml-dark-border)]/80 bg-[var(--ml-dark-bg)] px-4 py-2.5">
           <BookingProgressBar currentId={screenId} />
         </div>
-      </header>
+      </div>
 
       {/* Single scroll region — avoid nested scroll; fit phone viewport when possible */}
       <main
