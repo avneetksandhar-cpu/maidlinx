@@ -37,7 +37,7 @@ function isActive(pathname: string, item: (typeof NAV_ITEMS)[number]): boolean {
   if (pathname.startsWith(item.match) || pathname.startsWith(proMatch)) return true;
   if ("alsoExact" in item && item.alsoExact) {
     const normalized = pathname.replace(/\/$/, "") || "/";
-    if (item.alsoExact.includes(normalized)) return true;
+    if ((item.alsoExact as readonly string[]).includes(normalized)) return true;
   }
   if ("alsoMatch" in item && item.alsoMatch) {
     return item.alsoMatch.some((prefix) => pathname.startsWith(prefix));
