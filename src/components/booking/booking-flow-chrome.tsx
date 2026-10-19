@@ -5,9 +5,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui";
 import { AppHeader } from "@/components/mobile/app-header";
 import {
-  BOOKING_SCREENS,
   BOOKING_SCREEN_PATHS,
-  getBookingScreenIndex,
   getPreviousScreen,
   type BookingScreenId,
 } from "@/lib/bookings/booking-routes";
@@ -35,6 +33,19 @@ interface BookingFlowChromeProps {
   locationSlot?: React.ReactNode;
 }
 
+/** Design-spec 4-phase progress: Clean → When → Review → Pay */
+const BOOKING_PHASES: BookingScreenId[][] = [
+  ["welcome", "address", "property", "service", "details", "addons"],
+  ["date", "time"],
+  ["access", "review"],
+  ["payment"],
+];
+
+function bookingPhaseIndex(id: BookingScreenId): number {
+  const idx = BOOKING_PHASES.findIndex((phase) => phase.includes(id));
+  return idx >= 0 ? idx : 0;
+}
+
 export function BookingProgressBar({
   currentId,
   className,
@@ -42,25 +53,30 @@ export function BookingProgressBar({
   currentId: BookingScreenId;
   className?: string;
 }) {
-  const current = getBookingScreenIndex(currentId);
-  const total = BOOKING_SCREENS.length;
-  const step = current + 1;
-  const pct = Math.round((step / total) * 100);
+  const phase = bookingPhaseIndex(currentId);
+  const total = BOOKING_PHASES.length;
+  const step = phase + 1;
 
   return (
     <div className={cn("booking-progress", className)}>
       <div
-        className="booking-progress-track mx-auto h-1 w-full max-w-[680px] overflow-hidden rounded-full bg-[var(--ml-dark-border)]"
+        className="mx-auto flex w-full max-w-[680px] items-center justify-center gap-2"
         role="progressbar"
         aria-valuenow={step}
         aria-valuemin={1}
         aria-valuemax={total}
         aria-label={`Booking progress, step ${step} of ${total}`}
       >
-        <div
-          className="booking-progress-fill h-full rounded-full bg-[var(--ml-dark-mint)] transition-[width] duration-220 ease-out"
-          style={{ width: `${pct}%` }}
-        />
+        {Array.from({ length: total }, (_, i) => (
+          <span
+            key={i}
+            className={cn(
+              "h-1.5 flex-1 max-w-16 rounded-full transition-colors duration-200",
+              i <= phase ? "bg-[var(--ml-dark-mint)]" : "bg-[var(--ml-dark-border)]",
+            )}
+            aria-hidden
+          />
+        ))}
       </div>
     </div>
   );

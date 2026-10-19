@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { CalendarDays, Home, LifeBuoy, UserRound } from "lucide-react";
+import { Building2, CalendarDays, Home, UserRound } from "lucide-react";
 import { routes } from "@/config/site";
 import { cn } from "@/lib/utils";
 
@@ -39,63 +39,73 @@ export function shouldShowCustomerTabBar(pathname: string): boolean {
   );
 }
 
-const NAV_ITEMS = [
-  {
-    href: routes.home,
-    label: "Home",
-    icon: Home,
-    match: (pathname: string) =>
-      pathname === routes.home ||
-      pathname === routes.account ||
-      pathname === routes.dashboard,
-  },
-  {
-    href: routes.dashboardBookings,
-    label: "Bookings",
-    icon: CalendarDays,
-    match: (pathname: string) =>
-      pathname.startsWith(routes.dashboardBookings) ||
-      pathname.startsWith("/bookings/") ||
-      pathname.startsWith("/book/confirmation"),
-  },
-  {
-    href: routes.dashboardSupport,
-    label: "Support",
-    icon: LifeBuoy,
-    match: (pathname: string) =>
-      pathname.startsWith(routes.dashboardSupport) ||
-      pathname.includes("/help") ||
-      pathname.includes("/faq"),
-  },
-  {
-    href: routes.dashboardProfile,
-    label: "Account",
-    icon: UserRound,
-    match: (pathname: string) =>
-      pathname.startsWith(routes.dashboardProfile) ||
-      pathname.startsWith(routes.dashboardNotifications) ||
-      pathname.startsWith(routes.dashboardFavorites) ||
-      pathname.startsWith(routes.dashboardSavedPlaces) ||
-      pathname.startsWith(routes.dashboardInvoices) ||
-      pathname.startsWith(routes.dashboardReceipts) ||
-      pathname.startsWith("/profile"),
-  },
-] as const;
-
-interface CustomerBottomNavProps {
-  className?: string;
-  /** Force hide (e.g. immersive overlays). Path rules still apply when false. */
-  hidden?: boolean;
+function isInAppShell(pathname: string): boolean {
+  return (
+    pathname.startsWith("/dashboard") ||
+    pathname.startsWith("/account") ||
+    pathname.startsWith("/bookings") ||
+    pathname.startsWith("/profile") ||
+    pathname.startsWith("/book/confirmation")
+  );
 }
 
 /**
  * Persistent iOS-style bottom tabs — dark bar, mint active, safe-area inset.
- * Uber-like: Home · Bookings · Support · Account.
+ * Design-spec: Home · Bookings · Properties · Profile.
  */
-export function CustomerBottomNav({ className, hidden = false }: CustomerBottomNavProps) {
+export function CustomerBottomNav({
+  className,
+  hidden = false,
+}: {
+  className?: string;
+  /** Force hide (e.g. immersive overlays). Path rules still apply when false. */
+  hidden?: boolean;
+}) {
   const pathname = usePathname() ?? "";
 
   if (hidden || !shouldShowCustomerTabBar(pathname)) return null;
+
+  const homeHref = isInAppShell(pathname) ? routes.dashboard : routes.home;
+
+  const navItems = [
+    {
+      href: homeHref,
+      label: "Home",
+      icon: Home,
+      match: (path: string) =>
+        path === routes.home ||
+        path === routes.account ||
+        path === routes.dashboard,
+    },
+    {
+      href: routes.dashboardBookings,
+      label: "Bookings",
+      icon: CalendarDays,
+      match: (path: string) =>
+        path.startsWith(routes.dashboardBookings) ||
+        path.startsWith("/bookings/") ||
+        path.startsWith("/book/confirmation"),
+    },
+    {
+      href: routes.dashboardSavedPlaces,
+      label: "Properties",
+      icon: Building2,
+      match: (path: string) => path.startsWith(routes.dashboardSavedPlaces),
+    },
+    {
+      href: routes.dashboardProfile,
+      label: "Profile",
+      icon: UserRound,
+      match: (path: string) =>
+        path.startsWith(routes.dashboardProfile) ||
+        path.startsWith(routes.dashboardNotifications) ||
+        path.startsWith(routes.dashboardFavorites) ||
+        path.startsWith(routes.dashboardInvoices) ||
+        path.startsWith(routes.dashboardReceipts) ||
+        path.startsWith(routes.dashboardSupport) ||
+        path.startsWith("/profile"),
+    },
+  ] as const;
 
   return (
     <nav
@@ -107,7 +117,7 @@ export function CustomerBottomNav({ className, hidden = false }: CustomerBottomN
       style={{ fontFamily: "var(--ml-font-ios)" }}
     >
       <div className="mx-auto grid h-[3.75rem] max-w-lg grid-cols-4 px-1 pb-[max(0.35rem,env(safe-area-inset-bottom))] pt-1">
-        {NAV_ITEMS.map((item) => {
+        {navItems.map((item) => {
           const active = item.match(pathname);
           const Icon = item.icon;
           return (

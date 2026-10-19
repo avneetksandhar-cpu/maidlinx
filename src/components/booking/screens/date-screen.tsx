@@ -50,8 +50,8 @@ export function DateScreen() {
   return (
     <BookingFlowChrome
       screenId="date"
-      title="When do you need us?"
-      subtitle="One tap to pick a day."
+      title="Choose a time"
+      subtitle="Pick a day that works — availability is checked for real windows only."
       hideCta={!showContinue}
       ctaLabel="Continue"
       ctaDisabled={!isDateComplete(state)}

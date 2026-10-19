@@ -77,14 +77,17 @@ export function BookingCard({ booking, showActions = true }: BookingCardProps) {
 
   return (
     <>
-      <Card>
+      <Card className="border-[var(--ml-dark-border)] bg-[var(--ml-dark-surface)] shadow-[var(--shadow-soft)]">
         <CardContent className="space-y-4">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <p className="font-display text-base font-semibold text-ink">
+              <Link
+                href={routes.bookingDetail(booking.id)}
+                className="font-display text-base font-semibold text-white hover:underline"
+              >
                 {getServiceLabel(booking.serviceType)}
-              </p>
-              <p className="mt-1 text-sm text-ink-muted">
+              </Link>
+              <p className="mt-1 text-sm text-[var(--ml-dark-ink-muted)]">
                 {formatBookingDate(booking.scheduledAt)} ·{" "}
                 {formatBookingTimeRange(
                   booking.scheduledAt,
@@ -98,40 +101,40 @@ export function BookingCard({ booking, showActions = true }: BookingCardProps) {
 
           <div className="grid gap-2 text-sm sm:grid-cols-2">
             <div>
-              <p className="text-ink-subtle">Address</p>
-              <p className="text-ink">
+              <p className="text-[var(--ml-dark-ink-subtle)]">Address</p>
+              <p className="text-white">
                 {formatAddress(booking.addressLine1, booking.addressCity, booking.addressState)}
               </p>
             </div>
             <div>
-              <p className="text-ink-subtle">Total</p>
-              <p className="font-medium text-ink">
+              <p className="text-[var(--ml-dark-ink-subtle)]">Total</p>
+              <p className="font-medium text-white">
                 {formatBookingTotal(booking.totalCents, booking.currency)}
               </p>
             </div>
             {booking.professionalName && (
               <div>
-                <p className="text-ink-subtle">Cleaner</p>
-                <p className="text-ink">{booking.professionalName}</p>
+                <p className="text-[var(--ml-dark-ink-subtle)]">Cleaner</p>
+                <p className="text-white">{booking.professionalName}</p>
               </div>
             )}
             {booking.invoiceNumber && (
               <div>
-                <p className="text-ink-subtle">Invoice</p>
-                <p className="font-mono text-sm text-ink">{booking.invoiceNumber}</p>
+                <p className="text-[var(--ml-dark-ink-subtle)]">Invoice</p>
+                <p className="font-mono text-sm text-white">{booking.invoiceNumber}</p>
               </div>
             )}
           </div>
 
           {(actionable || booking.professionalProfileId || showBookAgain) && (
-            <div className="flex flex-wrap gap-2 border-t border-border pt-4">
+            <div className="flex flex-wrap gap-2 border-t border-[var(--ml-dark-border)] pt-4">
               {completed && booking.professionalProfileId && !favorited && (
                 <Button variant="ghost" size="sm" onClick={handleFavorite} disabled={favoriteLoading}>
                   {favoriteLoading ? "Saving..." : "Prefer this Pro"}
                 </Button>
               )}
               {favorited && (
-                <span className="inline-flex items-center px-3 text-sm text-accent">
+                <span className="inline-flex items-center px-3 text-sm text-[var(--ml-dark-mint)]">
                   Preference saved — assigned when available
                 </span>
               )}
@@ -152,6 +155,11 @@ export function BookingCard({ booking, showActions = true }: BookingCardProps) {
                   </Button>
                 </Link>
               ) : null}
+              <Link href={routes.bookingDetail(booking.id)}>
+                <Button variant="ghost" size="sm">
+                  View booking
+                </Button>
+              </Link>
             </div>
           )}
         </CardContent>

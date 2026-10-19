@@ -85,9 +85,9 @@ export function CustomerShell({ children, contentClassName }: CustomerShellProps
                 { href: routes.dashboard, label: "Home" },
                 { href: routes.dashboardBookings, label: "Bookings" },
                 { href: routes.dashboardSavedPlaces, label: "Properties" },
+                { href: routes.dashboardProfile, label: "Profile" },
                 { href: routes.dashboardSupport, label: "Support" },
-                { href: routes.dashboardProfile, label: "Account" },
-                { href: routes.book, label: "Book a clean" },
+                { href: routes.book, label: "Schedule a clean" },
               ].map((item) => (
                 <Link
                   key={item.href}
