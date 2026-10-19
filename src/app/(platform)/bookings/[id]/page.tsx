@@ -1,14 +1,14 @@
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
-import { CustomerShell } from "@/components/customer/customer-shell";
 import { GoogleMapsProvider } from "@/components/booking/google-maps-provider";
+import { LiveJobShell } from "@/components/post-booking/live-job-shell";
 import { PostBookingDashboard } from "@/components/post-booking/post-booking-dashboard";
 import { BookingAccessError, assertBookingAccess } from "@/lib/bookings/access";
 import { getBookingById } from "@/lib/bookings/repository";
 import { routes } from "@/config/site";
 
 export const metadata: Metadata = {
-  title: "Your booking",
+  title: "Your clean",
   robots: { index: false, follow: false },
 };
 
@@ -17,6 +17,7 @@ interface BookingDetailPageProps {
   searchParams: Promise<{ token?: string }>;
 }
 
+/** Live job status after pay — Uber arriving loop (real status only). */
 export default async function BookingDetailPage({
   params,
   searchParams,
@@ -37,7 +38,7 @@ export default async function BookingDetailPage({
   }
 
   return (
-    <CustomerShell>
+    <LiveJobShell>
       <GoogleMapsProvider>
         <PostBookingDashboard
           bookingId={id}
@@ -46,6 +47,6 @@ export default async function BookingDetailPage({
           customerFirstName={booking.customer_first_name}
         />
       </GoogleMapsProvider>
-    </CustomerShell>
+    </LiveJobShell>
   );
 }

@@ -34,11 +34,25 @@ export function DateScreen() {
     );
   }
 
+  const needsCalendar = state.schedulePreset === "date";
+  const showContinue = needsCalendar;
+
+  const advance = (merged: typeof state) => {
+    trackBookingEvent("date_selected", {
+      preset: merged.schedulePreset,
+      date: merged.date,
+      window: merged.arrivalWindow,
+    });
+    updateState({ step: 6 });
+    router.push(BOOKING_SCREEN_PATHS[getNextScreen("date", merged)]);
+  };
+
   return (
     <BookingFlowChrome
       screenId="date"
-      title="Date & time"
-      subtitle="Choose a day — then a real arrival window."
+      title="When do you need us?"
+      subtitle="One tap to pick a day."
+      hideCta={!showContinue}
       ctaLabel="Continue"
       ctaDisabled={!isDateComplete(state)}
       onContinue={() => {
@@ -47,17 +61,10 @@ export function DateScreen() {
           return;
         }
         setErrors({});
-        trackBookingEvent("date_selected", {
-          preset: state.schedulePreset,
-          date: state.date,
-          window: state.arrivalWindow,
-        });
-        const next = getNextScreen("date", state);
-        updateState({ step: 6 });
-        router.push(BOOKING_SCREEN_PATHS[next]);
+        advance(state);
       }}
     >
-      <div className="space-y-6">
+      <div className="space-y-5">
         <ScheduleWhenSelector
           mode="date"
           schedulePreset={state.schedulePreset}
@@ -65,11 +72,16 @@ export function DateScreen() {
           arrivalWindow={state.arrivalWindow}
           marketId={state.marketId}
           onPresetChange={(preset: SchedulePreset, resolved) => {
-            updateState({
+            const patch = {
               schedulePreset: preset,
               date: resolved.date,
               arrivalWindow: resolved.arrivalWindow,
-            });
+            };
+            updateState(patch);
+            // Auto-advance on ASAP / Today / Tomorrow — calendar needs Continue
+            if (preset !== "date" && resolved.date) {
+              advance({ ...state, ...patch });
+            }
           }}
           onDateChange={(date) => updateState({ date, schedulePreset: "date" })}
           onWindowChange={(arrivalWindow: ArrivalWindowId) => updateState({ arrivalWindow })}

@@ -111,7 +111,7 @@ export function ScheduleWhenSelector({
                   aria-pressed={selected}
                   data-selected={selected}
                   className={cn(
-                    "flex min-h-[5rem] flex-col items-start gap-1.5 rounded-2xl border p-4 text-left transition-all duration-200",
+                    "flex min-h-[4.25rem] flex-col items-start gap-1 rounded-2xl border p-3.5 text-left transition-all duration-200",
                     "hover:border-[var(--ml-dark-border-strong)] active:scale-[0.99]",
                     selected
                       ? "border-[var(--ml-dark-mint)] bg-[var(--ml-dark-surface)] shadow-[0_0_0_1px_rgb(8_224_212_/_0.3)]"

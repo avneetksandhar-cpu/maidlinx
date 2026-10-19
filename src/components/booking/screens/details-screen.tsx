@@ -7,7 +7,10 @@ import { DynamicServiceQuestions } from "@/components/booking/dynamic-service-qu
 import { Input, Label } from "@/components/ui";
 import { useBooking } from "@/components/booking/booking-provider";
 import { useBookingGuard } from "@/components/booking/use-booking-guard";
-import { BOOKING_SCREEN_PATHS } from "@/lib/bookings/booking-routes";
+import {
+  BOOKING_SCREEN_PATHS,
+  getNextScreen,
+} from "@/lib/bookings/booking-routes";
 import { getPropertyQuestions } from "@/config/property-types";
 import { validateDetailsState } from "@/lib/bookings/booking-helpers";
 import type { ServiceAnswers } from "@/lib/services/questions";
@@ -59,16 +62,17 @@ export function DetailsScreen() {
       return;
     }
     setErrors({});
-    // Persist coalesced beds/baths/sqft so the service guard's isDetailsComplete matches.
-    updateState({ ...(result.synced ?? {}), step: 4 });
-    router.push(BOOKING_SCREEN_PATHS.service);
+    const synced = result.synced ?? {};
+    const merged = { ...nextState, ...synced, step: 4 };
+    updateState({ ...synced, step: 4 });
+    router.push(BOOKING_SCREEN_PATHS[getNextScreen("details", merged)]);
   };
 
   return (
     <BookingFlowChrome
       screenId="details"
-      title="A few details about the space"
-      subtitle="Helps us price accurately — you can edit these later."
+      title="About the space"
+      subtitle="Beds, baths, and size for pricing."
       ctaLabel="Continue"
       onContinue={handleContinue}
     >

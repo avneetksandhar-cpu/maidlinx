@@ -78,8 +78,8 @@ export function AddressScreen() {
   return (
     <BookingFlowChrome
       screenId="address"
-      title="Select property"
-      subtitle="Search or choose a saved address."
+      title="Where’s the clean?"
+      subtitle="Search or pick a saved place."
       hideCta={!isAddressComplete(state)}
       ctaLabel="Continue"
       ctaDisabled={!isAddressComplete(state)}

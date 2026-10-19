@@ -44,17 +44,17 @@ export function ExtrasScreen() {
     <BookingFlowChrome
       screenId="addons"
       title="Any extras?"
-      subtitle="Optional add-ons — skip if you don’t need them."
+      subtitle="Optional — skip if you don’t need them."
       ctaLabel={totalLabel ? `Continue · ${totalLabel}` : "Continue"}
       footerHint={
         <div className="flex items-center justify-between gap-3 text-sm">
-          <span className="text-ink-muted">
+          <span className="text-[var(--ml-dark-ink-muted)]">
             {(state.extras?.length ?? 0) === 0
               ? "No add-ons"
               : `${state.extras!.length} add-on${state.extras!.length === 1 ? "" : "s"}`}
           </span>
-          <span className="font-semibold tabular-nums text-ink">
-            {totalLabel ? (loading ? "Updating…" : `Estimated total ${totalLabel}`) : "—"}
+          <span className="font-semibold tabular-nums text-[var(--ml-dark-ink)]">
+            {totalLabel ? (loading ? "Updating…" : `Est. ${totalLabel}`) : "—"}
           </span>
         </div>
       }

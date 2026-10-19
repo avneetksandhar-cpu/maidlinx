@@ -6,10 +6,7 @@ import { BookingFlowChrome } from "@/components/booking/booking-flow-chrome";
 import { ScheduleWhenSelector } from "@/components/booking/schedule-when-selector";
 import { useBooking } from "@/components/booking/booking-provider";
 import { useBookingGuard } from "@/components/booking/use-booking-guard";
-import {
-  BOOKING_SCREEN_PATHS,
-  isTimeComplete,
-} from "@/lib/bookings/booking-routes";
+import { BOOKING_SCREEN_PATHS } from "@/lib/bookings/booking-routes";
 import type { ArrivalWindowId } from "@/lib/bookings/constants";
 import { trackBookingEvent } from "@/lib/analytics/booking";
 
@@ -21,33 +18,32 @@ export function TimeScreen() {
 
   if (!hydrated || blocked) {
     return (
-      <div className="flex min-h-[40dvh] items-center justify-center text-sm text-ink-muted">
+      <div
+        data-theme="ml-dark"
+        className="flex min-h-[40dvh] items-center justify-center bg-[var(--ml-dark-bg)] text-sm text-[var(--ml-dark-ink-muted)]"
+      >
         Loading…
       </div>
     );
   }
 
+  const selectWindow = (arrivalWindow: ArrivalWindowId) => {
+    updateState({ arrivalWindow, step: 7 });
+    trackBookingEvent("date_selected", {
+      preset: state.schedulePreset,
+      date: state.date,
+      window: arrivalWindow,
+    });
+    setErrors({});
+    router.push(BOOKING_SCREEN_PATHS.access);
+  };
+
   return (
     <BookingFlowChrome
       screenId="time"
-      title="What time works best?"
-      subtitle="Pick an arrival window — we’ll treat it as your preference."
-      ctaLabel="Continue"
-      ctaDisabled={!isTimeComplete(state)}
-      onContinue={() => {
-        if (!state.arrivalWindow) {
-          setErrors({ arrivalWindow: "Choose an arrival window." });
-          return;
-        }
-        setErrors({});
-        trackBookingEvent("date_selected", {
-          preset: state.schedulePreset,
-          date: state.date,
-          window: state.arrivalWindow,
-        });
-        updateState({ step: 7 });
-        router.push(BOOKING_SCREEN_PATHS.access);
-      }}
+      title="What time works?"
+      subtitle="Tap a window to continue."
+      hideCta
     >
       <ScheduleWhenSelector
         mode="time"
@@ -61,7 +57,7 @@ export function TimeScreen() {
         onDateChange={() => {
           /* date step owns date */
         }}
-        onWindowChange={(arrivalWindow: ArrivalWindowId) => updateState({ arrivalWindow })}
+        onWindowChange={selectWindow}
         errors={errors}
       />
     </BookingFlowChrome>

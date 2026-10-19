@@ -66,10 +66,10 @@ export function WelcomeScreen() {
 
         <div className="mt-auto flex flex-col items-stretch text-center sm:items-center">
           <h1 className="mx-auto max-w-md text-[1.85rem] font-semibold leading-tight tracking-tight text-white sm:text-[2.15rem]">
-            Professional cleaning for modern properties.
+            Request a clean in minutes.
           </h1>
           <p className="mx-auto mt-3 max-w-sm text-[15px] leading-relaxed text-[var(--ml-dark-ink-muted)]">
-            Homes, Airbnbs, offices and businesses. Fast. Reliable. Vetted.
+            Choose · confirm · track your MaidLinx Pro.
           </p>
 
           <Button

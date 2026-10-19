@@ -14,7 +14,6 @@ import { BOOKING_SCREEN_PATHS } from "@/lib/bookings/booking-routes";
 import { getPropertyType, type PropertyTypeId } from "@/config/property-types";
 import type { ServiceAnswers } from "@/lib/services/questions";
 import { trackBookingEvent } from "@/lib/analytics/booking";
-import { routes } from "@/config/site";
 
 export function PropertyScreen() {
   const router = useRouter();
@@ -72,8 +71,8 @@ export function PropertyScreen() {
   return (
     <BookingFlowChrome
       screenId="property"
-      title="What would you like cleaned?"
-      subtitle="Homes, short-term rentals, offices, and commercial spaces."
+      title="What needs cleaning?"
+      subtitle="Tap one to continue."
       hideCta
       locationSlot={
         <div className="flex items-center gap-2 text-sm text-[var(--ml-dark-ink-muted)]">
@@ -92,12 +91,6 @@ export function PropertyScreen() {
         value={state.propertyType === "condo" ? "apartment" : state.propertyType}
         onChange={selectCategory}
       />
-      <p className="mt-6 text-center text-xs text-[var(--ml-dark-ink-subtle)]">
-        Prefer a guided start?{" "}
-        <Link href={routes.forBusiness} className="text-[var(--ml-dark-mint)] hover:underline">
-          For business
-        </Link>
-      </p>
     </BookingFlowChrome>
   );
 }

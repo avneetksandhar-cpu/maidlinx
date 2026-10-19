@@ -121,14 +121,14 @@ export function ReviewScreen() {
   return (
     <BookingFlowChrome
       screenId="review"
-      title="Review & pay"
-      subtitle="Transparent estimate — deposit charged today in Stripe TEST."
+      title="Confirm your clean"
+      subtitle="Deposit today · balance after the job (Stripe TEST)."
       ctaLabel={
         loading
           ? "Verifying price…"
           : depositLabel
-            ? `Confirm · ${depositLabel} deposit`
-            : "Continue to payment"
+            ? `Confirm · ${depositLabel}`
+            : "Confirm & pay"
       }
       ctaDisabled={loading || Boolean(pricingError)}
       ctaLoading={loading}

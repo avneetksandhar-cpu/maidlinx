@@ -83,7 +83,7 @@ export function CategoryCards({ value, onChange, className }: CategoryCardsProps
   return (
     <fieldset className={className}>
       <legend className="sr-only">What would you like cleaned?</legend>
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 gap-2.5">
         {BOOKING_CATEGORIES.map((cat) => {
           const selected = active === cat.id;
           return (
@@ -101,7 +101,8 @@ export function CategoryCards({ value, onChange, className }: CategoryCardsProps
                   : "border-[var(--ml-dark-border)]",
               )}
             >
-              <span className="relative block aspect-[4/3] w-full overflow-hidden">
+              {/* Compact image so 2×2 fits ~390×844 without page scroll */}
+              <span className="relative block h-[5.5rem] w-full overflow-hidden sm:h-28">
                 <Image
                   src={cat.image}
                   alt=""
@@ -111,16 +112,16 @@ export function CategoryCards({ value, onChange, className }: CategoryCardsProps
                 />
                 <span className="absolute inset-0 bg-gradient-to-t from-[var(--ml-dark-bg)]/90 via-[var(--ml-dark-bg)]/25 to-transparent" />
                 {selected ? (
-                  <span className="absolute right-2.5 top-2.5 flex size-7 items-center justify-center rounded-full bg-[var(--ml-dark-mint)] text-[var(--color-accent-foreground)] shadow-[0_0_16px_rgb(8_224_212_/_0.45)]">
+                  <span className="absolute right-2 top-2 flex size-6 items-center justify-center rounded-full bg-[var(--ml-dark-mint)] text-[var(--color-accent-foreground)] shadow-[0_0_16px_rgb(8_224_212_/_0.45)]">
                     <Check className="size-3.5" strokeWidth={3} aria-hidden />
                   </span>
                 ) : null}
               </span>
-              <span className="space-y-0.5 bg-[var(--ml-dark-surface)] px-3.5 py-3">
-                <span className="block text-[15px] font-semibold text-[var(--ml-dark-ink)]">
+              <span className="space-y-0.5 bg-[var(--ml-dark-surface)] px-3 py-2.5">
+                <span className="block text-[14px] font-semibold leading-snug text-[var(--ml-dark-ink)] sm:text-[15px]">
                   {cat.label}
                 </span>
-                <span className="block text-xs leading-snug text-[var(--ml-dark-ink-muted)]">
+                <span className="block text-[11px] leading-snug text-[var(--ml-dark-ink-muted)] sm:text-xs">
                   {cat.description}
                 </span>
               </span>

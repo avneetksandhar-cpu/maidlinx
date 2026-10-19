@@ -113,114 +113,82 @@ export function PostBookingDashboard({
   return (
     <div
       data-theme="ml-dark"
-      className="min-h-[50dvh] bg-[var(--ml-dark-bg)] text-[var(--ml-dark-ink)]"
+      className="bg-[var(--ml-dark-bg)] text-[var(--ml-dark-ink)]"
       style={{ fontFamily: "var(--ml-font-ios)" }}
     >
-      <div className="space-y-6 px-1 lg:mx-auto lg:grid lg:max-w-[1100px] lg:grid-cols-[minmax(0,1fr)_minmax(280px,360px)] lg:items-start lg:gap-8 lg:space-y-0">
-        <div className="space-y-6">
-          <header className="space-y-1">
-            <p className="text-base text-[var(--ml-dark-ink-muted)]">Hi, {name}</p>
-            <h1 className="text-[1.65rem] font-semibold leading-tight tracking-tight text-white sm:text-[1.85rem]">
-              {cleaningToday
-                ? "You’ve got a cleaning today."
-                : timeline.findingProfessional
-                  ? "You’re booked."
-                  : "Your cleaning is on the calendar."}
-            </h1>
-            <p className="text-[15px] text-[var(--ml-dark-ink-muted)]">
-              Sit back, we’ve got it from here.
-            </p>
-          </header>
+      <div className="space-y-5">
+        <header className="space-y-1">
+          <p className="text-sm text-[var(--ml-dark-ink-muted)]">Hi, {name}</p>
+          <h1 className="text-[1.55rem] font-semibold leading-tight tracking-tight text-white sm:text-[1.75rem]">
+            {cleaningToday
+              ? "Cleaning today"
+              : timeline.findingProfessional
+                ? "You’re booked"
+                : "Your clean is confirmed"}
+          </h1>
+          <p className="text-[14px] text-[var(--ml-dark-ink-muted)]">
+            Live status updates as your Pro is assigned and arrives.
+          </p>
+        </header>
 
-          <div className="flex items-center gap-3 overflow-hidden rounded-2xl border border-[var(--ml-dark-border)] bg-[var(--ml-dark-surface)] p-4">
-            <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-[var(--ml-dark-mint)] text-[var(--color-accent-foreground)]">
-              <ShieldIcon />
-            </span>
-            <p className="text-sm leading-snug text-[var(--ml-dark-ink-muted)]">
-              Your home, your time. We handle the cleaning so you can focus on what matters.
-            </p>
-          </div>
+        <LiveStatusCard booking={booking} accessToken={accessToken} />
 
-          <LiveStatusCard booking={booking} accessToken={accessToken} />
+        <UpcomingBookingCard booking={booking} showViewAll />
 
-          {booking.status === "completed" ? (
-            <div className="space-y-4 rounded-2xl border border-[var(--ml-dark-border)] bg-[var(--ml-dark-surface)] p-5 shadow-[var(--shadow-card)]">
-              <div className="flex flex-col items-center text-center">
-                <div
-                  className="mb-4 flex size-14 items-center justify-center rounded-full bg-[var(--ml-dark-mint)] text-[var(--color-accent-foreground)] shadow-[0_0_24px_rgb(8_224_212_/_0.3)]"
-                  aria-hidden
-                >
-                  <span className="text-2xl font-bold leading-none">✓</span>
-                </div>
-                <h2 className="text-xl font-semibold text-white">Cleaning completed!</h2>
-                <p className="mt-2 text-sm text-[var(--ml-dark-ink-muted)]">
-                  Thanks for booking with MaidLinx. Rate your cleaners, view your invoice, or book
-                  again.
-                </p>
+        {booking.status === "completed" ? (
+          <div className="space-y-4 rounded-2xl border border-[var(--ml-dark-border)] bg-[var(--ml-dark-surface)] p-5 shadow-[var(--shadow-card)]">
+            <div className="flex flex-col items-center text-center">
+              <div
+                className="mb-4 flex size-14 items-center justify-center rounded-full bg-[var(--ml-dark-mint)] text-[var(--color-accent-foreground)] shadow-[0_0_24px_rgb(8_224_212_/_0.3)]"
+                aria-hidden
+              >
+                <span className="text-2xl font-bold leading-none">✓</span>
               </div>
-
-              <BookingReviewCard bookingId={booking.id} />
-
-              <div className="grid gap-2 sm:grid-cols-2">
-                <Link href={routes.dashboardInvoices}>
-                  <Button
-                    variant="secondary"
-                    className="w-full rounded-2xl border-[var(--ml-dark-border-strong)] bg-transparent text-white hover:bg-[var(--ml-dark-surface-2)]"
-                  >
-                    View invoice
-                  </Button>
-                </Link>
-                <Link href={`${routes.book}?rebook=1`}>
-                  <Button
-                    variant="secondary"
-                    className="w-full rounded-2xl border-[var(--ml-dark-border-strong)] bg-transparent text-white hover:bg-[var(--ml-dark-surface-2)]"
-                  >
-                    Book again
-                  </Button>
-                </Link>
-              </div>
-
-              <p className="text-center text-xs text-[var(--ml-dark-ink-subtle)]">
-                Tips are not available in TEST checkout yet — leave a review to thank your team.
+              <h2 className="text-xl font-semibold text-white">Cleaning completed!</h2>
+              <p className="mt-2 text-sm text-[var(--ml-dark-ink-muted)]">
+                Rate your Pro, view your invoice, or book again.
               </p>
             </div>
-          ) : null}
-        </div>
 
-        <div className="space-y-6">
-          <UpcomingBookingCard booking={booking} showViewAll />
+            <BookingReviewCard bookingId={booking.id} />
 
-          <div className="flex flex-col gap-3 sm:flex-row lg:flex-col">
-            <Link href={routes.dashboardBookings} className="sm:flex-1">
+            <div className="grid gap-2 sm:grid-cols-2">
+              <Link href={routes.dashboardInvoices}>
+                <Button
+                  variant="secondary"
+                  className="w-full rounded-2xl border-[var(--ml-dark-border-strong)] bg-transparent text-white hover:bg-[var(--ml-dark-surface-2)]"
+                >
+                  View invoice
+                </Button>
+              </Link>
+              <Link href={`${routes.book}?rebook=1`}>
+                <Button
+                  variant="secondary"
+                  className="w-full rounded-2xl border-[var(--ml-dark-border-strong)] bg-transparent text-white hover:bg-[var(--ml-dark-surface-2)]"
+                >
+                  Book again
+                </Button>
+              </Link>
+            </div>
+          </div>
+        ) : (
+          <div className="grid gap-2 sm:grid-cols-2">
+            <Link href={routes.dashboardBookings}>
               <Button
                 variant="secondary"
                 className="w-full rounded-2xl border-[var(--ml-dark-border-strong)] bg-transparent text-white hover:bg-[var(--ml-dark-surface-2)]"
               >
-                View my bookings
+                My bookings
               </Button>
             </Link>
-            <Link href={routes.book} className="sm:flex-1">
+            <Link href={routes.book}>
               <Button variant="primary" className="booking-cta-btn w-full rounded-2xl">
-                Book another clean
+                Book another
               </Button>
             </Link>
           </div>
-        </div>
+        )}
       </div>
     </div>
-  );
-}
-
-function ShieldIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path
-        d="M12 3 5 6v6c0 4.5 3 7.5 7 9 4-1.5 7-4.5 7-9V6l-7-3Z"
-        stroke="currentColor"
-        strokeWidth="1.75"
-        strokeLinejoin="round"
-      />
-      <path d="M9.5 12.5 11 14l3.5-3.5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
-    </svg>
   );
 }

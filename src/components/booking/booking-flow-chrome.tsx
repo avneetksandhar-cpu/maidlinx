@@ -128,12 +128,13 @@ export function BookingShell({
     <div
       data-theme="ml-dark"
       className={cn(
-        "booking-shell min-h-dvh overflow-x-clip bg-[var(--ml-dark-bg)] text-[var(--ml-dark-ink)]",
+        "booking-shell flex h-dvh flex-col overflow-hidden bg-[var(--ml-dark-bg)] text-[var(--ml-dark-ink)]",
         className,
       )}
+      style={{ fontFamily: "var(--ml-font-ios)" }}
     >
-      <header className="sticky top-0 z-50 border-b border-[var(--ml-dark-border)]/80 bg-[var(--ml-dark-bg)]/92 backdrop-blur-md">
-        <div className="mx-auto flex h-14 w-full max-w-[680px] items-center justify-between gap-3 px-4 pt-[env(safe-area-inset-top)]">
+      <header className="z-50 shrink-0 border-b border-[var(--ml-dark-border)]/80 bg-[var(--ml-dark-bg)]/95 backdrop-blur-md">
+        <div className="mx-auto flex h-12 w-full max-w-[680px] items-center justify-between gap-3 px-4 pt-[env(safe-area-inset-top)] sm:h-14">
           <div className="flex min-w-0 items-center gap-1.5">
             <button
               type="button"
@@ -157,23 +158,24 @@ export function BookingShell({
             Help
           </a>
         </div>
-        <div className="px-4 pb-3">
+        <div className="px-4 pb-2.5">
           <BookingProgressBar currentId={screenId} />
         </div>
       </header>
 
+      {/* Single scroll region — avoid nested scroll; fit phone viewport when possible */}
       <main
         className={cn(
-          "mx-auto w-full max-w-[680px] px-4 pt-6 md:pt-8",
+          "booking-slide-main mx-auto w-full max-w-[680px] flex-1 overflow-y-auto overscroll-y-contain px-4 pt-4 sm:pt-6",
           showSticky
-            ? "pb-[calc(9rem+env(safe-area-inset-bottom))]"
-            : "pb-16",
+            ? "pb-[calc(8.5rem+env(safe-area-inset-bottom))]"
+            : "pb-[max(1.5rem,env(safe-area-inset-bottom))]",
         )}
       >
-        <div className="booking-shell-enter mb-6 md:mb-8">
+        <div className="booking-shell-enter mb-4 sm:mb-6">
           <h1 className="booking-step-title">{title}</h1>
           {subtitle ? <p className="booking-step-subtitle">{subtitle}</p> : null}
-          {locationSlot ? <div className="mt-3">{locationSlot}</div> : null}
+          {locationSlot ? <div className="mt-2.5">{locationSlot}</div> : null}
         </div>
         <div className="booking-shell-enter" style={{ animationDelay: "40ms" }}>
           {children}
@@ -181,8 +183,8 @@ export function BookingShell({
       </main>
 
       {showSticky ? (
-        <div className="booking-sticky-footer fixed inset-x-0 bottom-0 z-40 border-t border-[var(--ml-dark-border)] bg-[var(--ml-dark-bg)]/95 backdrop-blur-md">
-          <div className="mx-auto w-full max-w-[680px] space-y-2.5 px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+        <div className="booking-sticky-footer shrink-0 border-t border-[var(--ml-dark-border)] bg-[var(--ml-dark-bg)]/95 backdrop-blur-md">
+          <div className="mx-auto w-full max-w-[680px] space-y-2 px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
             {footerHint ??
               (estimatedTotal ? (
                 <div className="flex items-center justify-between gap-3 text-[15px]">
@@ -201,7 +203,9 @@ export function BookingShell({
               onClick={onContinue}
             >
               {ctaLoading ? "Please wait…" : ctaLabel}
-              {!ctaLoading && ctaLabel.toLowerCase().includes("continue") ? (
+              {!ctaLoading &&
+              (ctaLabel.toLowerCase().includes("continue") ||
+                ctaLabel.toLowerCase().includes("confirm")) ? (
                 <span aria-hidden>→</span>
               ) : null}
             </Button>

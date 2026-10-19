@@ -57,7 +57,7 @@ export function ServiceScreen() {
     <BookingFlowChrome
       screenId="service"
       title="Select a service"
-      subtitle="Estimated price for your space — final quote is confirmed before payment."
+      subtitle="Tap to continue — final price confirmed before pay."
       hideCta
     >
       <ServiceTierSelector
