@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { SiteLogo } from "@/components/brand/site-logo";
+import { AppHeader } from "@/components/mobile/app-header";
 import { CustomerBottomNav } from "@/components/customer/customer-bottom-nav";
 import { PlatformUserMenu } from "@/components/layout/platform-user-menu";
 import { Button } from "@/components/ui";
@@ -16,7 +16,7 @@ interface CustomerShellProps {
 }
 
 /**
- * Post-booking / account chrome: dark header + iOS bottom tabs.
+ * Post-booking / account chrome: mint-teal app header + iOS bottom tabs.
  * Not used during /book/* question funnel.
  */
 export function CustomerShell({ children, contentClassName }: CustomerShellProps) {
@@ -28,13 +28,14 @@ export function CustomerShell({ children, contentClassName }: CustomerShellProps
       className="min-h-dvh bg-[var(--ml-dark-bg)] text-[var(--ml-dark-ink)]"
       style={{ fontFamily: "var(--ml-font-ios)" }}
     >
-      <header className="sticky top-0 z-40 border-b border-[var(--ml-dark-border)] bg-[var(--ml-dark-bg)]/95 backdrop-blur-md">
-        <div className="mx-auto flex h-14 max-w-[1100px] items-center justify-between px-4 sm:px-6">
-          <SiteLogo variant="horizontal" tone="brand" href={routes.dashboard} priority />
-          <div className="flex items-center gap-1">
+      <AppHeader
+        homeHref={routes.dashboard}
+        logoVariant="mark"
+        trailing={
+          <>
             <Link
               href={routes.dashboardNotifications}
-              className="inline-flex size-10 items-center justify-center rounded-xl text-[var(--ml-dark-ink)] transition-colors hover:bg-[var(--ml-dark-surface)]"
+              className="inline-flex size-11 items-center justify-center rounded-xl text-[var(--ml-app-header-ink)] transition-colors hover:bg-black/10"
               aria-label="Notifications"
             >
               <BellIcon />
@@ -42,18 +43,21 @@ export function CustomerShell({ children, contentClassName }: CustomerShellProps
             <Button
               variant="ghost"
               size="sm"
-              className="h-10 w-10 px-0 text-[var(--ml-dark-ink)] hover:bg-[var(--ml-dark-surface)] lg:hidden"
+              className="h-11 w-11 px-0 text-[var(--ml-app-header-ink)] hover:bg-black/10 lg:hidden"
               aria-label="Open menu"
               onClick={() => setMenuOpen(true)}
             >
               <MenuIcon />
             </Button>
             <div className="hidden lg:block">
-              <PlatformUserMenu tone="dark" />
+              <PlatformUserMenu
+                tone="dark"
+                className="!text-[var(--ml-app-header-ink)] hover:!bg-black/10 hover:!text-[var(--ml-app-header-ink)]"
+              />
             </div>
-          </div>
-        </div>
-      </header>
+          </>
+        }
+      />
 
       {menuOpen ? (
         <div className="fixed inset-0 z-50 lg:hidden">
@@ -78,11 +82,12 @@ export function CustomerShell({ children, contentClassName }: CustomerShellProps
             </div>
             <nav className="flex flex-1 flex-col gap-1 p-3">
               {[
-                { href: routes.home, label: "Home" },
+                { href: routes.dashboard, label: "Home" },
                 { href: routes.dashboardBookings, label: "Bookings" },
+                { href: routes.dashboardSavedPlaces, label: "Properties" },
                 { href: routes.dashboardSupport, label: "Support" },
                 { href: routes.dashboardProfile, label: "Account" },
-                { href: routes.book, label: "Check availability" },
+                { href: routes.book, label: "Book a clean" },
               ].map((item) => (
                 <Link
                   key={item.href}

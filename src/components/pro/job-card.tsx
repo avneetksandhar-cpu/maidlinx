@@ -3,90 +3,82 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { StatusBadge } from "@/components/dashboard/status-badge";
-import { Button, Card, CardContent } from "@/components/ui";
+import { ChevronRight, Home } from "lucide-react";
 import { routes } from "@/config/site";
 import type { ProJob } from "@/lib/pro/dashboard/jobs";
 import {
-  formatAddress,
-  formatEarnings,
-  formatGeneralLocation,
   formatJobDate,
   formatJobTimeRange,
-  formatTravelEstimate,
-  getDirectionsUrl,
+  formatPropertyLabel,
   getServiceLabel,
 } from "@/lib/pro/dashboard/display";
-import { formatDurationMinutes } from "@/lib/pro/dashboard/duration";
+import { cn } from "@/lib/utils";
 
 interface JobCardProps {
   job: ProJob;
 }
 
-function JobCardShell({
-  job,
-  children,
-  footer,
-  revealAddress,
-}: {
-  job: ProJob;
-  children?: React.ReactNode;
-  footer: React.ReactNode;
-  revealAddress: boolean;
-}) {
-  const location = revealAddress
-    ? formatAddress(
-        job.addressLine1,
-        job.addressLine2,
-        job.addressCity,
-        job.addressState,
-        job.addressPostalCode,
-      )
-    : formatGeneralLocation(job.addressCity, job.addressState, job.addressPostalCode);
+const DECLINED_KEY = "ml.cleaner.declinedJobs";
 
-  const travel = formatTravelEstimate(job.distanceKm, job.travelMinutes);
+function readDeclined(): Set<string> {
+  if (typeof window === "undefined") return new Set();
+  try {
+    const raw = sessionStorage.getItem(DECLINED_KEY);
+    if (!raw) return new Set();
+    const parsed = JSON.parse(raw) as unknown;
+    return Array.isArray(parsed) ? new Set(parsed.filter((x) => typeof x === "string")) : new Set();
+  } catch {
+    return new Set();
+  }
+}
 
+function writeDeclined(ids: Set<string>) {
+  sessionStorage.setItem(DECLINED_KEY, JSON.stringify([...ids]));
+}
+
+function JobMeta({ job, showNew }: { job: ProJob; showNew?: boolean }) {
   return (
-    <Card className="overflow-hidden border-border/80 shadow-soft">
-      <CardContent className="space-y-3 p-4">
-        <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0 flex-1">
-            <p className="truncate font-display text-base font-semibold text-navy">
-              {getServiceLabel(job.serviceType)}
-            </p>
-            <p className="mt-0.5 text-sm text-ink-muted">
-              {formatJobDate(job.scheduledAt)} ·{" "}
-              {formatJobTimeRange(job.scheduledAt, job.arrivalWindowStart, job.arrivalWindowEnd)}
-            </p>
-          </div>
-          <StatusBadge status={job.status} />
-        </div>
-
-        <p className="text-sm leading-relaxed text-ink">{location}</p>
-
-        <div className="flex flex-wrap gap-x-3 gap-y-1 text-sm text-ink-muted">
-          <span>{formatDurationMinutes(job.estimatedDurationMinutes)}</span>
-          {travel && <span>{travel}</span>}
-          <span>
-            {job.bedrooms} bed · {job.bathrooms} bath
+    <>
+      <div className="flex items-start justify-between gap-3">
+        <p className="text-sm font-medium text-[var(--ml-dark-ink)]">
+          {formatJobDate(job.scheduledAt)},{" "}
+          {formatJobTimeRange(job.scheduledAt, job.arrivalWindowStart, job.arrivalWindowEnd)}
+        </p>
+        {showNew ? (
+          <span className="shrink-0 rounded-md bg-[var(--ml-dark-mint)] px-2 py-0.5 text-[11px] font-bold tracking-wide text-[var(--color-accent-foreground)]">
+            New
           </span>
+        ) : null}
+      </div>
+
+      <div className="flex items-center gap-3">
+        <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-[var(--ml-dark-surface-2)] text-[var(--ml-dark-ink-muted)]">
+          <Home className="size-5" strokeWidth={1.75} aria-hidden />
+        </span>
+        <div className="min-w-0 flex-1">
+          <p className="truncate font-semibold text-[var(--ml-dark-ink)]">
+            {formatPropertyLabel(job)}
+          </p>
+          <p className="truncate text-sm text-[var(--ml-dark-ink-muted)]">
+            {getServiceLabel(job.serviceType)}
+          </p>
         </div>
-
-        {children}
-
-        <div className="flex flex-col gap-2 border-t border-border pt-3">{footer}</div>
-      </CardContent>
-    </Card>
+        <ChevronRight className="size-5 shrink-0 text-[var(--ml-dark-ink-subtle)]" aria-hidden />
+      </div>
+    </>
   );
 }
 
 export function AvailableJobCard({ job }: JobCardProps) {
   const router = useRouter();
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState<"accept" | "decline" | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [hidden, setHidden] = useState(false);
+
+  if (hidden) return null;
 
   async function handleAccept() {
-    setLoading(true);
+    setLoading("accept");
     setError(null);
     try {
       const response = await fetch(`/api/cleaner/jobs/${job.id}`, {
@@ -101,81 +93,64 @@ export function AvailableJobCard({ job }: JobCardProps) {
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unable to accept job.");
     } finally {
-      setLoading(false);
+      setLoading(null);
     }
   }
 
+  function handleDecline() {
+    setLoading("decline");
+    // No decline API for open marketplace listings — honest session dismiss only.
+    const next = readDeclined();
+    next.add(job.id);
+    writeDeclined(next);
+    setHidden(true);
+    setLoading(null);
+  }
+
   return (
-    <JobCardShell
-      job={job}
-      revealAddress={false}
-      footer={
-        <Button
-          variant="gold"
-          size="lg"
-          className="w-full"
-          onClick={handleAccept}
-          disabled={loading}
-        >
-          {loading ? "Accepting…" : "Accept job"}
-        </Button>
-      }
-    >
-      <div className="flex items-center justify-between rounded-lg bg-teal-muted/60 px-3 py-2">
-        <span className="text-xs font-medium uppercase tracking-wide text-ink-muted">
-          You earn
-        </span>
-        <span className="font-display text-lg font-semibold text-teal">
-          {formatEarnings(job.subtotalCents, job.currency)}
-        </span>
+    <article className="overflow-hidden rounded-2xl border border-[var(--ml-dark-border)] bg-[var(--ml-dark-surface)] p-4 shadow-[var(--shadow-card)]">
+      <div className="space-y-3">
+        <JobMeta job={job} showNew />
+        {error ? <p className="text-sm text-error">{error}</p> : null}
+        <div className="grid grid-cols-2 gap-2 pt-1">
+          <button
+            type="button"
+            disabled={loading !== null}
+            onClick={handleDecline}
+            className={cn(
+              "inline-flex h-12 items-center justify-center rounded-2xl border border-[var(--ml-dark-border-strong)] bg-transparent text-sm font-semibold text-[var(--ml-dark-ink)]",
+              "active:bg-[var(--ml-dark-surface-2)] disabled:opacity-60",
+            )}
+          >
+            {loading === "decline" ? "…" : "Decline"}
+          </button>
+          <button
+            type="button"
+            disabled={loading !== null}
+            onClick={() => void handleAccept()}
+            className={cn(
+              "inline-flex h-12 items-center justify-center rounded-2xl bg-[var(--ml-dark-mint)] text-sm font-semibold text-[var(--color-accent-foreground)]",
+              "active:opacity-90 disabled:opacity-60",
+            )}
+          >
+            {loading === "accept" ? "Accepting…" : "Accept job"}
+          </button>
+        </div>
       </div>
-      {error && <p className="text-sm text-error">{error}</p>}
-    </JobCardShell>
+    </article>
   );
 }
 
 export function AssignedJobCard({ job }: JobCardProps) {
-  const directionsUrl = getDirectionsUrl(
-    job.addressLine1,
-    job.addressCity,
-    job.addressState,
-    job.addressPostalCode,
-    job.addressLatitude,
-    job.addressLongitude,
-  );
-
   return (
-    <JobCardShell
-      job={job}
-      revealAddress
-      footer={
-        <>
-          <Link
-            href={routes.cleanerJob(job.id)}
-            className="inline-flex h-12 w-full items-center justify-center rounded-full bg-teal px-4 text-sm font-medium text-white transition-colors hover:bg-accent-hover"
-          >
-            Open job
-          </Link>
-          <a
-            href={directionsUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex h-12 w-full items-center justify-center rounded-full border border-border-strong bg-surface px-4 text-sm font-medium text-ink transition-colors hover:bg-surface-muted"
-          >
-            Navigate
-          </a>
-        </>
-      }
+    <Link
+      href={routes.cleanerJob(job.id)}
+      className="block overflow-hidden rounded-2xl border border-[var(--ml-dark-border)] bg-[var(--ml-dark-surface)] p-4 shadow-[var(--shadow-card)] active:bg-[var(--ml-dark-surface-2)]"
     >
-      <div className="flex items-center justify-between rounded-lg bg-teal-muted/60 px-3 py-2">
-        <span className="text-xs font-medium uppercase tracking-wide text-ink-muted">
-          You earn
-        </span>
-        <span className="font-display text-lg font-semibold text-teal">
-          {formatEarnings(job.subtotalCents, job.currency)}
-        </span>
+      <div className="space-y-3">
+        <JobMeta job={job} />
       </div>
-    </JobCardShell>
+    </Link>
   );
 }
 
@@ -184,24 +159,13 @@ export const ScheduleJobCard = AssignedJobCard;
 
 export function HistoryJobCard({ job }: JobCardProps) {
   return (
-    <JobCardShell
-      job={job}
-      revealAddress
-      footer={
-        <Link
-          href={routes.cleanerJob(job.id)}
-          className="inline-flex h-12 w-full items-center justify-center rounded-full border border-border-strong bg-surface px-4 text-sm font-medium text-ink transition-colors hover:bg-surface-muted"
-        >
-          View details
-        </Link>
-      }
+    <Link
+      href={routes.cleanerJob(job.id)}
+      className="block overflow-hidden rounded-2xl border border-[var(--ml-dark-border)] bg-[var(--ml-dark-surface)] p-4"
     >
-      <div className="flex items-center justify-between text-sm">
-        <span className="text-ink-muted">Earned</span>
-        <span className="font-display font-semibold text-teal">
-          {formatEarnings(job.subtotalCents, job.currency)}
-        </span>
+      <div className="space-y-3">
+        <JobMeta job={job} />
       </div>
-    </JobCardShell>
+    </Link>
   );
 }

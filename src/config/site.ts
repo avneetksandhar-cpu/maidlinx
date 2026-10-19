@@ -95,6 +95,8 @@ export const routes = {
   cleanerTraining: "/cleaner/training",
   cleanerPerformance: "/cleaner/performance",
   cleanerJob: (id: string) => `/cleaner/jobs/${id}`,
+  cleanerMessages: "/cleaner/messages",
+  proMessages: "/pro/messages",
   proSettings: "/pro/settings",
   proAccountDelete: "/pro/settings/delete",
   admin: "/admin",

@@ -30,28 +30,28 @@ export function CustomerHomeDashboard({
     return (
       <div className="mx-auto max-w-[430px] space-y-6 lg:max-w-none">
         <header className="space-y-1">
-          <p className="text-base text-[var(--maidlinx-text)]">Hi, {name}</p>
-          <h1 className="font-display text-[1.75rem] font-bold tracking-tight text-[var(--maidlinx-ink)]">
+          <p className="text-base text-[var(--ml-dark-ink-muted)]">Hi, {name}</p>
+          <h1 className="text-[1.75rem] font-semibold tracking-tight text-[var(--ml-dark-ink)]">
             Ready for a fresh space?
           </h1>
-          <p className="text-[15px] text-[var(--maidlinx-muted)]">
+          <p className="text-[15px] text-[var(--ml-dark-ink-muted)]">
             Book a clean in minutes — we’ll confirm and assign your MaidLinx Pro.
           </p>
         </header>
 
         <ContinueBookingBanner />
 
-        <div className="flex items-center gap-3 overflow-hidden rounded-2xl bg-[var(--maidlinx-mint)] p-4">
-          <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-white text-[var(--maidlinx-green)]">
+        <div className="flex items-center gap-3 overflow-hidden rounded-2xl border border-[var(--ml-dark-border)] bg-[var(--ml-dark-surface)] p-4">
+          <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-[var(--ml-dark-mint)]/15 text-[var(--ml-dark-mint)]">
             <SparkIcon />
           </span>
-          <p className="text-sm leading-snug text-[var(--maidlinx-text)]">
+          <p className="text-sm leading-snug text-[var(--ml-dark-ink-muted)]">
             Your home, your time. We handle the cleaning so you can focus on what matters.
           </p>
         </div>
 
         <Link href={routes.book}>
-          <Button variant="accent" className="h-12 w-full text-base">
+          <Button variant="accent" className="h-14 w-full rounded-2xl text-base font-semibold">
             Book a clean
           </Button>
         </Link>

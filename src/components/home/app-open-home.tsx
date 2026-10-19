@@ -193,10 +193,12 @@ function AppOpenHomeInner() {
         <div className="absolute inset-0 bg-[radial-gradient(70%_45%_at_50%_10%,rgb(8_224_212_/_0.14),transparent_55%)]" />
       </div>
 
-      <header className="relative z-10 flex items-center justify-between px-4 pt-[max(0.75rem,env(safe-area-inset-top))]">
-        <SiteLogo variant="mark" tone="brand" href={routes.home} priority />
-        <div className="[&_a]:text-[var(--ml-dark-ink-muted)] [&_button]:text-[var(--ml-dark-ink-muted)]">
-          <AuthControls />
+      <header className="relative z-10 bg-[var(--ml-app-header)] text-[var(--ml-app-header-ink)]">
+        <div className="flex items-center justify-between px-3 pt-[max(0.5rem,env(safe-area-inset-top))] pb-2 sm:px-4">
+          <SiteLogo variant="mark" tone="onLight" href={routes.home} priority />
+          <div className="[&_a]:text-[var(--ml-app-header-ink)] [&_button]:text-[var(--ml-app-header-ink)]">
+            <AuthControls />
+          </div>
         </div>
       </header>
 

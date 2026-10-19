@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
+import { AppHeader } from "@/components/mobile/app-header";
 import { ThemeToggle } from "@/components/dashboard/theme-toggle";
 import { PlatformUserMenu } from "@/components/layout/platform-user-menu";
 import { Button } from "@/components/ui";
@@ -52,29 +53,36 @@ export function AdminNav() {
 
   return (
     <>
-      <header className="sticky top-0 z-40 border-b border-[var(--ml-dark-border)] bg-[var(--ml-dark-bg)]/95 text-[var(--ml-dark-ink)] backdrop-blur lg:hidden">
-        <div className="flex h-14 items-center justify-between gap-2 px-4">
-          <Link href={routes.admin} className="font-display text-base font-semibold">
-            MaidLinx <span className="text-[var(--ml-dark-mint)]">Ops</span>
-          </Link>
-          <div className="flex items-center gap-1">
-            <PlatformUserMenu tone="dark" showLabel={false} />
-            <ThemeToggle
-              compact
-              className="text-[var(--ml-dark-ink-muted)] hover:bg-[var(--ml-dark-surface)] hover:text-[var(--ml-dark-ink)]"
-            />
+      <div className="lg:hidden">
+        <AppHeader
+          homeHref={routes.admin}
+          logoVariant="mark"
+          leading={
             <Button
               variant="ghost"
               size="sm"
-              className="h-9 w-9 px-0 text-[var(--ml-dark-ink-muted)] hover:bg-[var(--ml-dark-surface)] hover:text-[var(--ml-dark-ink)]"
+              className="h-11 w-11 px-0 text-[var(--ml-app-header-ink)] hover:bg-black/10"
               aria-label="Open menu"
               onClick={() => setMobileOpen(true)}
             >
               <MenuIcon />
             </Button>
-          </div>
-        </div>
-      </header>
+          }
+          trailing={
+            <>
+              <PlatformUserMenu
+                tone="dark"
+                showLabel={false}
+                className="!text-[var(--ml-app-header-ink)] hover:!bg-black/10 hover:!text-[var(--ml-app-header-ink)]"
+              />
+              <ThemeToggle
+                compact
+                className="text-[var(--ml-app-header-ink)] hover:bg-black/10 hover:text-[var(--ml-app-header-ink)]"
+              />
+            </>
+          }
+        />
+      </div>
 
       {mobileOpen && (
         <div className="fixed inset-0 z-50 lg:hidden">

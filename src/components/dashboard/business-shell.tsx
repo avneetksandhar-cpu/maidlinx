@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { SiteLogo } from "@/components/brand/site-logo";
+import { AppHeader } from "@/components/mobile/app-header";
 import { CustomerBottomNav } from "@/components/customer/customer-bottom-nav";
 import { PlatformUserMenu } from "@/components/layout/platform-user-menu";
 import { Button } from "@/components/ui";
@@ -79,18 +80,23 @@ export function BusinessShell({ children, firstName }: BusinessShellProps) {
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col bg-[var(--ml-dark-bg)]">
-        <header className="sticky top-0 z-40 flex h-14 items-center justify-between border-b border-[var(--ml-dark-border)] bg-[var(--ml-dark-bg)]/95 px-4 backdrop-blur lg:hidden">
-          <SiteLogo variant="mark" tone="onDark" href={routes.dashboard} />
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-9 w-9 px-0 text-white hover:bg-white/10"
-            aria-label="Open menu"
-            onClick={() => setMobileOpen(true)}
-          >
-            <MenuIcon />
-          </Button>
-        </header>
+        <div className="lg:hidden">
+          <AppHeader
+            homeHref={routes.dashboard}
+            logoVariant="mark"
+            trailing={
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-11 w-11 px-0 text-[var(--ml-app-header-ink)] hover:bg-black/10"
+                aria-label="Open menu"
+                onClick={() => setMobileOpen(true)}
+              >
+                <MenuIcon />
+              </Button>
+            }
+          />
+        </div>
 
         {mobileOpen ? (
           <div className="fixed inset-0 z-50 lg:hidden">
