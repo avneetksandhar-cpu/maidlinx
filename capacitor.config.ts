@@ -16,7 +16,7 @@ const config: CapacitorConfig = {
   appId: "com.maidlinx.app",
   appName: "MaidLinx",
   webDir: "native/www",
-  backgroundColor: "#0a0c0b",
+  backgroundColor: "#003474",
   server: {
     url: "https://www.maidlinx.com",
     cleartext: false,
@@ -33,7 +33,7 @@ const config: CapacitorConfig = {
   },
   ios: {
     contentInset: "automatic",
-    backgroundColor: "#0a0c0b",
+    backgroundColor: "#003474",
     preferredContentMode: "mobile",
     // Capacitor bridge scheme (not the public deep-link scheme maidlinx://)
     scheme: "MaidLinx",
@@ -44,15 +44,15 @@ const config: CapacitorConfig = {
     SplashScreen: {
       launchShowDuration: 1200,
       launchAutoHide: true,
-      backgroundColor: "#0a0c0b",
+      backgroundColor: "#003474",
       showSpinner: false,
       splashFullScreen: true,
       splashImmersive: true,
     },
     StatusBar: {
-      // Dark style = light content text (correct for #0a0c0b shell)
+      // Dark style = light content text (correct for #003474 shell)
       style: "DARK",
-      backgroundColor: "#0a0c0b",
+      backgroundColor: "#003474",
     },
   },
 };

@@ -31,7 +31,7 @@ interface BusinessShellProps {
 }
 
 /**
- * B2B / multi-property customer chrome — near-black sidebar + mint active (design-spec).
+ * B2B / multi-property customer chrome — logo-navy sidebar + mint active (design-spec).
  * Residential customers keep CustomerShell instead.
  */
 export function BusinessShell({ children, firstName }: BusinessShellProps) {
@@ -44,7 +44,7 @@ export function BusinessShell({ children, firstName }: BusinessShellProps) {
       className="flex min-h-dvh bg-[var(--ml-dark-bg)] text-[var(--ml-dark-ink)]"
       style={{ fontFamily: "var(--ml-font-ios)" }}
     >
-      {/* Desktop near-black sidebar */}
+      {/* Desktop logo-navy sidebar */}
       <aside className="hidden w-60 shrink-0 flex-col border-r border-[var(--ml-dark-border)] bg-[var(--ml-dark-bg)] text-white lg:flex">
         <div className="flex h-16 items-center px-5">
           <SiteLogo variant="horizontal" tone="onDark" href={routes.dashboard} />

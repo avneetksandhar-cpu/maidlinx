@@ -20,13 +20,13 @@ sips -z 512 512 public/brand/icon-512.png --out native/www/assets/icon-512.png >
 sips -z 180 180 public/brand/apple-touch-icon.png \
   --out native/www/assets/apple-touch-icon.png >/dev/null
 
-# Splash: #0a0c0b + centered mark
+# Splash: #003474 (logo navy) + centered mark
 swift -e '
 import AppKit
 let size = NSSize(width: 2732, height: 2732)
 let image = NSImage(size: size)
 image.lockFocus()
-NSColor(calibratedRed: 10/255, green: 12/255, blue: 11/255, alpha: 1).setFill()
+NSColor(calibratedRed: 0/255, green: 52/255, blue: 116/255, alpha: 1).setFill()
 NSRect(origin: .zero, size: size).fill()
 if let mark = NSImage(contentsOfFile: "public/brand/maidlinx-mark.png") {
   let markSide: CGFloat = 720

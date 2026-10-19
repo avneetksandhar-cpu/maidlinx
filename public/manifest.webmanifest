@@ -4,8 +4,8 @@
   "description": "Request trusted home cleaning in minutes — like a ride for your space.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0a0c0b",
-  "theme_color": "#0a0c0b",
+  "background_color": "#003474",
+  "theme_color": "#003474",
   "lang": "en",
   "scope": "/",
   "icons": [
