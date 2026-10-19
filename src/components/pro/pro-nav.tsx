@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { SiteLogo } from "@/components/brand/site-logo";
 import { ThemeToggle } from "@/components/dashboard/theme-toggle";
 import { PlatformUserMenu } from "@/components/layout/platform-user-menu";
 import { routes } from "@/config/site";
@@ -30,9 +31,7 @@ export function ProNav() {
     <>
       <header className="sticky top-0 z-40 border-b border-border bg-surface/95 backdrop-blur lg:hidden">
         <div className="flex h-14 items-center justify-between px-4">
-          <Link href={routes.cleanerDashboard} className="font-display text-base font-semibold text-navy">
-            MaidLinx <span className="text-teal">Pro</span>
-          </Link>
+          <SiteLogo variant="mark" href={routes.cleanerDashboard} />
           <div className="flex items-center gap-1">
             <ThemeToggle compact />
             <PlatformUserMenu />
@@ -40,12 +39,10 @@ export function ProNav() {
         </div>
       </header>
 
-      <aside className="hidden w-56 shrink-0 border-r border-border bg-surface lg:flex lg:flex-col">
-        <div className="flex h-16 flex-col justify-center border-b border-border px-6">
-          <Link href={routes.cleanerDashboard} className="font-display text-lg font-semibold text-navy">
-            MaidLinx <span className="text-teal">Pro</span>
-          </Link>
-          <p className="text-xs text-ink-muted">Worker portal</p>
+      <aside className="hidden w-56 shrink-0 flex-col bg-navy text-white lg:flex">
+        <div className="flex h-16 flex-col justify-center border-b border-white/10 px-5">
+          <SiteLogo variant="horizontal" tone="onDark" href={routes.cleanerDashboard} />
+          <p className="mt-1 text-xs text-white/55">Cleaner portal</p>
         </div>
         <nav className="flex-1 space-y-1 p-3">
           {NAV_ITEMS.map((item) => {
@@ -55,10 +52,10 @@ export function ProNav() {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
+                  "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
                   active
-                    ? "bg-teal-muted text-navy"
-                    : "text-ink-muted hover:bg-surface-muted hover:text-ink",
+                    ? "bg-accent text-accent-foreground"
+                    : "text-white/70 hover:bg-white/10 hover:text-white",
                 )}
               >
                 <item.icon className="h-5 w-5 shrink-0" />
@@ -68,39 +65,21 @@ export function ProNav() {
           })}
           <Link
             href={routes.cleanerOnboarding}
-            className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-ink-muted hover:bg-surface-muted hover:text-ink"
+            className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-white/55 hover:bg-white/10 hover:text-white"
           >
             Onboarding
           </Link>
           <Link
-            href={routes.cleanerApplication}
-            className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-ink-muted hover:bg-surface-muted hover:text-ink"
-          >
-            Application
-          </Link>
-          <Link
-            href={routes.cleanerVerification}
-            className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-ink-muted hover:bg-surface-muted hover:text-ink"
-          >
-            Verification
-          </Link>
-          <Link
-            href={routes.cleanerTraining}
-            className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-ink-muted hover:bg-surface-muted hover:text-ink"
-          >
-            Academy
-          </Link>
-          <Link
             href={routes.cleanerDocuments}
-            className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-ink-muted hover:bg-surface-muted hover:text-ink"
+            className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-white/55 hover:bg-white/10 hover:text-white"
           >
             Documents
           </Link>
         </nav>
-        <div className="mt-auto space-y-2 border-t border-border p-4">
-          <ThemeToggle className="w-full justify-start" />
+        <div className="mt-auto space-y-2 border-t border-white/10 p-4">
+          <ThemeToggle className="w-full justify-start text-white/80" />
           <div className="flex items-center justify-between px-1">
-            <span className="text-sm text-ink-muted">Account</span>
+            <span className="text-sm text-white/55">Account</span>
             <PlatformUserMenu />
           </div>
         </div>
@@ -116,7 +95,7 @@ export function ProNav() {
                 href={item.href}
                 className={cn(
                   "flex min-h-12 flex-col items-center justify-center gap-0.5 rounded-lg px-1 py-2 text-[11px] font-medium transition-colors",
-                  active ? "text-teal" : "text-ink-muted",
+                  active ? "text-navy" : "text-ink-muted",
                 )}
               >
                 <item.icon className="h-5 w-5" />

@@ -131,7 +131,30 @@ export function PostBookingDashboard({
 
         <LiveStatusCard booking={booking} accessToken={accessToken} />
         {booking.status === "completed" ? (
-          <BookingReviewCard bookingId={booking.id} />
+          <div className="space-y-4 rounded-2xl border border-border bg-surface p-5 shadow-soft">
+            <h2 className="font-display text-xl font-semibold text-navy">
+              Cleaning completed!
+            </h2>
+            <p className="text-sm text-ink-muted">
+              Thanks for booking with MaidLinx. Rate your cleaners, view your invoice, or book again.
+            </p>
+            <BookingReviewCard bookingId={booking.id} />
+            <div className="grid gap-2 sm:grid-cols-2">
+              <Link href={routes.dashboardInvoices}>
+                <Button variant="secondary" className="w-full">
+                  View invoice
+                </Button>
+              </Link>
+              <Link href={`${routes.book}?rebook=1`}>
+                <Button variant="secondary" className="w-full">
+                  Book again
+                </Button>
+              </Link>
+            </div>
+            <p className="text-center text-xs text-ink-subtle">
+              Tips are not available in TEST checkout yet — leave a review to thank your team.
+            </p>
+          </div>
         ) : null}
       </div>
 
@@ -145,7 +168,7 @@ export function PostBookingDashboard({
             </Button>
           </Link>
           <Link href={routes.book} className="sm:flex-1">
-            <Button variant="accent" className="w-full">
+            <Button variant="primary" className="w-full">
               Book another clean
             </Button>
           </Link>

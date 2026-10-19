@@ -26,24 +26,26 @@ export function CheckoutStep({ booking, accessToken, onSuccess }: CheckoutStepPr
 
   return (
     <MotionReveal>
-      <div className="space-y-2 rounded-2xl border border-[#E2E9E6] bg-[#F1F8F5] px-4 py-3.5 text-[14px] leading-relaxed">
-        <p className="font-semibold text-ink">Pay securely with Stripe</p>
+      <div className="space-y-1 rounded-2xl border border-accent/45 bg-accent-muted px-4 py-4 text-[14px] leading-relaxed">
+        <p className="font-semibold text-navy">
+          Pay {getDepositPercent()}% deposit today
+        </p>
         <p className="text-ink-muted">
-          MaidLinx never stores your card number. You pay a {getDepositPercent()}% deposit now;
-          any remaining balance is settled with support after the job.
+          Stripe TEST checkout — MaidLinx never stores your card. Remaining balance is settled
+          with support after the job.
         </p>
       </div>
 
-      <div className="mt-5 space-y-2 rounded-2xl border border-[#E2E9E6] bg-white p-4 text-[15px] shadow-soft">
+      <div className="mt-5 space-y-2 rounded-2xl border border-border bg-surface p-4 text-[15px] shadow-soft">
         <div className="flex justify-between gap-4">
           <span className="text-ink-muted">Booking total</span>
-          <span className="font-semibold tabular-nums">
+          <span className="font-semibold tabular-nums text-navy">
             {formatCurrency(booking.total_cents, booking.currency)}
           </span>
         </div>
         <div className="flex justify-between gap-4">
           <span className="text-ink-muted">Due today ({getDepositPercent()}%)</span>
-          <span className="font-semibold tabular-nums">
+          <span className="font-semibold tabular-nums text-navy">
             {formatCurrency(deposit, booking.currency)}
           </span>
         </div>

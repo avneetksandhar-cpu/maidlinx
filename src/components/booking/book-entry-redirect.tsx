@@ -5,7 +5,6 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { BOOKING_SCREEN_PATHS, getBookingEntryPath } from "@/lib/bookings/booking-routes";
 import { readUsualClean } from "@/lib/bookings/usual-clean";
 import { useBooking } from "@/components/booking/booking-provider";
-import { isMarketBookingOpen } from "@/lib/markets/booking-availability";
 import { Suspense } from "react";
 
 function BookEntryInner() {
@@ -34,34 +33,39 @@ function BookEntryInner() {
       return;
     }
 
-    // Preserve query prefill (rebook, service=…) already handled by useBookingState.
+    // Returning customer with usual clean — skip welcome, land on address/property.
     const usual = readUsualClean();
     const hasUsual = Boolean(usual?.line1 && usual.serviceType);
-    const target = getBookingEntryPath({ hasUsualClean: hasUsual });
-
-    // If draft already has a completed address and booking is open, skip to property.
-    if (
-      state.line1 &&
-      state.inServiceArea &&
-      state.marketId &&
-      isMarketBookingOpen(state.marketId)
-    ) {
-      router.replace(
-        qs ? `${BOOKING_SCREEN_PATHS.property}?${qs}` : BOOKING_SCREEN_PATHS.property,
-      );
+    if (hasUsual || searchParams?.get("skipWelcome") === "1") {
+      const target = getBookingEntryPath({ hasUsualClean: hasUsual });
+      router.replace(qs ? `${target}?${qs}` : target);
       return;
     }
 
-    // Market known but booking closed (or out of area) — land on address for waitlist.
-    if (state.line1 && state.marketId && !isMarketBookingOpen(state.marketId)) {
-      router.replace(
-        qs ? `${BOOKING_SCREEN_PATHS.address}?${qs}` : BOOKING_SCREEN_PATHS.address,
-      );
+    // Draft already mid-funnel — resume at furthest unfinished step via property/service.
+    if (state.propertyType && state.serviceType) {
+      if (!state.line1) {
+        router.replace(qs ? `${BOOKING_SCREEN_PATHS.address}?${qs}` : BOOKING_SCREEN_PATHS.address);
+        return;
+      }
+      router.replace(qs ? `${BOOKING_SCREEN_PATHS.details}?${qs}` : BOOKING_SCREEN_PATHS.details);
       return;
     }
 
-    router.replace(qs ? `${target}?${qs}` : target);
-  }, [hydrated, router, searchParams, state.line1, state.inServiceArea, state.marketId, state.serviceType]);
+    if (state.propertyType) {
+      router.replace(qs ? `${BOOKING_SCREEN_PATHS.service}?${qs}` : BOOKING_SCREEN_PATHS.service);
+      return;
+    }
+
+    router.replace(qs ? `${BOOKING_SCREEN_PATHS.welcome}?${qs}` : BOOKING_SCREEN_PATHS.welcome);
+  }, [
+    hydrated,
+    router,
+    searchParams,
+    state.line1,
+    state.propertyType,
+    state.serviceType,
+  ]);
 
   return (
     <div className="flex min-h-[40dvh] items-center justify-center text-sm text-ink-muted">

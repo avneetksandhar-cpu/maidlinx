@@ -38,6 +38,7 @@ export const routes = {
   resetPassword: "/reset-password",
   account: "/account",
   book: "/book",
+  bookWelcome: "/book/welcome",
   bookAddress: "/book/address",
   bookProperty: "/book/property",
   bookDetails: "/book/details",

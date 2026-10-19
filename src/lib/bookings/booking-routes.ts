@@ -2,14 +2,16 @@ import type { BookingState } from "@/lib/bookings/booking-state";
 import { isQuoteOnlyService } from "@/config/services";
 
 /**
- * Multi-screen booking funnel routes (one decision per screen).
+ * Multi-screen booking funnel — aligned to Uber-like design reference:
+ * Welcome → Category → Service → Property/Address → Details → …
  * Paths are App Router destinations under /book/*.
  */
 export const BOOKING_SCREENS = [
-  { id: "address", path: "/book/address", label: "Address", shortLabel: "Where" },
-  { id: "property", path: "/book/property", label: "Property", shortLabel: "Type" },
-  { id: "details", path: "/book/details", label: "Details", shortLabel: "Details" },
+  { id: "welcome", path: "/book/welcome", label: "Welcome", shortLabel: "Start" },
+  { id: "property", path: "/book/property", label: "Category", shortLabel: "What" },
   { id: "service", path: "/book/service", label: "Service", shortLabel: "Clean" },
+  { id: "address", path: "/book/address", label: "Property", shortLabel: "Where" },
+  { id: "details", path: "/book/details", label: "Details", shortLabel: "Details" },
   { id: "addons", path: "/book/addons", label: "Add-ons", shortLabel: "Extras" },
   { id: "date", path: "/book/date", label: "Date", shortLabel: "Date" },
   { id: "time", path: "/book/time", label: "Time", shortLabel: "Time" },
@@ -125,43 +127,48 @@ export function isScheduleComplete(state: BookingState): boolean {
 
 export function isReviewReady(state: BookingState): boolean {
   return (
-    isAddressComplete(state) &&
     isPropertyComplete(state) &&
-    isDetailsComplete(state) &&
     isServiceComplete(state) &&
+    isAddressComplete(state) &&
+    isDetailsComplete(state) &&
     isExtrasComplete(state) &&
     isScheduleComplete(state)
   );
 }
 
+/**
+ * Guard: prerequisites that must be true before entering a screen.
+ * Welcome has no prerequisites. Category (property) is first real decision.
+ */
 const COMPLETION: Record<BookingScreenId, (state: BookingState) => boolean> = {
-  address: () => true,
-  property: isAddressComplete,
-  details: (s) => isAddressComplete(s) && isPropertyComplete(s),
-  service: (s) => isAddressComplete(s) && isPropertyComplete(s) && isDetailsComplete(s),
+  welcome: () => true,
+  property: () => true,
+  service: isPropertyComplete,
+  address: (s) => isPropertyComplete(s) && isServiceComplete(s),
+  details: (s) => isPropertyComplete(s) && isServiceComplete(s) && isAddressComplete(s),
   addons: (s) =>
-    isAddressComplete(s) &&
     isPropertyComplete(s) &&
-    isDetailsComplete(s) &&
-    isServiceComplete(s),
-  date: (s) =>
-    isAddressComplete(s) &&
-    isPropertyComplete(s) &&
-    isDetailsComplete(s) &&
     isServiceComplete(s) &&
+    isAddressComplete(s) &&
+    isDetailsComplete(s),
+  date: (s) =>
+    isPropertyComplete(s) &&
+    isServiceComplete(s) &&
+    isAddressComplete(s) &&
+    isDetailsComplete(s) &&
     isExtrasComplete(s),
   time: (s) =>
-    isAddressComplete(s) &&
     isPropertyComplete(s) &&
-    isDetailsComplete(s) &&
     isServiceComplete(s) &&
+    isAddressComplete(s) &&
+    isDetailsComplete(s) &&
     isExtrasComplete(s) &&
     isDateComplete(s),
   access: (s) =>
-    isAddressComplete(s) &&
     isPropertyComplete(s) &&
-    isDetailsComplete(s) &&
     isServiceComplete(s) &&
+    isAddressComplete(s) &&
+    isDetailsComplete(s) &&
     isExtrasComplete(s) &&
     isScheduleComplete(s),
   review: isReviewReady,
@@ -192,10 +199,10 @@ export function getGuardRedirect(
     return null;
   }
 
-  if (!isAddressComplete(state)) return BOOKING_SCREEN_PATHS.address;
   if (!isPropertyComplete(state)) return BOOKING_SCREEN_PATHS.property;
-  if (!isDetailsComplete(state)) return BOOKING_SCREEN_PATHS.details;
   if (!isServiceComplete(state)) return BOOKING_SCREEN_PATHS.service;
+  if (!isAddressComplete(state)) return BOOKING_SCREEN_PATHS.address;
+  if (!isDetailsComplete(state)) return BOOKING_SCREEN_PATHS.details;
   if (!isExtrasComplete(state)) return BOOKING_SCREEN_PATHS.addons;
   if (!isDateComplete(state)) return BOOKING_SCREEN_PATHS.date;
   if (!isTimeComplete(state)) return BOOKING_SCREEN_PATHS.time;
@@ -210,12 +217,15 @@ export function getPreviousScreen(
   if (index <= 0) return null;
 
   let prev = BOOKING_SCREENS[index - 1]!.id;
+  if (prev === "welcome") {
+    return "welcome";
+  }
   if (
     prev === "addons" &&
     state.serviceType &&
     isQuoteOnlyService(state.serviceType)
   ) {
-    prev = "service";
+    prev = "details";
   }
   if (prev === "time" && state.schedulePreset === "asap") {
     prev = "date";
@@ -244,25 +254,24 @@ export function getNextScreen(
   return next;
 }
 
-/** Resolve entry for /book — returning customers with a saved usual can jump ahead lightly. */
+/** Resolve entry for /book — start at welcome splash. */
 export function getBookingEntryPath(options?: {
   hasUsualClean?: boolean;
   prefillAddress?: boolean;
 }): string {
   if (options?.prefillAddress) return BOOKING_SCREEN_PATHS.address;
   if (options?.hasUsualClean) return BOOKING_SCREEN_PATHS.address;
-  return BOOKING_SCREEN_PATHS.address;
+  return BOOKING_SCREEN_PATHS.welcome;
 }
 
 /**
  * Furthest incomplete screen for abandoned-draft recovery.
- * Prefers date/time when address+service are filled (rebook / continue).
  */
 export function getFurthestScreenPath(state: BookingState): string {
-  if (!isAddressComplete(state)) return BOOKING_SCREEN_PATHS.address;
   if (!isPropertyComplete(state)) return BOOKING_SCREEN_PATHS.property;
-  if (!isDetailsComplete(state)) return BOOKING_SCREEN_PATHS.details;
   if (!isServiceComplete(state)) return BOOKING_SCREEN_PATHS.service;
+  if (!isAddressComplete(state)) return BOOKING_SCREEN_PATHS.address;
+  if (!isDetailsComplete(state)) return BOOKING_SCREEN_PATHS.details;
   if (!isExtrasComplete(state)) return BOOKING_SCREEN_PATHS.addons;
   if (!isDateComplete(state)) return BOOKING_SCREEN_PATHS.date;
   if (!isTimeComplete(state)) return BOOKING_SCREEN_PATHS.time;

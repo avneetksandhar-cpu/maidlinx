@@ -5,7 +5,7 @@ import { BookingFlowChrome } from "@/components/booking/booking-flow-chrome";
 import { ServiceTierSelector } from "@/components/booking/service-tier-selector";
 import { useBooking } from "@/components/booking/booking-provider";
 import { useBookingGuard } from "@/components/booking/use-booking-guard";
-import { BOOKING_SCREEN_PATHS, getNextScreen } from "@/lib/bookings/booking-routes";
+import { BOOKING_SCREEN_PATHS } from "@/lib/bookings/booking-routes";
 import { getServiceBySlug } from "@/config/services";
 import type { ServiceTier } from "@/config/service-tiers";
 import { resolveServiceAreaCurrency } from "@/lib/bookings/market-currency";
@@ -36,11 +36,10 @@ export function ServiceScreen() {
             : tier.serviceType === "post_construction"
               ? "construction"
               : "home") as NonNullable<typeof state.serviceTile>,
-      step: 5,
+      step: 3,
     };
     updateState(next);
-    const nextScreen = getNextScreen("service", { ...state, ...next });
-    router.push(BOOKING_SCREEN_PATHS[nextScreen]);
+    router.push(BOOKING_SCREEN_PATHS.address);
   };
 
   if (!hydrated || blocked) {
@@ -54,8 +53,8 @@ export function ServiceScreen() {
   return (
     <BookingFlowChrome
       screenId="service"
-      title="What kind of clean?"
-      subtitle="Each option shows an estimated price for your space."
+      title="Select a service"
+      subtitle="Estimated price for your space — final quote is confirmed before payment."
       hideCta
     >
       <ServiceTierSelector

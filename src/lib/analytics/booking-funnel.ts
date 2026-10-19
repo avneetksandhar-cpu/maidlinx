@@ -181,6 +181,7 @@ export function trackFunnelStep(
 /** Map multi-screen route ids to funnel steps. */
 export function trackBookingScreen(
   screenId:
+    | "welcome"
     | "address"
     | "property"
     | "details"
@@ -195,6 +196,10 @@ export function trackBookingScreen(
     | "payment",
   props?: BookingFunnelProps,
 ) {
+  if (screenId === "welcome") {
+    trackFunnelEvent("funnel_continue_draft", { screen: "welcome", ...props });
+    return;
+  }
   const step: BookingFunnelStep =
     screenId === "payment"
       ? "payment"

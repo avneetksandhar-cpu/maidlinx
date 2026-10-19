@@ -65,7 +65,12 @@ export function BookingCalendar({
   })();
 
   return (
-    <div className={cn("rounded-2xl border border-[#E2E9E6] bg-white p-4 shadow-soft", className)}>
+    <div
+      className={cn(
+        "rounded-2xl border border-[var(--ml-dark-border)] bg-[var(--ml-dark-surface)] p-4",
+        className,
+      )}
+    >
       <div className="mb-4 flex items-center justify-between gap-2">
         <button
           type="button"
@@ -73,18 +78,18 @@ export function BookingCalendar({
             setCursor(new Date(cursor.getFullYear(), cursor.getMonth() - 1, 1))
           }
           disabled={!canGoPrev}
-          className="inline-flex size-9 items-center justify-center rounded-xl text-ink transition-colors duration-200 hover:bg-[#F1F8F5] disabled:opacity-35"
+          className="inline-flex size-9 items-center justify-center rounded-xl text-[var(--ml-dark-ink)] transition-colors duration-200 hover:bg-[var(--ml-dark-surface-2)] disabled:opacity-35"
           aria-label="Previous month"
         >
           <ChevronLeft className="size-5" aria-hidden />
         </button>
-        <p className="text-[15px] font-semibold text-ink">{monthLabel}</p>
+        <p className="text-[15px] font-semibold text-[var(--ml-dark-ink)]">{monthLabel}</p>
         <button
           type="button"
           onClick={() =>
             setCursor(new Date(cursor.getFullYear(), cursor.getMonth() + 1, 1))
           }
-          className="inline-flex size-9 items-center justify-center rounded-xl text-ink transition-colors duration-200 hover:bg-[#F1F8F5]"
+          className="inline-flex size-9 items-center justify-center rounded-xl text-[var(--ml-dark-ink)] transition-colors duration-200 hover:bg-[var(--ml-dark-surface-2)]"
           aria-label="Next month"
         >
           <ChevronRight className="size-5" aria-hidden />
@@ -93,7 +98,10 @@ export function BookingCalendar({
 
       <div className="grid grid-cols-7 gap-1 text-center">
         {WEEKDAYS.map((d) => (
-          <span key={d} className="pb-2 text-[11px] font-semibold uppercase tracking-wide text-ink-subtle">
+          <span
+            key={d}
+            className="pb-2 text-[11px] font-semibold uppercase tracking-wide text-[var(--ml-dark-ink-subtle)]"
+          >
             {d}
           </span>
         ))}
@@ -113,11 +121,14 @@ export function BookingCalendar({
               aria-pressed={selected}
               aria-label={cell.iso}
               className={cn(
-                "aspect-square rounded-xl text-sm font-medium transition-all duration-150",
-                disabled && "cursor-not-allowed text-ink-subtle/50",
-                !disabled && !selected && "text-ink hover:bg-[#F1F8F5]",
-                selected && "bg-accent text-white shadow-[0_6px_14px_rgb(8_127_101_/_0.28)]",
-                isToday && !selected && "ring-1 ring-accent/35",
+                "aspect-square rounded-full text-sm font-medium transition-all duration-150",
+                disabled && "cursor-not-allowed text-[var(--ml-dark-ink-subtle)]/40",
+                !disabled &&
+                  !selected &&
+                  "text-[var(--ml-dark-ink)] hover:bg-[var(--ml-dark-surface-2)]",
+                selected &&
+                  "bg-[var(--ml-dark-mint)] text-[var(--color-accent-foreground)] shadow-[0_0_20px_rgb(8_224_212_/_0.35)]",
+                isToday && !selected && "ring-1 ring-[var(--ml-dark-mint)]/40",
               )}
             >
               {cell.day}

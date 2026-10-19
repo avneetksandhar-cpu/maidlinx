@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   BOOKING_SCREEN_PATHS,
+  getBookingEntryPath,
   getGuardRedirect,
   getNextScreen,
   getPreviousScreen,
@@ -25,19 +26,45 @@ function baseAddress(overrides: Partial<BookingState> = {}): BookingState {
   };
 }
 
-describe("booking route guards", () => {
-  it("requires address before property", () => {
-    expect(getGuardRedirect("property", DEFAULT_BOOKING_STATE)).toBe(
-      BOOKING_SCREEN_PATHS.address,
+describe("booking route guards (category-first)", () => {
+  it("starts at welcome", () => {
+    expect(getBookingEntryPath()).toBe(BOOKING_SCREEN_PATHS.welcome);
+  });
+
+  it("allows category without address", () => {
+    expect(getGuardRedirect("property", DEFAULT_BOOKING_STATE)).toBeNull();
+    expect(getGuardRedirect("welcome", DEFAULT_BOOKING_STATE)).toBeNull();
+  });
+
+  it("requires category before service", () => {
+    expect(getGuardRedirect("service", DEFAULT_BOOKING_STATE)).toBe(
+      BOOKING_SCREEN_PATHS.property,
     );
   });
 
-  it("allows property when address is complete", () => {
-    expect(getGuardRedirect("property", baseAddress())).toBeNull();
+  it("requires service before address", () => {
+    const withProperty = { ...DEFAULT_BOOKING_STATE, propertyType: "house" as const };
+    expect(getGuardRedirect("address", withProperty)).toBe(BOOKING_SCREEN_PATHS.service);
   });
 
-  it("requires property before details", () => {
-    expect(getGuardRedirect("details", baseAddress())).toBe(BOOKING_SCREEN_PATHS.property);
+  it("allows address when category + service are set", () => {
+    const state = {
+      ...DEFAULT_BOOKING_STATE,
+      propertyType: "house" as const,
+      serviceType: "standard" as const,
+      serviceTierId: "standard",
+    };
+    expect(getGuardRedirect("address", state)).toBeNull();
+  });
+
+  it("requires address before details", () => {
+    const state = {
+      ...DEFAULT_BOOKING_STATE,
+      propertyType: "house" as const,
+      serviceType: "standard" as const,
+      serviceTierId: "standard",
+    };
+    expect(getGuardRedirect("details", state)).toBe(BOOKING_SCREEN_PATHS.address);
   });
 
   it("skips addons for quote-only services", () => {
@@ -49,9 +76,9 @@ describe("booking route guards", () => {
       serviceType: "post_construction",
       serviceTierId: "pro",
     });
-    expect(getNextScreen("service", state)).toBe("date");
+    expect(getNextScreen("service", state)).toBe("address");
     expect(getGuardRedirect("addons", state)).toBe(BOOKING_SCREEN_PATHS.date);
-    expect(getPreviousScreen("date", state)).toBe("service");
+    expect(getPreviousScreen("date", state)).toBe("details");
   });
 
   it("blocks payment until schedule is complete", () => {

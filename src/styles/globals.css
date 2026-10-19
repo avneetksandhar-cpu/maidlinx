@@ -1,54 +1,48 @@
 @import "tailwindcss";
+@import "./brand-tokens.css";
 
 /*
-  MaidLinx brand teal
-  - Logo fill (mark/lockup): #08E0D4 — bright cyan; decorative only (poor white-text contrast)
-  - Primary UI / buttons:   #0d9488 — logo-family teal with WCAG-safe white text
-  - Hover / pressed:        #0f766e
+  MaidLinx brand — colors sampled from /public/brand/maidlinx-logo.png
+  - Logo teal (exact):  #08e0d4 — primary buttons / progress / selected
+  - Logo navy (exact):  #003474 — headings, nav, button label on teal
+  - Surfaces: white + soft neutrals
 */
 :root {
-  --maidlinx-logo-teal: #08e0d4;
-  --maidlinx-green: #0d9488;
-  --maidlinx-green-dark: #0f766e;
-  --maidlinx-mint: #f0fdfa;
-  --maidlinx-mint-soft: #ccfbf1;
-  --maidlinx-bg: #fafafa;
-  --maidlinx-ink: #111827;
-  --maidlinx-text: #111827;
-  --maidlinx-muted: #6b7280;
-  --maidlinx-border: #e5e7eb;
-  --shadow-soft: 0 1px 2px rgb(17 24 39 / 0.04);
-  --shadow-card: 0 1px 3px rgb(17 24 39 / 0.05), 0 4px 12px rgb(17 24 39 / 0.04);
+  --maidlinx-green: var(--maidlinx-logo-teal);
+  --maidlinx-green-dark: var(--maidlinx-teal-hover);
+  --maidlinx-mint: var(--maidlinx-teal-muted);
+  --maidlinx-mint-soft: var(--maidlinx-teal-soft);
 }
 
 @theme {
-  /* MaidLinx — bright premium: white/off-white, near-black, logo teal accent */
+  /* MaidLinx — logo teal + logo navy + white */
   --color-background: #fafafa;
   --color-surface: #ffffff;
-  --color-ink: #111827;
-  --color-ink-muted: #6b7280;
-  --color-ink-subtle: #9ca3af;
-  --color-accent: #0d9488;
-  --color-accent-hover: #0f766e;
-  --color-accent-muted: #f0fdfa;
-  --color-navy: #111827;
-  --color-navy-light: #1f2937;
-  --color-teal: #0d9488;
-  --color-teal-muted: #ccfbf1;
+  --color-ink: #0f172a;
+  --color-ink-muted: #64748b;
+  --color-ink-subtle: #94a3b8;
+  --color-accent: #08e0d4;
+  --color-accent-hover: #06c9bf;
+  --color-accent-muted: #e6fffc;
+  --color-accent-foreground: #003474;
+  --color-navy: #003474;
+  --color-navy-light: #0a4588;
+  --color-teal: #08e0d4;
+  --color-teal-muted: #b8f7f1;
   --color-border: #e5e7eb;
   --color-border-strong: #d1d5db;
   --color-success: #059669;
   --color-error: #dc2626;
 
-  /* Legacy aliases — map gold → brand teal (do not reintroduce non-teal primaries) */
+  /* Legacy aliases — map gold → exact logo teal */
   --color-surface-muted: #f4f5f7;
   --color-surface-elevated: #ffffff;
-  --color-gold: #0d9488;
-  --color-gold-hover: #0f766e;
-  --color-gold-muted: #f0fdfa;
+  --color-gold: #08e0d4;
+  --color-gold-hover: #06c9bf;
+  --color-gold-muted: #e6fffc;
 
   --font-sans: var(--font-dm-sans), ui-sans-serif, system-ui, sans-serif;
-  --font-display: var(--font-dm-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-fraunces), var(--font-dm-sans), ui-serif, Georgia, serif;
 
   --radius-sm: 0.5rem;
   --radius-md: 0.625rem;
@@ -149,9 +143,9 @@
   }
 
   .booking-step-title {
-    font-family: var(--font-display);
-    font-size: 1.875rem;
-    font-weight: 600;
+    font-family: var(--ml-font-ios, var(--font-sans));
+    font-size: 1.75rem;
+    font-weight: 650;
     letter-spacing: -0.03em;
     line-height: 1.15;
     color: var(--color-ink);
@@ -159,7 +153,7 @@
 
   .booking-step-subtitle {
     margin-top: 0.5rem;
-    font-size: 1rem;
+    font-size: 0.975rem;
     line-height: 1.5;
     color: var(--color-ink-muted);
   }
@@ -170,8 +164,8 @@
     align-items: center;
     justify-content: space-between;
     gap: 0.75rem;
-    border-radius: 0.75rem;
-    border: 1px solid var(--color-border);
+    border-radius: 1rem;
+    border: 1.5px solid var(--color-border);
     background-color: var(--color-surface);
     padding: 1.125rem 1.25rem;
     text-align: left;
@@ -190,7 +184,30 @@
   .booking-select-card[data-selected="true"] {
     border-color: var(--color-accent);
     background-color: var(--color-accent-muted);
-    box-shadow: 0 0 0 1px rgb(13 148 136 / 0.15);
+    box-shadow: 0 0 0 1px rgb(8 224 212 / 0.35), var(--ml-dark-mint-glow, none);
+  }
+
+  .booking-shell-enter {
+    animation: riseIn 320ms ease both;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .booking-shell-enter {
+      animation: none;
+    }
+  }
+
+  .booking-cta-btn {
+    background-color: var(--color-accent);
+    color: var(--color-accent-foreground);
+  }
+
+  .booking-cta-btn:hover:not(:disabled) {
+    background-color: var(--color-accent-hover);
+  }
+
+  .booking-cta-btn:disabled {
+    opacity: 0.55;
   }
 
   .booking-input-lg {

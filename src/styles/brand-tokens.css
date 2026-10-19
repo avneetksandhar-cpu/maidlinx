@@ -1,0 +1,80 @@
+/*
+  MaidLinx brand tokens — sampled from official logo assets:
+  /public/brand/maidlinx-logo.png
+  Dominant logo fill (mint/teal): #08e0d4
+  Dominant wordmark/icon (navy): #003474
+
+  Primary buttons use exact logo teal with navy text for WCAG AA contrast
+  (white-on-teal ≈ 1.66:1 fail; navy-on-teal ≈ 7.24:1 pass).
+
+  Booking + B2B surfaces use premium near-black / dark green (not marketing light).
+*/
+
+:root {
+  --maidlinx-logo-teal: #08e0d4;
+  --maidlinx-logo-navy: #003474;
+  --maidlinx-mint-hex: #08e0d4;
+  --maidlinx-teal: #08e0d4;
+  --maidlinx-teal-hover: #06c9bf;
+  --maidlinx-teal-pressed: #05b3aa;
+  --maidlinx-teal-muted: #e6fffc;
+  --maidlinx-teal-soft: #b8f7f1;
+  --maidlinx-navy: #003474;
+  --maidlinx-navy-light: #0a4588;
+  --maidlinx-bg: #fafafa;
+  --maidlinx-ink: #003474;
+  --maidlinx-text: #0f172a;
+  --maidlinx-muted: #64748b;
+  --maidlinx-border: #e5e7eb;
+  --shadow-soft: 0 1px 2px rgb(0 52 116 / 0.04);
+  --shadow-card: 0 1px 3px rgb(0 52 116 / 0.05), 0 4px 12px rgb(0 52 116 / 0.04);
+
+  /* Premium dark (booking funnel / business dashboard) */
+  --ml-dark-bg: #0a0c0b;
+  --ml-dark-bg-elevated: #111413;
+  --ml-dark-surface: #151917;
+  --ml-dark-surface-2: #1a1f1c;
+  --ml-dark-border: #2a322e;
+  --ml-dark-border-strong: #3a4540;
+  --ml-dark-ink: #f5f7f6;
+  --ml-dark-ink-muted: #9aa3a0;
+  --ml-dark-ink-subtle: #6b7370;
+  --ml-dark-mint: #08e0d4;
+  --ml-dark-mint-glow: 0 0 24px rgb(8 224 212 / 0.28);
+  --ml-font-ios: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display",
+    "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* Scoped dark theme for /book/* shell + B2B dashboard */
+[data-theme="ml-dark"] {
+  --color-background: var(--ml-dark-bg);
+  --color-surface: var(--ml-dark-surface);
+  --color-surface-muted: var(--ml-dark-surface-2);
+  --color-surface-elevated: var(--ml-dark-bg-elevated);
+  --color-ink: var(--ml-dark-ink);
+  --color-ink-muted: var(--ml-dark-ink-muted);
+  --color-ink-subtle: var(--ml-dark-ink-subtle);
+  --color-accent: var(--ml-dark-mint);
+  --color-accent-hover: #06c9bf;
+  --color-accent-muted: rgb(8 224 212 / 0.12);
+  --color-accent-foreground: #003474;
+  --color-navy: var(--ml-dark-ink);
+  --color-navy-light: #c8d0cc;
+  --color-teal: var(--ml-dark-mint);
+  --color-teal-muted: rgb(8 224 212 / 0.18);
+  --color-border: var(--ml-dark-border);
+  --color-border-strong: var(--ml-dark-border-strong);
+  --color-gold: var(--ml-dark-mint);
+  --color-gold-hover: #06c9bf;
+  --color-gold-muted: rgb(8 224 212 / 0.12);
+  --maidlinx-bg: var(--ml-dark-bg);
+  --maidlinx-ink: var(--ml-dark-ink);
+  --maidlinx-text: var(--ml-dark-ink);
+  --maidlinx-muted: var(--ml-dark-ink-muted);
+  --maidlinx-border: var(--ml-dark-border);
+  --shadow-soft: 0 1px 2px rgb(0 0 0 / 0.35);
+  --shadow-card: 0 4px 16px rgb(0 0 0 / 0.45);
+  --shadow-elevated: 0 12px 32px rgb(0 0 0 / 0.5);
+  color-scheme: dark;
+  font-family: var(--ml-font-ios);
+}
