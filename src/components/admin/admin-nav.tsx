@@ -52,17 +52,21 @@ export function AdminNav() {
 
   return (
     <>
-      <header className="sticky top-0 z-40 border-b border-border bg-[#111111] text-white lg:hidden">
-        <div className="flex h-14 items-center justify-between px-4">
+      <header className="sticky top-0 z-40 border-b border-[var(--ml-dark-border)] bg-[var(--ml-dark-bg)]/95 text-[var(--ml-dark-ink)] backdrop-blur lg:hidden">
+        <div className="flex h-14 items-center justify-between gap-2 px-4">
           <Link href={routes.admin} className="font-display text-base font-semibold">
-            MaidLinx <span className="text-gold">Ops</span>
+            MaidLinx <span className="text-[var(--ml-dark-mint)]">Ops</span>
           </Link>
           <div className="flex items-center gap-1">
-            <ThemeToggle compact className="text-white hover:bg-white/10" />
+            <PlatformUserMenu tone="dark" showLabel={false} />
+            <ThemeToggle
+              compact
+              className="text-[var(--ml-dark-ink-muted)] hover:bg-[var(--ml-dark-surface)] hover:text-[var(--ml-dark-ink)]"
+            />
             <Button
               variant="ghost"
               size="sm"
-              className="h-9 w-9 px-0 text-white hover:bg-white/10"
+              className="h-9 w-9 px-0 text-[var(--ml-dark-ink-muted)] hover:bg-[var(--ml-dark-surface)] hover:text-[var(--ml-dark-ink)]"
               aria-label="Open menu"
               onClick={() => setMobileOpen(true)}
             >
@@ -76,33 +80,37 @@ export function AdminNav() {
         <div className="fixed inset-0 z-50 lg:hidden">
           <button
             type="button"
-            className="absolute inset-0 bg-ink/60"
+            className="absolute inset-0 bg-black/60"
             aria-label="Close"
             onClick={() => setMobileOpen(false)}
           />
-          <aside className="absolute inset-y-0 left-0 flex w-72 flex-col bg-[#111111] text-white shadow-elevated">
+          <aside className="absolute inset-y-0 left-0 flex w-72 flex-col bg-[var(--ml-dark-bg-elevated)] text-[var(--ml-dark-ink)] shadow-elevated">
             <NavContent pathname={pathname} onNavigate={() => setMobileOpen(false)} />
+            <AccountFooter />
           </aside>
         </div>
       )}
 
-      <aside className="hidden w-64 shrink-0 flex-col bg-[#111111] text-white lg:flex">
-        <div className="border-b border-white/10 px-6 py-5">
+      <aside className="hidden w-64 shrink-0 flex-col border-r border-[var(--ml-dark-border)] bg-[var(--ml-dark-bg-elevated)] text-[var(--ml-dark-ink)] lg:flex">
+        <div className="border-b border-[var(--ml-dark-border)] px-6 py-5">
           <Link href={routes.admin} className="font-display text-lg font-semibold">
-            MaidLinx <span className="text-gold">Ops</span>
+            MaidLinx <span className="text-[var(--ml-dark-mint)]">Ops</span>
           </Link>
-          <p className="mt-1 text-xs text-white/50">Operations command center</p>
+          <p className="mt-1 text-xs text-[var(--ml-dark-ink-muted)]">Operations command center</p>
         </div>
         <NavContent pathname={pathname} />
-        <div className="mt-auto space-y-2 border-t border-white/10 p-4">
-          <ThemeToggle className="w-full justify-start text-white hover:bg-white/10" />
-          <div className="flex items-center justify-between px-1">
-            <span className="text-sm text-white/50">Account</span>
-            <PlatformUserMenu />
-          </div>
-        </div>
+        <AccountFooter />
       </aside>
     </>
+  );
+}
+
+function AccountFooter() {
+  return (
+    <div className="mt-auto space-y-2 border-t border-[var(--ml-dark-border)] p-4">
+      <ThemeToggle className="w-full justify-start text-[var(--ml-dark-ink-muted)] hover:bg-[var(--ml-dark-surface)] hover:text-[var(--ml-dark-ink)]" />
+      <PlatformUserMenu tone="dark" className="w-full justify-start" />
+    </div>
   );
 }
 
@@ -111,7 +119,7 @@ function NavContent({ pathname, onNavigate }: { pathname: string; onNavigate?: (
     <nav className="flex-1 overflow-y-auto p-3">
       {NAV_GROUPS.map((group) => (
         <div key={group.label} className="mb-4">
-          <p className="px-3 pb-1.5 text-[10px] font-semibold uppercase tracking-wider text-white/35">
+          <p className="px-3 pb-1.5 text-[10px] font-semibold uppercase tracking-wider text-[var(--ml-dark-ink-subtle)]">
             {group.label}
           </p>
           <div className="space-y-0.5">
@@ -126,10 +134,10 @@ function NavContent({ pathname, onNavigate }: { pathname: string; onNavigate?: (
                   href={item.href}
                   onClick={onNavigate}
                   className={cn(
-                    "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                    "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
                     active
-                      ? "bg-white/10 text-gold"
-                      : "text-white/70 hover:bg-white/5 hover:text-white",
+                      ? "bg-[var(--ml-dark-mint)] text-[var(--color-accent-foreground)] shadow-[0_0_20px_rgb(8_224_212_/_0.25)]"
+                      : "text-[var(--ml-dark-ink-muted)] hover:bg-[var(--ml-dark-surface)] hover:text-[var(--ml-dark-ink)]",
                   )}
                 >
                   <item.icon className="h-4 w-4 shrink-0" />

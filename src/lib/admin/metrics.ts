@@ -111,7 +111,30 @@ export interface StatusBreakdown {
   count: number;
 }
 
+export const EMPTY_PLATFORM_METRICS: PlatformMetrics = {
+  totalBookings: 0,
+  activeBookings: 0,
+  completedBookings: 0,
+  cancelledBookings: 0,
+  totalRevenueCents: 0,
+  platformFeesCents: 0,
+  proPayoutsCents: 0,
+  platformMarginCents: 0,
+  averageOrderValueCents: 0,
+  repeatRatePercent: 0,
+  cancelRatePercent: 0,
+  totalCustomers: 0,
+  totalCleaners: 0,
+  activeCleaners: 0,
+  openDisputes: 0,
+  pendingRefunds: 0,
+};
+
 export async function getPlatformMetrics(): Promise<PlatformMetrics> {
+  if (!hasAdminEnv()) {
+    return { ...EMPTY_PLATFORM_METRICS };
+  }
+
   const supabase = createAdminClient();
 
   const [
@@ -202,6 +225,10 @@ export async function getPlatformMetrics(): Promise<PlatformMetrics> {
 }
 
 export async function getRevenueTrend(days = 30): Promise<RevenuePoint[]> {
+  if (!hasAdminEnv()) {
+    return [];
+  }
+
   const supabase = createAdminClient();
   const since = new Date();
   since.setDate(since.getDate() - days);
@@ -242,6 +269,10 @@ export async function getRevenueTrend(days = 30): Promise<RevenuePoint[]> {
 }
 
 export async function getBookingStatusBreakdown(): Promise<StatusBreakdown[]> {
+  if (!hasAdminEnv()) {
+    return [];
+  }
+
   const supabase = createAdminClient();
   const { data, error } = await supabase.from("bookings").select("status");
 
@@ -257,6 +288,10 @@ export async function getBookingStatusBreakdown(): Promise<StatusBreakdown[]> {
 }
 
 export async function getServiceTypeBreakdown(): Promise<Array<{ serviceType: string; count: number }>> {
+  if (!hasAdminEnv()) {
+    return [];
+  }
+
   const supabase = createAdminClient();
   const { data, error } = await supabase.from("bookings").select("service_type");
 

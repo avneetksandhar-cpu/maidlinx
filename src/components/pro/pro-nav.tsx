@@ -30,7 +30,7 @@ export function ProNav() {
       <header className="sticky top-0 z-40 border-b border-[var(--ml-dark-border)] bg-[var(--ml-dark-bg)]/95 backdrop-blur lg:hidden">
         <div className="flex h-14 items-center justify-between px-4">
           <SiteLogo variant="mark" tone="brand" href={routes.cleanerDashboard} />
-          <PlatformUserMenu />
+          <PlatformUserMenu tone="dark" showLabel={false} />
         </div>
       </header>
 
@@ -78,10 +78,7 @@ export function ProNav() {
           </Link>
         </nav>
         <div className="mt-auto space-y-2 border-t border-[var(--ml-dark-border)] p-4">
-          <div className="flex items-center justify-between px-1">
-            <span className="text-sm text-[var(--ml-dark-ink-muted)]">Account</span>
-            <PlatformUserMenu />
-          </div>
+          <PlatformUserMenu tone="dark" className="w-full justify-start" />
         </div>
       </aside>
 

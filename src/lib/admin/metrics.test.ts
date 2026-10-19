@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { EMPTY_DASHBOARD_METRICS } from "@/lib/admin/metrics";
+import { EMPTY_DASHBOARD_METRICS, EMPTY_PLATFORM_METRICS } from "@/lib/admin/metrics";
 import {
   updateBookingStatusSchema,
   assignCleanerSchema,
@@ -16,6 +16,9 @@ describe("admin dashboard metrics", () => {
       pendingAssignments: 0,
       completedBookings: 0,
     });
+    expect(EMPTY_PLATFORM_METRICS.totalBookings).toBe(0);
+    expect(EMPTY_PLATFORM_METRICS.totalRevenueCents).toBe(0);
+    expect(EMPTY_PLATFORM_METRICS.activeCleaners).toBe(0);
   });
 });
 

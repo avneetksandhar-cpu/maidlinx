@@ -33,14 +33,20 @@ export default async function OwnerSalesPage() {
           <p className="mt-1 font-display text-xl font-semibold">{open.length}</p>
         </div>
         <div className="rounded-xl border border-border bg-surface p-4 text-sm">
-          <p className="text-ink-muted">Commercial bookings (sample)</p>
+          <p className="text-ink-muted">Commercial bookings</p>
           <p className="mt-1 font-display text-xl font-semibold">
             {commercial.available ? commercial.count : "—"}
           </p>
+          {commercial.available && commercial.count === 0 && (
+            <p className="mt-1 text-xs text-ink-subtle">None in database yet</p>
+          )}
           {commercial.estimatedCents != null && (
             <p className="mt-1 text-xs text-ink-subtle">
-              {formatAdminCurrency(commercial.estimatedCents)} historical (estimate for expansion)
+              {formatAdminCurrency(commercial.estimatedCents)} historical ticket sum (estimate)
             </p>
+          )}
+          {!commercial.available && commercial.gapReason && (
+            <p className="mt-1 text-xs text-ink-subtle">{commercial.gapReason}</p>
           )}
         </div>
         <div className="rounded-xl border border-border bg-surface p-4 text-sm">

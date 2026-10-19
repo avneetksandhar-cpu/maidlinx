@@ -490,7 +490,7 @@ async function huntCommercialFollowup(): Promise<{
         permissionLevel: permissionLevelForAction("reminder.recommend"),
         recommendedAction:
           "Review commercial bookings; add/update CRM leads (no auto outbound).",
-        evidence: `${commercial.count} commercial/office/airbnb bookings in sample. Dollar figure is historical ticket sum — estimate for expansion.`,
+        evidence: `${commercial.count} commercial/office/airbnb bookings from database. Dollar figure is historical ticket sum — estimate for expansion.`,
         isEstimate: true,
         aiEligible: true,
       });
@@ -565,7 +565,7 @@ async function huntAddonAndReferral(): Promise<{
     gaps.push({
       key: "addon_empty",
       label: "Add-on upsell",
-      reason: "No completed bookings without extras in sample.",
+      reason: "No completed bookings without extras in database.",
       howToFill: "Track extras on bookings for upsell detection.",
     });
   } else {
