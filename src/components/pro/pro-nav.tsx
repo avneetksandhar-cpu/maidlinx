@@ -2,32 +2,40 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Briefcase, CircleUserRound, Wallet } from "lucide-react";
+import { Briefcase, CircleUserRound, MessageCircle } from "lucide-react";
 import { SiteLogo } from "@/components/brand/site-logo";
+import { AppHeader } from "@/components/mobile/app-header";
 import { PlatformUserMenu } from "@/components/layout/platform-user-menu";
 import { routes } from "@/config/site";
 import { cn } from "@/lib/utils";
 
-/** Cleaner portal tabs — Uber driver-like: Jobs · Earnings · Account */
+/** Cleaner mobile tabs — design ref: My jobs · Messages · Profile */
 const NAV_ITEMS = [
   {
     href: `${routes.cleanerJobs}?tab=today`,
     match: "/cleaner/jobs",
-    alsoExact: ["/cleaner", "/pro"],
-    label: "Jobs",
+    alsoExact: ["/cleaner", "/pro", "/pro/jobs"],
+    label: "My jobs",
     icon: Briefcase,
   },
   {
-    href: routes.cleanerEarnings,
-    match: "/cleaner/earnings",
-    label: "Earnings",
-    icon: Wallet,
+    href: routes.cleanerMessages,
+    match: "/cleaner/messages",
+    alsoMatch: ["/pro/messages"],
+    label: "Messages",
+    icon: MessageCircle,
   },
   {
     href: routes.cleanerProfile,
     match: "/cleaner/profile",
-    alsoMatch: ["/cleaner/settings", "/pro/settings", "/pro/profile"],
-    label: "Account",
+    alsoMatch: [
+      "/cleaner/settings",
+      "/pro/settings",
+      "/pro/profile",
+      "/cleaner/earnings",
+      "/pro/earnings",
+    ],
+    label: "Profile",
     icon: CircleUserRound,
   },
 ] as const;
@@ -45,17 +53,33 @@ function isActive(pathname: string, item: (typeof NAV_ITEMS)[number]): boolean {
   return false;
 }
 
+function isJobDetail(pathname: string): boolean {
+  return /\/(cleaner|pro)\/jobs\/[^/]+/.test(pathname);
+}
+
 export function ProNav() {
   const pathname = usePathname() ?? "";
+  const jobDetail = isJobDetail(pathname);
 
   return (
     <>
-      <header className="sticky top-0 z-40 border-b border-[var(--ml-dark-border)] bg-[var(--ml-dark-bg)]/95 backdrop-blur lg:hidden">
-        <div className="flex h-14 items-center justify-between px-4">
-          <SiteLogo variant="mark" tone="brand" href={routes.cleanerDashboard} />
-          <PlatformUserMenu tone="dark" showLabel={false} />
+      {!jobDetail ? (
+        <div className="lg:hidden">
+          <AppHeader
+            homeHref={routes.cleanerDashboard}
+            logoVariant="mark"
+            trailing={
+              <Link
+                href={routes.cleanerProfile}
+                aria-label="Profile"
+                className="inline-flex size-11 items-center justify-center rounded-xl text-[var(--ml-app-header-ink)] transition-colors hover:bg-black/10"
+              >
+                <CircleUserRound className="size-6" strokeWidth={2} aria-hidden />
+              </Link>
+            }
+          />
         </div>
-      </header>
+      ) : null}
 
       <aside className="hidden w-56 shrink-0 flex-col border-r border-[var(--ml-dark-border)] bg-[var(--ml-dark-bg-elevated)] lg:flex">
         <div className="flex h-16 flex-col justify-center border-b border-[var(--ml-dark-border)] px-5">
@@ -73,7 +97,7 @@ export function ProNav() {
                 className={cn(
                   "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
                   active
-                    ? "bg-[var(--ml-dark-mint)] text-[var(--color-accent-foreground)] shadow-[0_0_20px_rgb(8_224_212_/_0.25)]"
+                    ? "bg-[var(--ml-dark-mint)] text-[var(--color-accent-foreground)]"
                     : "text-[var(--ml-dark-ink-muted)] hover:bg-[var(--ml-dark-surface)] hover:text-[var(--ml-dark-ink)]",
                 )}
               >
@@ -83,16 +107,16 @@ export function ProNav() {
             );
           })}
           <Link
+            href={routes.cleanerEarnings}
+            className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-[var(--ml-dark-ink-subtle)] hover:bg-[var(--ml-dark-surface)] hover:text-[var(--ml-dark-ink)]"
+          >
+            Earnings
+          </Link>
+          <Link
             href={routes.cleanerApplication}
             className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-[var(--ml-dark-ink-subtle)] hover:bg-[var(--ml-dark-surface)] hover:text-[var(--ml-dark-ink)]"
           >
             Application
-          </Link>
-          <Link
-            href={routes.cleanerOnboarding}
-            className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-[var(--ml-dark-ink-subtle)] hover:bg-[var(--ml-dark-surface)] hover:text-[var(--ml-dark-ink)]"
-          >
-            Onboarding
           </Link>
           <Link
             href={routes.cleanerDocuments}
@@ -106,34 +130,36 @@ export function ProNav() {
         </div>
       </aside>
 
-      <nav
-        aria-label="Cleaner"
-        className="fixed inset-x-0 bottom-0 z-40 border-t border-[var(--ml-dark-border)] bg-[var(--ml-dark-bg)]/95 backdrop-blur-md lg:hidden"
-        style={{ fontFamily: "var(--ml-font-ios)" }}
-      >
-        <div className="mx-auto grid h-[3.75rem] max-w-lg grid-cols-3 px-1 pb-[max(0.35rem,env(safe-area-inset-bottom))] pt-1">
-          {NAV_ITEMS.map((item) => {
-            const active = isActive(pathname, item);
-            const Icon = item.icon;
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                aria-current={active ? "page" : undefined}
-                className={cn(
-                  "flex min-h-12 flex-col items-center justify-center gap-0.5 rounded-xl px-1 text-[10px] font-medium tracking-wide transition-colors",
-                  active
-                    ? "text-[var(--ml-dark-mint)]"
-                    : "text-[var(--ml-dark-ink-muted)] active:text-[var(--ml-dark-ink)]",
-                )}
-              >
-                <Icon className="size-6" strokeWidth={active ? 2.35 : 1.85} aria-hidden />
-                <span className="truncate">{item.label}</span>
-              </Link>
-            );
-          })}
-        </div>
-      </nav>
+      {!jobDetail ? (
+        <nav
+          aria-label="Cleaner"
+          className="fixed inset-x-0 bottom-0 z-40 border-t border-[var(--ml-dark-border)] bg-[var(--ml-dark-bg)]/95 backdrop-blur-md lg:hidden"
+          style={{ fontFamily: "var(--ml-font-ios)" }}
+        >
+          <div className="mx-auto grid h-[3.75rem] max-w-lg grid-cols-3 px-1 pb-[max(0.35rem,env(safe-area-inset-bottom))] pt-1">
+            {NAV_ITEMS.map((item) => {
+              const active = isActive(pathname, item);
+              const Icon = item.icon;
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  aria-current={active ? "page" : undefined}
+                  className={cn(
+                    "flex min-h-12 flex-col items-center justify-center gap-0.5 rounded-xl px-1 text-[10px] font-medium tracking-wide transition-colors",
+                    active
+                      ? "text-[var(--ml-dark-mint)]"
+                      : "text-[var(--ml-dark-ink-muted)] active:text-[var(--ml-dark-ink)]",
+                  )}
+                >
+                  <Icon className="size-6" strokeWidth={active ? 2.35 : 1.85} aria-hidden />
+                  <span className="truncate">{item.label}</span>
+                </Link>
+              );
+            })}
+          </div>
+        </nav>
+      ) : null}
     </>
   );
 }
