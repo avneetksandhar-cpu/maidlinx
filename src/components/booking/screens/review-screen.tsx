@@ -6,12 +6,15 @@ import { useRouter } from "next/navigation";
 import { Pencil } from "lucide-react";
 import { BookingFlowChrome } from "@/components/booking/booking-flow-chrome";
 import { BookingMapPreview } from "@/components/booking/booking-map-preview";
+import { PromoCodeField } from "@/components/booking/promo-code-field";
+import { PriceSummary } from "@/components/booking/price-summary";
 import { useBookingGuard } from "@/components/booking/use-booking-guard";
 import { BOOKING_SCREEN_PATHS } from "@/lib/bookings/booking-routes";
 import { buildQuoteInput } from "@/lib/bookings/booking-helpers";
 import { useBookingPricing } from "@/hooks/use-booking-pricing";
 import { getPropertyType } from "@/config/property-types";
 import { getBookingServiceLabel, BOOKING_EXTRAS } from "@/lib/bookings/constants";
+import { calculateDepositCents, getDepositPercent } from "@/lib/payments/deposit";
 import { formatCurrency } from "@/lib/utils";
 import { useBooking } from "@/components/booking/booking-provider";
 import { trackFunnelStep } from "@/lib/analytics/booking-funnel";
@@ -26,14 +29,18 @@ function Row({
   href: string;
 }) {
   return (
-    <div className="flex items-start justify-between gap-3 border-b border-border/70 py-4 last:border-0">
+    <div className="flex items-start justify-between gap-3 border-b border-[var(--ml-dark-border)] py-4 last:border-0">
       <div className="min-w-0">
-        <p className="text-xs font-medium uppercase tracking-wide text-ink-muted">{label}</p>
-        <p className="mt-1 text-sm font-medium text-ink">{value}</p>
+        <p className="text-[12px] font-medium uppercase tracking-wide text-[var(--ml-dark-ink-muted)]">
+          {label}
+        </p>
+        <p className="mt-1 text-[15px] font-medium leading-snug text-[var(--ml-dark-ink)]">
+          {value}
+        </p>
       </div>
       <Link
         href={href}
-        className="inline-flex shrink-0 items-center gap-1 text-sm font-medium text-accent"
+        className="inline-flex shrink-0 items-center gap-1 rounded-lg px-2 py-1.5 text-sm font-medium text-[var(--ml-dark-mint)] transition-colors duration-200 hover:bg-[var(--ml-dark-surface-2)]"
       >
         <Pencil className="size-3.5" aria-hidden />
         Edit
@@ -67,7 +74,10 @@ export function ReviewScreen() {
 
   if (!hydrated || blocked) {
     return (
-      <div className="flex min-h-[40dvh] items-center justify-center text-sm text-ink-muted">
+      <div
+        data-theme="ml-dark"
+        className="flex min-h-[40dvh] items-center justify-center bg-[var(--ml-dark-bg)] text-sm text-[var(--ml-dark-ink-muted)]"
+      >
         Loading…
       </div>
     );
@@ -102,17 +112,23 @@ export function ReviewScreen() {
         ? "…"
         : null;
 
+  const depositLabel =
+    pricing && !pricing.quoteOnly
+      ? formatCurrency(calculateDepositCents(pricing.totalCents), pricing.currency)
+      : null;
+  const depositPct = getDepositPercent();
+
   return (
     <BookingFlowChrome
       screenId="review"
-      title="Ready to clean?"
-      subtitle="Confirm the details, then continue to payment."
+      title="Confirm your clean"
+      subtitle="Deposit today · balance after the job (Stripe TEST)."
       ctaLabel={
         loading
           ? "Verifying price…"
-          : totalLabel
-            ? `Continue · ${totalLabel}`
-            : "Continue to payment"
+          : depositLabel
+            ? `Confirm · ${depositLabel}`
+            : "Confirm & pay"
       }
       ctaDisabled={loading || Boolean(pricingError)}
       ctaLoading={loading}
@@ -121,6 +137,23 @@ export function ReviewScreen() {
         updateState({ step: 10 });
         router.push(BOOKING_SCREEN_PATHS.payment);
       }}
+      footerHint={
+        totalLabel ? (
+          <div className="space-y-1 text-[15px]">
+            <div className="flex items-center justify-between gap-3">
+              <span className="text-[var(--ml-dark-ink-muted)]">Est. total</span>
+              <span className="font-semibold tabular-nums text-[var(--ml-dark-ink)]">
+                {totalLabel}
+              </span>
+            </div>
+            {depositLabel ? (
+              <p className="text-xs text-[var(--ml-dark-mint)]">
+                Pay {depositPct}% deposit {depositLabel} today
+              </p>
+            ) : null}
+          </div>
+        ) : null
+      }
     >
       <div className="space-y-5">
         <BookingMapPreview
@@ -129,7 +162,9 @@ export function ReviewScreen() {
           label={address}
         />
 
-        <div className="rounded-2xl border border-border bg-surface px-4">
+        <div className="rounded-2xl border border-[var(--ml-dark-border)] bg-[var(--ml-dark-surface)] px-4">
+          <Row label="Service" value={serviceLabel} href={BOOKING_SCREEN_PATHS.service} />
+          <Row label="Property type" value={propertyLabel} href={BOOKING_SCREEN_PATHS.property} />
           <Row label="Address" value={address} href={BOOKING_SCREEN_PATHS.address} />
           <Row label="Unit / suite" value={unitLabel} href={BOOKING_SCREEN_PATHS.details} />
           <Row
@@ -137,33 +172,31 @@ export function ReviewScreen() {
             value={accessLabel}
             href={BOOKING_SCREEN_PATHS.access}
           />
-          <Row label="Property" value={propertyLabel} href={BOOKING_SCREEN_PATHS.property} />
           <Row
             label="Details"
             value={`${state.bedrooms ?? 0} bed · ${state.bathrooms ?? 1} bath · ${state.squareFootage ?? "—"} sq ft`}
             href={BOOKING_SCREEN_PATHS.details}
           />
-          <Row label="Service" value={serviceLabel} href={BOOKING_SCREEN_PATHS.service} />
           <Row label="Add-ons" value={extrasLabel} href={BOOKING_SCREEN_PATHS.addons} />
           <Row label="When" value={whenLabel || "—"} href={BOOKING_SCREEN_PATHS.date} />
         </div>
 
+        <PriceSummary
+          pricing={pricing}
+          loading={loading}
+          isServerVerified={isServerVerified}
+          showDeposit
+          variant="embedded"
+        />
+
+        <PromoCodeField />
+
         {pricingError ? (
           <p
-            className="rounded-xl bg-red-50 px-4 py-3 text-center text-sm text-error"
+            className="rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-center text-sm text-red-300"
             role="alert"
           >
             {pricingError}
-          </p>
-        ) : totalLabel ? (
-          <p className="text-center text-sm text-ink-muted">
-            Estimated total{" "}
-            <span className="font-semibold text-ink">{totalLabel}</span>
-            {isServerVerified ? (
-              <span className="mt-1 block text-xs text-ink-subtle">Server-verified price</span>
-            ) : loading ? (
-              <span className="mt-1 block text-xs text-ink-subtle">Verifying with server…</span>
-            ) : null}
           </p>
         ) : null}
       </div>

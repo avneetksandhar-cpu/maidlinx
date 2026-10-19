@@ -2,27 +2,67 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { SiteLogo } from "@/components/brand/site-logo";
 import { MatchingStep } from "@/components/booking/matching-step";
+import { BookingMapPreview } from "@/components/booking/booking-map-preview";
 import { BookingStatusTimeline } from "@/components/booking/booking-status-timeline";
+import { LiveCleanerMap } from "@/components/booking/live-cleaner-map";
 import {
   fetchBooking,
   isBookingPaymentConfirmed,
   pollBookingUntilConfirmed,
 } from "@/lib/bookings/client-api";
 import type { StoredBooking } from "@/lib/bookings/repository";
-import { getBookingStatusLabel } from "@/lib/bookings/status";
-import { getCustomerTimelineState } from "@/lib/bookings/status-timeline";
-import { Button, Heading, Text } from "@/components/ui";
+import { getBookingStatusLabel, isLiveLocationStatus, normalizeBookingStatus } from "@/lib/bookings/status";
+import { getCustomerStatusHeadline, getCustomerTimelineState } from "@/lib/bookings/status-timeline";
+import { Button } from "@/components/ui";
 import { formatCurrency } from "@/lib/utils";
 import { calculateDepositCents } from "@/lib/payments/deposit";
 import { routes } from "@/config/site";
 import { trackFunnelStep } from "@/lib/analytics/booking-funnel";
 import { useBooking } from "@/components/booking/booking-provider";
+import { formatBookingDate, formatBookingTimeRange } from "@/lib/dashboard/display";
 
 interface BookingStatusScreenProps {
   bookingId: string;
   accessToken?: string | null;
   initialBooking?: StoredBooking | null;
+}
+
+function statusVariant(
+  status: string,
+): "confirmed" | "assigned" | "on_the_way" | "in_progress" | "completed" | "other" {
+  const normalized = normalizeBookingStatus(status);
+  switch (normalized) {
+    case "confirmed":
+    case "awaiting_assignment":
+    case "offered":
+      return "confirmed";
+    case "assigned":
+    case "accepted":
+      return "assigned";
+    case "on_the_way":
+    case "arrived":
+      return "on_the_way";
+    case "in_progress":
+      return "in_progress";
+    case "completed":
+      return "completed";
+    default:
+      return "other";
+  }
+}
+
+function DarkShell({ children }: { children: React.ReactNode }) {
+  return (
+    <div
+      data-theme="ml-dark"
+      className="min-h-[50dvh] bg-[var(--ml-dark-bg)] text-[var(--ml-dark-ink)]"
+      style={{ fontFamily: "var(--ml-font-ios)" }}
+    >
+      {children}
+    </div>
+  );
 }
 
 export function BookingStatusScreen({
@@ -99,130 +139,266 @@ export function BookingStatusScreen({
 
   if (loading || !booking) {
     return (
-      <div className="mx-auto flex min-h-[50dvh] max-w-lg flex-col items-center justify-center px-4 text-center">
-        <div className="mb-6 flex size-20 items-center justify-center overflow-hidden rounded-full bg-navy ring-2 ring-white/20">
-          {/* eslint-disable-next-line @next/next/no-img-element -- compact brand mark */}
-          <img
-            src="/brand/maidlinx-mark.png"
-            alt=""
-            width={44}
-            height={44}
-            className="size-11 object-contain"
-          />
+      <DarkShell>
+        <div className="mx-auto flex min-h-[50dvh] max-w-lg flex-col items-center justify-center px-4 text-center">
+          <SiteLogo variant="mark" tone="brand" href={routes.home} className="mb-6 scale-110" />
+          <h1 className="text-2xl font-semibold tracking-tight text-white">
+            Finding your MaidLinx Pro…
+          </h1>
+          <p className="mt-2 text-sm text-[var(--ml-dark-ink-muted)]">
+            {error ?? "Loading your booking…"}
+          </p>
         </div>
-        <Heading as="h1" className="text-2xl">
-          Finding your MaidLinx Pro…
-        </Heading>
-        <Text muted className="mt-2">
-          {error ?? "Loading your booking…"}
-        </Text>
-      </div>
+      </DarkShell>
     );
   }
 
   if (!isBookingPaymentConfirmed(booking.status) && !booking.quote_requested) {
     if (booking.status === "pending_payment") {
       return (
-        <div className="mx-auto max-w-lg px-4 py-12 text-center">
-          <Heading as="h1" className="text-2xl">
-            Confirming payment…
-          </Heading>
-          <Text muted className="mt-2">
-            This usually takes a few seconds.
-          </Text>
-        </div>
+        <DarkShell>
+          <div className="mx-auto max-w-lg px-4 py-12 text-center">
+            <h1 className="text-2xl font-semibold tracking-tight text-white">
+              Confirming payment…
+            </h1>
+            <p className="mt-2 text-sm text-[var(--ml-dark-ink-muted)]">
+              This usually takes a few seconds.
+            </p>
+          </div>
+        </DarkShell>
       );
     }
   }
 
   const timeline = getCustomerTimelineState(booking.status);
+  const variant = statusVariant(booking.status);
   const cleanerName = booking.cleaner
     ? [booking.cleaner.firstName, booking.cleaner.lastName].filter(Boolean).join(" ")
     : null;
+  const addressLabel = [
+    booking.address_line1,
+    booking.address_line2,
+    booking.address_city,
+    booking.address_state,
+    booking.address_postal_code,
+  ]
+    .filter(Boolean)
+    .join(", ");
+  const showLiveProgress =
+    variant === "on_the_way" || variant === "in_progress" || variant === "completed";
+  const showMintCheck = variant === "confirmed" || variant === "assigned" || variant === "completed";
 
   // Prefer dedicated matching UI while waiting; show assigned profile when real cleaner exists.
   if (timeline.findingProfessional || !booking.cleaner) {
     return (
-      <div className="mx-auto max-w-lg px-4 py-8">
-        <MatchingStep booking={booking} accessToken={accessToken} bookingState={state} />
-      </div>
+      <DarkShell>
+        <div className="mx-auto max-w-lg px-4 py-8">
+          <MatchingStep booking={booking} accessToken={accessToken} bookingState={state} />
+          {addressLabel ? (
+            <div className="mt-6 overflow-hidden rounded-2xl border border-[var(--ml-dark-border)]">
+              <BookingMapPreview
+                latitude={booking.address_latitude}
+                longitude={booking.address_longitude}
+                label={addressLabel}
+              />
+            </div>
+          ) : null}
+        </div>
+      </DarkShell>
     );
   }
 
+  const headline =
+    variant === "completed"
+      ? "Cleaning completed!"
+      : variant === "in_progress"
+        ? "Cleaning in progress"
+        : variant === "on_the_way"
+          ? "Your cleaners are on the way"
+          : variant === "assigned"
+            ? "Your MaidLinx Pro is assigned"
+            : getCustomerStatusHeadline(booking.status);
+
   return (
-    <div className="mx-auto max-w-lg px-4 py-8">
-      <div className="text-center">
-        <div className="mx-auto mb-6 flex size-16 items-center justify-center rounded-full bg-accent-muted text-accent">
-          <span className="text-2xl font-semibold">✓</span>
-        </div>
-        <Heading as="h1" className="text-2xl tracking-tight">
-          Your MaidLinx Pro is assigned
-        </Heading>
-        <Text muted className="mt-2">
-          Reference #{booking.id.slice(0, 8).toUpperCase()}
-        </Text>
-      </div>
-
-      <div className="mt-8 rounded-2xl border border-border p-5">
-        <p className="font-display text-xl font-semibold text-ink">
-          {cleanerName || "Your cleaner"}
-        </p>
-        {booking.cleaner.ratingAverage !== null ? (
-          <p className="mt-1 text-sm text-ink-muted">
-            Rating {booking.cleaner.ratingAverage.toFixed(1)}
-            {booking.cleaner.ratingCount
-              ? ` · ${booking.cleaner.ratingCount} reviews`
-              : null}
+    <DarkShell>
+      <div className="mx-auto max-w-lg px-4 py-8">
+        <div className="text-center">
+          {showMintCheck ? (
+            <div
+              className="mx-auto mb-5 flex size-[4.5rem] items-center justify-center rounded-full bg-[var(--ml-dark-mint)] text-[var(--color-accent-foreground)] shadow-[0_0_28px_rgb(8_224_212_/_0.35)]"
+              aria-hidden
+            >
+              <span className="text-3xl font-bold leading-none">✓</span>
+            </div>
+          ) : (
+            <div className="mb-5 flex justify-center">
+              <SiteLogo variant="mark" tone="brand" href={routes.home} />
+            </div>
+          )}
+          <h1 className="text-[1.75rem] font-semibold tracking-tight text-white md:text-[2rem]">
+            {headline}
+          </h1>
+          <p className="mt-2 text-[15px] text-[var(--ml-dark-ink-muted)]">
+            Booking #{booking.id.slice(0, 8).toUpperCase()}
           </p>
+          {booking.scheduled_at ? (
+            <p className="mt-3 text-sm text-[var(--ml-dark-ink-muted)]">
+              {formatBookingDate(booking.scheduled_at)}
+              {" · "}
+              {formatBookingTimeRange(
+                booking.scheduled_at,
+                booking.arrival_window_start,
+                booking.arrival_window_end,
+              )}
+            </p>
+          ) : null}
+          {addressLabel ? (
+            <p className="mt-1 text-sm text-[var(--ml-dark-ink-subtle)]">{addressLabel}</p>
+          ) : null}
+        </div>
+
+        <div className="mt-8 space-y-4">
+          {isLiveLocationStatus(booking.status) ? (
+            <div className="overflow-hidden rounded-2xl border border-[var(--ml-dark-border)] bg-[var(--ml-dark-surface)]">
+              <LiveCleanerMap
+                bookingId={booking.id}
+                accessToken={accessToken}
+                status={booking.status}
+                customerLat={booking.address_latitude}
+                customerLng={booking.address_longitude}
+                addressLabel={addressLabel}
+              />
+            </div>
+          ) : addressLabel ? (
+            <div className="overflow-hidden rounded-2xl border border-[var(--ml-dark-border)]">
+              <BookingMapPreview
+                latitude={booking.address_latitude}
+                longitude={booking.address_longitude}
+                label={addressLabel}
+              />
+            </div>
+          ) : null}
+        </div>
+
+        {/* Real cleaner only — never invent names, ratings, or photos */}
+        {booking.cleaner ? (
+          <div className="mt-6 rounded-2xl border border-[var(--ml-dark-border)] bg-[var(--ml-dark-surface)] p-5 shadow-[var(--shadow-card)]">
+            <div className="flex items-center gap-3">
+              <span className="flex size-12 shrink-0 items-center justify-center rounded-full bg-[var(--ml-dark-mint)]/15 text-sm font-bold text-[var(--ml-dark-mint)]">
+                {(cleanerName ?? "P").charAt(0).toUpperCase()}
+              </span>
+              <div className="min-w-0">
+                <p className="truncate font-semibold text-white">
+                  {cleanerName || "Your MaidLinx Pro"}
+                </p>
+                {booking.cleaner.ratingAverage !== null ? (
+                  <p className="mt-0.5 text-sm text-[var(--ml-dark-ink-muted)]">
+                    <span className="text-[var(--ml-dark-mint)]">★</span>{" "}
+                    {booking.cleaner.ratingAverage.toFixed(1)}
+                    {booking.cleaner.ratingCount
+                      ? ` · ${booking.cleaner.ratingCount} reviews`
+                      : null}
+                  </p>
+                ) : (
+                  <p className="mt-0.5 text-sm text-[var(--ml-dark-ink-muted)]">MaidLinx Pro</p>
+                )}
+              </div>
+            </div>
+            {/* ETA only when backend provides a real value — never invent */}
+            {booking.estimated_eta_minutes != null &&
+            Number.isFinite(booking.estimated_eta_minutes) ? (
+              <p className="mt-3 text-sm font-medium text-[var(--ml-dark-mint)]">
+                ETA ~{booking.estimated_eta_minutes} min
+              </p>
+            ) : null}
+            <p className="mt-2 text-sm text-[var(--ml-dark-ink-muted)]">
+              Status: {getBookingStatusLabel(booking.status)}
+            </p>
+          </div>
         ) : null}
-        {booking.estimated_eta_minutes !== null ? (
-          <p className="mt-2 text-sm font-medium text-accent">
-            ETA ~{booking.estimated_eta_minutes} min
-          </p>
-        ) : null}
-        <p className="mt-2 text-sm text-ink-muted">
-          Status: {getBookingStatusLabel(booking.status)}
-        </p>
-      </div>
 
-      <div className="mt-8">
-        <p className="mb-3 text-sm font-medium text-ink-muted">Progress</p>
-        <BookingStatusTimeline status={booking.status} />
-      </div>
+        {showLiveProgress ? (
+          <div className="mt-8 rounded-2xl border border-[var(--ml-dark-border)] bg-[var(--ml-dark-surface)] px-4 py-5">
+            <p className="mb-4 text-center text-xs font-medium tracking-wide text-[var(--ml-dark-ink-muted)] uppercase">
+              Progress
+            </p>
+            <BookingStatusTimeline status={booking.status} variant="live" />
+          </div>
+        ) : (
+          <div className="mt-8">
+            <p className="mb-3 text-sm font-medium text-[var(--ml-dark-ink-muted)]">Progress</p>
+            <BookingStatusTimeline status={booking.status} />
+          </div>
+        )}
 
-      <dl className="mt-8 space-y-3 rounded-2xl border border-border p-5 text-sm">
-        <div className="flex justify-between gap-4">
-          <dt className="text-ink-muted">Service</dt>
-          <dd className="font-medium capitalize">
-            {booking.service_type.replace(/_/g, " ")}
-          </dd>
-        </div>
-        <div className="flex justify-between gap-4">
-          <dt className="text-ink-muted">Deposit paid</dt>
-          <dd className="font-medium">
-            {formatCurrency(calculateDepositCents(booking.total_cents), booking.currency)}
-          </dd>
-        </div>
-        <div className="flex justify-between gap-4">
-          <dt className="text-ink-muted">Address</dt>
-          <dd className="text-right font-medium">
-            {booking.address_line1}, {booking.address_city}
-          </dd>
-        </div>
-      </dl>
+        <dl className="mt-8 space-y-3 rounded-2xl border border-[var(--ml-dark-border)] bg-[var(--ml-dark-surface)] p-5 text-sm">
+          <div className="flex justify-between gap-4">
+            <dt className="text-[var(--ml-dark-ink-muted)]">Service</dt>
+            <dd className="font-medium capitalize text-white">
+              {booking.service_type.replace(/_/g, " ")}
+            </dd>
+          </div>
+          <div className="flex justify-between gap-4">
+            <dt className="text-[var(--ml-dark-ink-muted)]">Deposit paid</dt>
+            <dd className="font-medium text-white">
+              {formatCurrency(calculateDepositCents(booking.total_cents), booking.currency)}
+            </dd>
+          </div>
+          <div className="flex justify-between gap-4">
+            <dt className="text-[var(--ml-dark-ink-muted)]">Address</dt>
+            <dd className="text-right font-medium text-white">
+              {booking.address_line1}, {booking.address_city}
+            </dd>
+          </div>
+        </dl>
 
-      <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-        <Link href={routes.dashboardBookings} className="sm:flex-1">
-          <Button variant="accent" className="w-full">
-            View my bookings
-          </Button>
-        </Link>
-        <Link href={routes.home} className="sm:flex-1">
-          <Button variant="secondary" className="w-full">
-            Back to home
-          </Button>
-        </Link>
+        {variant === "completed" ? (
+          <div className="mt-8 space-y-3">
+            <Link href={routes.dashboardBookings} className="block">
+              <Button variant="primary" className="booking-cta-btn w-full rounded-2xl">
+                Rate your cleaners
+              </Button>
+            </Link>
+            <div className="grid gap-2 sm:grid-cols-2">
+              <Link href={routes.dashboardInvoices}>
+                <Button
+                  variant="secondary"
+                  className="w-full rounded-2xl border-[var(--ml-dark-border-strong)] bg-transparent text-white hover:bg-[var(--ml-dark-surface-2)]"
+                >
+                  View invoice
+                </Button>
+              </Link>
+              <Link href={`${routes.book}?rebook=1`}>
+                <Button
+                  variant="secondary"
+                  className="w-full rounded-2xl border-[var(--ml-dark-border-strong)] bg-transparent text-white hover:bg-[var(--ml-dark-surface-2)]"
+                >
+                  Book again
+                </Button>
+              </Link>
+            </div>
+            <p className="text-center text-xs text-[var(--ml-dark-ink-subtle)]">
+              Tips are not available in TEST checkout yet — leave a review to thank your team.
+            </p>
+          </div>
+        ) : (
+          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+            <Link href={routes.dashboardBookings} className="sm:flex-1">
+              <Button variant="primary" className="booking-cta-btn w-full rounded-2xl">
+                View my bookings
+              </Button>
+            </Link>
+            <Link href={routes.home} className="sm:flex-1">
+              <Button
+                variant="secondary"
+                className="w-full rounded-2xl border-[var(--ml-dark-border-strong)] bg-transparent text-white hover:bg-[var(--ml-dark-surface-2)]"
+              >
+                Back to home
+              </Button>
+            </Link>
+          </div>
+        )}
       </div>
-    </div>
+    </DarkShell>
   );
 }

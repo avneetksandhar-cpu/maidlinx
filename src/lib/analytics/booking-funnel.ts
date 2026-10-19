@@ -19,6 +19,9 @@
  * - funnel_rebook (usual clean)
  * - funnel_completed / booking_completed
  * - funnel_abandoned / booking_abandoned
+ * - funnel_promo / funnel_referral / funnel_prefer_pro (repeat revenue)
+ *
+ * Never send emails, phones, addresses, or card data in props.
  *
  * @see docs/MARKETPLACE_ROADMAP.md
  */
@@ -41,6 +44,10 @@ export const BOOKING_ANALYTICS_EVENTS = [
   "funnel_rebook",
   "funnel_completed",
   "funnel_abandoned",
+  "funnel_promo",
+  "funnel_referral",
+  "funnel_prefer_pro",
+  "funnel_continue_draft",
   "address_started",
   "address_selected",
   "property_selected",
@@ -96,6 +103,10 @@ export type BookingFunnelEvent =
   | "funnel_rebook"
   | "funnel_completed"
   | "funnel_abandoned"
+  | "funnel_promo"
+  | "funnel_referral"
+  | "funnel_prefer_pro"
+  | "funnel_continue_draft"
   // Compatibility with existing booking.ts events
   | "address_started"
   | "address_selected"
@@ -170,6 +181,7 @@ export function trackFunnelStep(
 /** Map multi-screen route ids to funnel steps. */
 export function trackBookingScreen(
   screenId:
+    | "welcome"
     | "address"
     | "property"
     | "details"
@@ -184,6 +196,10 @@ export function trackBookingScreen(
     | "payment",
   props?: BookingFunnelProps,
 ) {
+  if (screenId === "welcome") {
+    trackFunnelEvent("funnel_continue_draft", { screen: "welcome", ...props });
+    return;
+  }
   const step: BookingFunnelStep =
     screenId === "payment"
       ? "payment"

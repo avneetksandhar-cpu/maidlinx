@@ -2,6 +2,7 @@ import { isQuoteOnlyService } from "@/config/services";
 import type { BookingState } from "@/lib/bookings/booking-state";
 import { validateServiceAnswers, type ServiceAnswers } from "@/lib/services/questions";
 import { getPropertyQuestions } from "@/config/property-types";
+import { resolveServiceArea } from "@/lib/service-area";
 import {
   step1AddressSchema,
   step2PropertySchema,
@@ -13,6 +14,57 @@ import {
   type BookingQuoteInput,
   type CreateBookingRequest,
 } from "@/lib/validations/booking-flow";
+
+/**
+ * Merge an address patch onto the current draft and resolve service area.
+ * Partial keystrokes must not wipe marketId or sticky-false out-of-area.
+ */
+export function buildAddressStatePatch(
+  current: BookingState,
+  patch: Partial<BookingState>,
+): Partial<BookingState> {
+  const merged = {
+    line1: patch.line1 ?? current.line1,
+    line2: patch.line2 !== undefined ? patch.line2 : current.line2,
+    city: patch.city ?? current.city,
+    state: patch.state ?? current.state,
+    postalCode: patch.postalCode ?? current.postalCode,
+    country: patch.country ?? current.country ?? "US",
+    latitude: patch.latitude !== undefined ? patch.latitude : current.latitude,
+    longitude: patch.longitude !== undefined ? patch.longitude : current.longitude,
+    googlePlaceId:
+      patch.googlePlaceId !== undefined ? patch.googlePlaceId : current.googlePlaceId,
+    formattedAddress:
+      patch.formattedAddress !== undefined ? patch.formattedAddress : current.formattedAddress,
+    streetNumber: patch.streetNumber !== undefined ? patch.streetNumber : current.streetNumber,
+    route: patch.route !== undefined ? patch.route : current.route,
+  };
+
+  const hasServiceAreaSignal = Boolean(
+    merged.postalCode?.trim() || (merged.city?.trim() && merged.state?.trim()),
+  );
+
+  if (!hasServiceAreaSignal) {
+    // Incomplete address — update fields only; keep prior market / in-area flags.
+    return { ...patch };
+  }
+
+  const area = resolveServiceArea({
+    postalCode: merged.postalCode,
+    city: merged.city,
+    state: merged.state,
+    country: merged.country,
+  });
+
+  return {
+    ...patch,
+    marketId: area.marketId,
+    zoneId: area.zoneId,
+    inServiceArea: area.inServiceArea,
+    marketName: area.marketName ?? null,
+    step: area.inServiceArea ? 2 : 1,
+  };
+}
 
 export function buildQuoteInput(
   state: BookingState,
@@ -48,6 +100,7 @@ export function buildQuoteInput(
     notes: state.notes,
     accessNotes: state.accessNotes,
     schedulePreset: state.schedulePreset,
+    promoCode: state.promoCode,
   };
 }
 
@@ -77,23 +130,46 @@ export function buildCreateBookingRequest(state: BookingState): CreateBookingReq
       notes: mergeNotes(state),
     });
 
-  return parsed.success ? parsed.data : null;
+  if (!parsed.success) return null;
+
+  return {
+    ...parsed.data,
+    promoCode: state.promoCode,
+    preferredCleanerId: state.preferredCleanerId,
+    recurringFrequency: state.recurringFrequency,
+    rebookSourceBookingId: state.rebookSourceBookingId,
+  };
 }
 
 export function validateDetailsState(state: BookingState): {
   ok: boolean;
   errors: Record<string, string>;
+  /** Coalesced fields that must be written before leaving Details (guard uses raw state). */
+  synced?: Pick<BookingState, "bedrooms" | "bathrooms" | "squareFootage">;
 } {
   if (!state.propertyType) {
     return { ok: false, errors: { propertyType: "Select a property type." } };
   }
 
+  const commercial =
+    state.propertyType === "office" ||
+    state.propertyType === "retail" ||
+    state.propertyType === "restaurant" ||
+    state.propertyType === "commercial" ||
+    state.propertyType === "post_construction";
+
+  const synced = {
+    bedrooms: state.bedrooms ?? (commercial ? 0 : 2),
+    bathrooms: state.bathrooms ?? (commercial ? 1 : 2),
+    squareFootage: state.squareFootage ?? 1500,
+  };
+
   const propertyQuestions = getPropertyQuestions(state.propertyType);
   const answers: ServiceAnswers = {
     ...(state.serviceAnswers ?? {}),
-    ...(state.bedrooms !== undefined ? { bedrooms: state.bedrooms } : {}),
-    ...(state.bathrooms !== undefined ? { bathrooms: state.bathrooms } : {}),
-    ...(state.squareFootage !== undefined ? { squareFootage: state.squareFootage } : {}),
+    bedrooms: synced.bedrooms,
+    bathrooms: synced.bathrooms,
+    squareFootage: synced.squareFootage,
     ...(state.propertyType ? { propertyType: state.propertyType } : {}),
   };
   const propertyResult = validateServiceAnswers(propertyQuestions, answers);
@@ -102,9 +178,9 @@ export function validateDetailsState(state: BookingState): {
   }
 
   const property = step2PropertySchema.safeParse({
-    bedrooms: state.bedrooms ?? 0,
-    bathrooms: state.bathrooms ?? 1,
-    squareFootage: state.squareFootage ?? 1500,
+    bedrooms: synced.bedrooms,
+    bathrooms: synced.bathrooms,
+    squareFootage: synced.squareFootage,
     propertyType: state.propertyType,
     notes: state.notes,
     accessNotes: state.accessNotes,
@@ -114,7 +190,7 @@ export function validateDetailsState(state: BookingState): {
     return { ok: false, errors: fieldErrors(property.error) };
   }
 
-  return { ok: true, errors: {} };
+  return { ok: true, errors: {}, synced };
 }
 
 export function isQuoteOnlyBooking(state: BookingState): boolean {

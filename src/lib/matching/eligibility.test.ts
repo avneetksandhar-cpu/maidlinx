@@ -18,6 +18,8 @@ function baseContext(overrides: Partial<MatchContext> = {}): EligibilityContext 
     cancelledJobsByProfileId: new Map(),
     favoriteProfileIds: new Set(),
     repeatProfileIds: new Set(),
+    // Legacy soft-open path for historical match-engine unit coverage.
+    requireStrictMarketplace: false,
     ...overrides,
   };
 }

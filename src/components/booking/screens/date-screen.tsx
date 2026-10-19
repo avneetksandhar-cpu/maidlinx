@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { BookingFlowChrome } from "@/components/booking/booking-flow-chrome";
 import { ScheduleWhenSelector } from "@/components/booking/schedule-when-selector";
+import { RecurringFrequencyPicker } from "@/components/booking/recurring-frequency-picker";
 import { useBooking } from "@/components/booking/booking-provider";
 import { useBookingGuard } from "@/components/booking/use-booking-guard";
 import {
@@ -13,6 +14,7 @@ import {
 } from "@/lib/bookings/booking-routes";
 import type { SchedulePreset } from "@/lib/bookings/booking-state";
 import type { ArrivalWindowId } from "@/lib/bookings/constants";
+import type { RecurringFrequencyId } from "@/lib/recurring/frequencies";
 import { trackBookingEvent } from "@/lib/analytics/booking";
 
 export function DateScreen() {
@@ -23,17 +25,34 @@ export function DateScreen() {
 
   if (!hydrated || blocked) {
     return (
-      <div className="flex min-h-[40dvh] items-center justify-center text-sm text-ink-muted">
+      <div
+        data-theme="ml-dark"
+        className="flex min-h-[40dvh] items-center justify-center bg-[var(--ml-dark-bg)] text-sm text-[var(--ml-dark-ink-muted)]"
+      >
         Loading…
       </div>
     );
   }
 
+  const needsCalendar = state.schedulePreset === "date";
+  const showContinue = needsCalendar;
+
+  const advance = (merged: typeof state) => {
+    trackBookingEvent("date_selected", {
+      preset: merged.schedulePreset,
+      date: merged.date,
+      window: merged.arrivalWindow,
+    });
+    updateState({ step: 6 });
+    router.push(BOOKING_SCREEN_PATHS[getNextScreen("date", merged)]);
+  };
+
   return (
     <BookingFlowChrome
       screenId="date"
-      title="Which day?"
-      subtitle="ASAP, today, tomorrow, or pick a date."
+      title="When do you need us?"
+      subtitle="One tap to pick a day."
+      hideCta={!showContinue}
       ctaLabel="Continue"
       ctaDisabled={!isDateComplete(state)}
       onContinue={() => {
@@ -42,33 +61,38 @@ export function DateScreen() {
           return;
         }
         setErrors({});
-        trackBookingEvent("date_selected", {
-          preset: state.schedulePreset,
-          date: state.date,
-          window: state.arrivalWindow,
-        });
-        const next = getNextScreen("date", state);
-        updateState({ step: 6 });
-        router.push(BOOKING_SCREEN_PATHS[next]);
+        advance(state);
       }}
     >
-      <ScheduleWhenSelector
-        mode="date"
-        schedulePreset={state.schedulePreset}
-        date={state.date}
-        arrivalWindow={state.arrivalWindow}
-        marketId={state.marketId}
-        onPresetChange={(preset: SchedulePreset, resolved) => {
-          updateState({
-            schedulePreset: preset,
-            date: resolved.date,
-            arrivalWindow: resolved.arrivalWindow,
-          });
-        }}
-        onDateChange={(date) => updateState({ date, schedulePreset: "date" })}
-        onWindowChange={(arrivalWindow: ArrivalWindowId) => updateState({ arrivalWindow })}
-        errors={errors}
-      />
+      <div className="space-y-5">
+        <ScheduleWhenSelector
+          mode="date"
+          schedulePreset={state.schedulePreset}
+          date={state.date}
+          arrivalWindow={state.arrivalWindow}
+          marketId={state.marketId}
+          onPresetChange={(preset: SchedulePreset, resolved) => {
+            const patch = {
+              schedulePreset: preset,
+              date: resolved.date,
+              arrivalWindow: resolved.arrivalWindow,
+            };
+            updateState(patch);
+            // Auto-advance on ASAP / Today / Tomorrow — calendar needs Continue
+            if (preset !== "date" && resolved.date) {
+              advance({ ...state, ...patch });
+            }
+          }}
+          onDateChange={(date) => updateState({ date, schedulePreset: "date" })}
+          onWindowChange={(arrivalWindow: ArrivalWindowId) => updateState({ arrivalWindow })}
+          errors={errors}
+        />
+        <RecurringFrequencyPicker
+          variant="toggle"
+          value={(state.recurringFrequency as RecurringFrequencyId) ?? "one_time"}
+          onChange={(recurringFrequency) => updateState({ recurringFrequency })}
+        />
+      </div>
     </BookingFlowChrome>
   );
 }

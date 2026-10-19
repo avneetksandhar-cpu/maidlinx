@@ -262,8 +262,8 @@ function PaymentScreenInner() {
     return (
       <BookingFlowChrome
         screenId="payment"
-        title="Secure payment"
-        subtitle="Guest checkout — no account required."
+        title="Confirm & pay"
+        subtitle="50% deposit · Stripe TEST · no account required."
         hideCta
       >
         <CheckoutStep
@@ -277,30 +277,40 @@ function PaymentScreenInner() {
 
   const busy = submitting || devSubmitting;
   const bookLabel = (() => {
-    if (submitting) return quoteOnly ? "Submitting…" : "Booking…";
+    if (submitting) return quoteOnly ? "Submitting…" : "Confirming…";
     if (quoteOnly) return "Request quote";
     if (pricing && !pricing.quoteOnly) {
-      return `Book MaidLinx — ${formatCurrency(pricing.totalCents, pricing.currency)}`;
+      return `Confirm · ${formatCurrency(pricing.totalCents, pricing.currency)}`;
     }
-    return "Book MaidLinx";
+    return "Confirm clean";
   })();
 
   return (
     <BookingFlowChrome
       screenId="payment"
-      title="Checkout"
-      subtitle="Guest checkout is fine — no account required."
+      title="Confirm your clean"
+      subtitle="Guest checkout is fine — no account needed."
       ctaLabel={bookLabel}
       ctaDisabled={busy || !pricing || !isServerVerified}
       ctaLoading={submitting}
       onContinue={() => void createAndProceed()}
     >
-      <div className="space-y-8">
+      <div className="space-y-6">
         {globalError ? (
-          <p className="rounded-xl bg-red-50 px-4 py-3 text-sm text-error" role="alert">
+          <p
+            className="rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300"
+            role="alert"
+          >
             {globalError}
           </p>
         ) : null}
+
+        <div className="rounded-2xl border border-[var(--ml-dark-border)] bg-[var(--ml-dark-surface)] px-4 py-3.5 text-[14px] leading-relaxed text-[var(--ml-dark-ink)]">
+          <p className="font-semibold text-[var(--ml-dark-ink)]">Secure checkout</p>
+          <p className="mt-1 text-[var(--ml-dark-ink-muted)]">
+            Stripe processes your card. Deposit now · remaining balance after the job.
+          </p>
+        </div>
 
         <PriceReviewStep
           pricing={pricing}

@@ -36,16 +36,19 @@ export function ServiceScreen() {
             : tier.serviceType === "post_construction"
               ? "construction"
               : "home") as NonNullable<typeof state.serviceTile>,
-      step: 5,
+      step: 3,
     };
     updateState(next);
-    const nextScreen = getNextScreen("service", { ...state, ...next });
-    router.push(BOOKING_SCREEN_PATHS[nextScreen]);
+    const merged = { ...state, ...next };
+    router.push(BOOKING_SCREEN_PATHS[getNextScreen("service", merged)]);
   };
 
   if (!hydrated || blocked) {
     return (
-      <div className="flex min-h-[40dvh] items-center justify-center text-sm text-ink-muted">
+      <div
+        data-theme="ml-dark"
+        className="flex min-h-[40dvh] items-center justify-center bg-[var(--ml-dark-bg)] text-sm text-[var(--ml-dark-ink-muted)]"
+      >
         Loading…
       </div>
     );
@@ -54,8 +57,8 @@ export function ServiceScreen() {
   return (
     <BookingFlowChrome
       screenId="service"
-      title="Choose your clean"
-      subtitle="Estimated prices shown on each option."
+      title="Select a service"
+      subtitle="Tap to continue — final price confirmed before pay."
       hideCta
     >
       <ServiceTierSelector

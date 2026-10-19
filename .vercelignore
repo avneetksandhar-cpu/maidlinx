@@ -1,0 +1,9 @@
+# Keep local Vercel uploads lean — MaidLinx is the Vercel root app.
+wingman
+.next
+node_modules
+tmp
+.git
+ios/App/Pods
+ios/App/build
+*.log

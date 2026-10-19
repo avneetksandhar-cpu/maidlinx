@@ -1,14 +1,17 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { getSupabaseAnonKey, getSupabaseUrl } from "@/config/env";
 import { normalizeRole } from "@/lib/auth/roles";
 import type { UserRole } from "@/lib/auth/types";
 
-const AUTH_ROUTES = ["/sign-in", "/sign-up"];
-const CUSTOMER_PREFIXES = ["/dashboard"];
+const AUTH_ROUTES = ["/sign-in", "/sign-up", "/forgot-password", "/reset-password"];
+/** Recovery session must stay on this page to set a new password. */
+const AUTH_ROUTES_ALLOW_SESSION = ["/reset-password"];
+const CUSTOMER_PREFIXES = ["/dashboard", "/account"];
 const CLEANER_PREFIXES = ["/cleaner", "/pro"];
 const CLEANER_API_PREFIXES = ["/api/cleaner", "/api/pro"];
-const ADMIN_PREFIXES = ["/admin"];
-const ADMIN_API_PREFIXES = ["/api/admin"];
+const ADMIN_PREFIXES = ["/admin", "/owner"];
+const ADMIN_API_PREFIXES = ["/api/admin", "/api/owner"];
 
 function matchesPrefix(pathname: string, prefixes: string[]): boolean {
   return prefixes.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));
@@ -17,7 +20,30 @@ function matchesPrefix(pathname: string, prefixes: string[]): boolean {
 function homeForRole(role: UserRole): string {
   if (role === "admin") return "/admin";
   if (role === "cleaner") return "/cleaner";
-  return "/dashboard";
+  return "/account";
+}
+
+function isSafeNextPath(next: string | null): next is string {
+  return Boolean(next && next.startsWith("/") && !next.startsWith("//") && !next.includes("://"));
+}
+
+function canRoleAccessPath(role: UserRole, pathname: string): boolean {
+  if (matchesPrefix(pathname, ADMIN_PREFIXES) || matchesPrefix(pathname, ADMIN_API_PREFIXES)) {
+    return role === "admin";
+  }
+  if (matchesPrefix(pathname, CLEANER_PREFIXES) || matchesPrefix(pathname, CLEANER_API_PREFIXES)) {
+    return role === "cleaner" || role === "admin";
+  }
+  if (matchesPrefix(pathname, CUSTOMER_PREFIXES)) {
+    return role === "customer" || role === "admin";
+  }
+  return true;
+}
+
+/** Matches ADMIN_BOOTSTRAP_EMAIL so promoteBootstrapAdminIfNeeded can run server-side. */
+function isBootstrapAdminEmail(email: string | null | undefined): boolean {
+  const bootstrap = process.env.ADMIN_BOOTSTRAP_EMAIL?.toLowerCase()?.trim();
+  return Boolean(bootstrap && email?.toLowerCase() === bootstrap);
 }
 
 export async function updateSession(request: NextRequest) {
@@ -32,8 +58,8 @@ export async function updateSession(request: NextRequest) {
     matchesPrefix(pathname, ADMIN_PREFIXES) ||
     matchesPrefix(pathname, ADMIN_API_PREFIXES);
 
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  const url = getSupabaseUrl();
+  const anonKey = getSupabaseAnonKey();
 
   // Fail closed for protected routes when Supabase is not configured.
   if (!url || !anonKey) {
@@ -43,7 +69,7 @@ export async function updateSession(request: NextRequest) {
         matchesPrefix(pathname, ADMIN_API_PREFIXES)
       ) {
         return NextResponse.json(
-          { error: "Authentication is not configured. Add Supabase keys to .env.local." },
+          { error: "Sign-in is temporarily unavailable. Please try again shortly." },
           { status: 503 },
         );
       }
@@ -88,6 +114,9 @@ export async function updateSession(request: NextRequest) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = "/sign-in";
     redirectUrl.searchParams.set("next", pathname);
+    if (matchesPrefix(pathname, CLEANER_PREFIXES)) {
+      redirectUrl.searchParams.set("role", "cleaner");
+    }
     return NextResponse.redirect(redirectUrl);
   }
 
@@ -101,25 +130,41 @@ export async function updateSession(request: NextRequest) {
     const role = normalizeRole(profile?.role);
 
     if (isAuthRoute) {
+      // Password recovery lands here with a session — do not bounce to account home.
+      if (AUTH_ROUTES_ALLOW_SESSION.some((route) => pathname.startsWith(route))) {
+        return supabaseResponse;
+      }
+      const requestedNext = request.nextUrl.searchParams.get("next");
       const redirectUrl = request.nextUrl.clone();
-      redirectUrl.pathname = homeForRole(role);
-      redirectUrl.search = "";
+      if (isSafeNextPath(requestedNext) && canRoleAccessPath(role, requestedNext)) {
+        redirectUrl.pathname = requestedNext;
+        redirectUrl.search = "";
+      } else {
+        redirectUrl.pathname = homeForRole(role);
+        redirectUrl.search = "";
+      }
       return NextResponse.redirect(redirectUrl);
     }
 
-    if (matchesPrefix(pathname, ADMIN_PREFIXES) && role !== "admin") {
+    const bootstrapAdmin = isBootstrapAdminEmail(user.email);
+
+    if (matchesPrefix(pathname, ADMIN_PREFIXES) && role !== "admin" && !bootstrapAdmin) {
       const redirectUrl = request.nextUrl.clone();
       redirectUrl.pathname = homeForRole(role);
       return NextResponse.redirect(redirectUrl);
     }
 
-    if (matchesPrefix(pathname, ADMIN_API_PREFIXES) && role !== "admin") {
+    if (matchesPrefix(pathname, ADMIN_API_PREFIXES) && role !== "admin" && !bootstrapAdmin) {
       return NextResponse.json({ error: "Forbidden." }, { status: 403 });
     }
 
     if (matchesPrefix(pathname, CLEANER_PREFIXES) && role !== "cleaner" && role !== "admin") {
       const redirectUrl = request.nextUrl.clone();
-      redirectUrl.pathname = homeForRole(role);
+      // Send aspiring cleaners back through apply → signup with intent preserved.
+      redirectUrl.pathname = "/sign-up";
+      redirectUrl.search = "";
+      redirectUrl.searchParams.set("role", "cleaner");
+      redirectUrl.searchParams.set("next", pathname);
       return NextResponse.redirect(redirectUrl);
     }
 

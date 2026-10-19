@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <!-- Fallback only. Official mark is public/brand/wingman-logo.png -->
+  <defs>
+    <linearGradient id="wm-neon" x1="8" y1="4" x2="56" y2="60" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#FF2BD6"/>
+      <stop offset="55%" stop-color="#8B5CFF"/>
+      <stop offset="100%" stop-color="#00F0FF"/>
+    </linearGradient>
+  </defs>
+  <path fill="url(#wm-neon)" d="M38 6c8 6 16 18 16 32 0 12-10 22-22 22S10 50 10 38C10 22 22 8 38 6c-8 8-12 16-12 26 0 8 6 14 14 14s14-6 14-14C54 20 48 12 38 6Z"/>
+  <path fill="#050508" d="M32 24c6 0 10 5 10 12 0 8-10 18-10 18s-10-10-10-18c0-7 4-12 10-12Zm0 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8Z"/>
+</svg>

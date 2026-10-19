@@ -167,9 +167,12 @@ export async function reviewCleanerOnboarding(input: {
         input.decision === "reject" || input.decision === "suspend"
           ? input.rejectionReason ?? "Needs more information"
           : null,
-      is_verified: input.decision === "approve",
-      is_active: input.decision === "approve",
+      // Approve does NOT fabricate identity/background results.
+      // Activation + maidlinx_verified still require server-side gates.
+      is_verified: false,
+      is_active: false,
       is_online: false,
+      platform_stage: input.decision === "approve" ? "APPROVED" : status === "SUSPENDED" ? "SUSPENDED" : "REJECTED",
       onboarding_checklist: {
         ...current.checklist,
         approval: input.decision === "approve",
@@ -178,6 +181,18 @@ export async function reviewCleanerOnboarding(input: {
     .eq("id", input.professionalId);
 
   if (error) throw new Error(error.message);
+
+  if (input.decision === "approve") {
+    const { syncMaidlinxVerifiedFlag } = await import("@/lib/cleaners/gates-store");
+    // Sets maidlinx_verified + active only when all gates already pass.
+    const cleared = await syncMaidlinxVerifiedFlag(input.professionalId);
+    if (cleared) {
+      await supabase
+        .from("professionals")
+        .update({ is_active: true, activated_at: now, platform_stage: "ACTIVE" })
+        .eq("id", input.professionalId);
+    }
+  }
 }
 
 export async function updateStripeConnectState(

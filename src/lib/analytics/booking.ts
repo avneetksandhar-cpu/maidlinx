@@ -4,6 +4,7 @@
  */
 
 export type BookingAnalyticsEvent =
+  | "booking_started"
   | "address_started"
   | "address_selected"
   | "property_selected"

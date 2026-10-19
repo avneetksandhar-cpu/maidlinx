@@ -3,6 +3,7 @@ import { emitBookingEvent } from "@/lib/bookings/events";
 import { resolveSchedule } from "@/lib/bookings/schedule";
 import { estimateTravelMinutes } from "@/lib/eta";
 import { resolveMarketOrThrow } from "@/lib/markets/eligibility";
+import { assertMarketBookingEnabled } from "@/lib/markets/flags";
 import { estimateServiceDurationMinutes, resolveCatalogService } from "@/lib/services/catalog";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { PriceBreakdown } from "@/lib/pricing/calculate";
@@ -69,6 +70,8 @@ export interface StoredBooking {
   address_state: string | null;
   address_postal_code: string | null;
   address_country: string | null;
+  address_latitude: number | null;
+  address_longitude: number | null;
   google_place_id: string | null;
   stripe_payment_intent_id: string | null;
   notes: string | null;
@@ -77,6 +80,8 @@ export interface StoredBooking {
   zone_id: string | null;
   quote_requested: boolean;
   estimated_eta_minutes: number | null;
+  legal_consent_accepted_at: string | null;
+  legal_consent_policy_version: string | null;
   cleaner: StoredBookingCleaner | null;
   created_at: string;
 }
@@ -114,6 +119,10 @@ function mapRow(
     address_state: row.address_state ? String(row.address_state) : null,
     address_postal_code: row.address_postal_code ? String(row.address_postal_code) : null,
     address_country: row.address_country ? String(row.address_country) : null,
+    address_latitude:
+      row.address_latitude != null ? Number(row.address_latitude) : null,
+    address_longitude:
+      row.address_longitude != null ? Number(row.address_longitude) : null,
     google_place_id: row.google_place_id ? String(row.google_place_id) : null,
     stripe_payment_intent_id: row.stripe_payment_intent_id
       ? String(row.stripe_payment_intent_id)
@@ -131,6 +140,12 @@ function mapRow(
       row.estimated_eta_minutes !== undefined && row.estimated_eta_minutes !== null
         ? Number(row.estimated_eta_minutes)
         : null,
+    legal_consent_accepted_at: row.legal_consent_accepted_at
+      ? String(row.legal_consent_accepted_at)
+      : null,
+    legal_consent_policy_version: row.legal_consent_policy_version
+      ? String(row.legal_consent_policy_version)
+      : null,
     cleaner,
     created_at: String(row.created_at),
   };
@@ -231,6 +246,7 @@ export async function insertBooking(
     state: input.state,
     country: input.country,
   });
+  assertMarketBookingEnabled(marketResolve.market?.id);
   const catalogService = resolveCatalogService(input.serviceType);
   const quoteOnly =
     Boolean(pricing.quoteOnly) || catalogService?.pricingModel === "quote";
@@ -307,7 +323,9 @@ export async function insertBooking(
       address_longitude: input.longitude ?? null,
       google_place_id: input.googlePlaceId ?? null,
       pricing_snapshot: pricing as unknown as import("@/types/database.types").Json,
-    })
+      preferred_professional_id: input.preferredCleanerId ?? null,
+      recurring_preference: input.recurringFrequency ?? null,
+    } as never)
     .select("*")
     .single();
 
@@ -320,10 +338,12 @@ export async function insertBooking(
         .maybeSingle();
       if (existing) return mapRow(existing as Record<string, unknown>);
     }
-    // Columns from 00017 may be absent until migration is applied.
+    // Columns from 00017 / 00023 may be absent until migration is applied.
     if (
       error &&
-      /coupon_code|quote_id|idempotency_key|schema cache|column/i.test(error.message)
+      /coupon_code|quote_id|idempotency_key|preferred_professional|recurring_preference|schema cache|column/i.test(
+        error.message,
+      )
     ) {
       const { data: retry, error: retryError } = await supabase
         .from("bookings")
@@ -449,6 +469,25 @@ export async function attachPaymentIntent(
   const { error } = await supabase
     .from("bookings")
     .update({ stripe_payment_intent_id: paymentIntentId })
+    .eq("id", bookingId);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+}
+
+/** Persist checkout legal consent (idempotent for same policy version). */
+export async function recordLegalConsent(
+  bookingId: string,
+  policyVersion: string,
+): Promise<void> {
+  const supabase = createAdminClient();
+  const { error } = await supabase
+    .from("bookings")
+    .update({
+      legal_consent_accepted_at: new Date().toISOString(),
+      legal_consent_policy_version: policyVersion,
+    } as never)
     .eq("id", bookingId);
 
   if (error) {

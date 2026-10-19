@@ -7,11 +7,11 @@ export type CardProps = HTMLAttributes<HTMLDivElement> & {
 };
 
 const variantStyles = {
-  default: "bg-surface border border-border",
+  default: "card-glow bg-surface rounded-2xl",
   elevated:
-    "bg-surface-elevated border border-border-subtle shadow-lg shadow-black/40",
-  outline: "bg-transparent border border-border-subtle",
-  "gold-top": "gold-top-border bg-surface",
+    "card-glow bg-surface-elevated rounded-2xl shadow-lg shadow-black/40",
+  outline: "bg-transparent border border-border-subtle rounded-2xl",
+  "gold-top": "card-glow bg-surface rounded-2xl",
 };
 
 const paddingStyles = {
@@ -31,7 +31,7 @@ export function Card({
   return (
     <div
       className={cn(
-        "rounded-lg",
+        "rounded-2xl",
         variantStyles[variant],
         paddingStyles[padding],
         className,

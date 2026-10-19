@@ -24,7 +24,7 @@ interface BookingCardProps {
 }
 
 function buildRebookHref(booking: DashboardBooking): string {
-  const params = new URLSearchParams({ rebook: "1" });
+  const params = new URLSearchParams({ rebook: "1", sourceBookingId: booking.id });
   if (booking.serviceType) params.set("serviceType", booking.serviceType);
   if (booking.addressLine1) params.set("line1", booking.addressLine1);
   if (booking.addressLine2) params.set("line2", booking.addressLine2);
@@ -32,7 +32,19 @@ function buildRebookHref(booking: DashboardBooking): string {
   if (booking.addressState) params.set("state", booking.addressState);
   if (booking.addressPostalCode) params.set("postalCode", booking.addressPostalCode);
   if (booking.addressCountry) params.set("country", booking.addressCountry);
-  return `${routes.book}?${params.toString()}`;
+  if (booking.propertyType) params.set("propertyType", booking.propertyType);
+  if (booking.bedrooms != null) params.set("bedrooms", String(booking.bedrooms));
+  if (booking.bathrooms != null) params.set("bathrooms", String(booking.bathrooms));
+  if (booking.squareFootage != null) params.set("squareFootage", String(booking.squareFootage));
+  if (booking.extras.length > 0) params.set("extras", booking.extras.join(","));
+  if (booking.professionalProfileId) {
+    params.set("preferredCleanerId", booking.professionalProfileId);
+  }
+  if (booking.professionalName) {
+    params.set("preferredCleanerName", booking.professionalName);
+  }
+  // Jump to date so customer only picks new schedule after prefill.
+  return `${routes.bookDate}?${params.toString()}`;
 }
 
 export function BookingCard({ booking, showActions = true }: BookingCardProps) {
@@ -43,6 +55,7 @@ export function BookingCard({ booking, showActions = true }: BookingCardProps) {
   const [favorited, setFavorited] = useState(false);
   const actionable = showActions && canCancelOrReschedule(booking.status, booking.scheduledAt);
   const completed = booking.status === "completed";
+  const showBookAgain = completed;
 
   async function handleFavorite() {
     if (!booking.professionalProfileId) return;
@@ -110,15 +123,17 @@ export function BookingCard({ booking, showActions = true }: BookingCardProps) {
             )}
           </div>
 
-          {(actionable || booking.professionalProfileId || (showActions && completed)) && (
+          {(actionable || booking.professionalProfileId || showBookAgain) && (
             <div className="flex flex-wrap gap-2 border-t border-border pt-4">
-              {booking.professionalProfileId && !favorited && (
+              {completed && booking.professionalProfileId && !favorited && (
                 <Button variant="ghost" size="sm" onClick={handleFavorite} disabled={favoriteLoading}>
-                  {favoriteLoading ? "Saving..." : "Save favorite cleaner"}
+                  {favoriteLoading ? "Saving..." : "Prefer this Pro"}
                 </Button>
               )}
               {favorited && (
-                <span className="inline-flex items-center px-3 text-sm text-accent">Saved to favorites</span>
+                <span className="inline-flex items-center px-3 text-sm text-accent">
+                  Preference saved — assigned when available
+                </span>
               )}
               {actionable && (
                 <>
@@ -130,9 +145,9 @@ export function BookingCard({ booking, showActions = true }: BookingCardProps) {
                   </Button>
                 </>
               )}
-              {showActions && completed ? (
+              {showBookAgain ? (
                 <Link href={buildRebookHref(booking)}>
-                  <Button variant="secondary" size="sm">
+                  <Button variant="accent" size="sm">
                     Book again
                   </Button>
                 </Link>

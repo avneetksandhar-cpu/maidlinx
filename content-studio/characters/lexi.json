@@ -1,0 +1,19 @@
+{
+  "id": "lexi",
+  "name": "Lexi",
+  "role": "Chaotic luxury-home owner",
+  "voice": "Glamorous, slightly dramatic, Y2K energy",
+  "look": {
+    "hair": "Long dark brunette blowout",
+    "wardrobe": "Recognizable pink wardrobe; pink satin pajamas as Ep.01 signature; glam feminine",
+    "era": "Y2K-inspired"
+  },
+  "personality": [
+    "Chaotic luxury",
+    "Party aftermath denial",
+    "Softens when the apartment is restored"
+  ],
+  "consistencyNotes": "Always pink-forward glam; never in MaidLinx uniform. Keep jewelry/nails consistent across episodes.",
+  "referenceDir": "characters/lexi/references",
+  "referenceImages": []
+}

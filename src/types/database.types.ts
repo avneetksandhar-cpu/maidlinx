@@ -123,7 +123,31 @@ export type Database = {
           onboarding_submitted_at: string | null;
           onboarding_reviewed_at: string | null;
           rejection_reason: string | null;
-          created_at: string;
+
+          platform_stage: string;
+          identity_status: string;
+          identity_provider: string | null;
+          identity_external_ref: string | null;
+          identity_reviewed_at: string | null;
+          identity_reviewed_by: string | null;
+          background_status: string;
+          background_provider: string | null;
+          background_external_ref: string | null;
+          background_reviewed_at: string | null;
+          background_reviewed_by: string | null;
+          phone_verified_at: string | null;
+          email_verified_at: string | null;
+          training_completed_at: string | null;
+          assessment_passed_at: string | null;
+          activated_at: string | null;
+          trust_score: number;
+          reliability_score: number;
+          serious_flag_count: number;
+          requires_admin_review: boolean;
+          application: Json;
+          application_submitted_at: string | null;
+          maidlinx_verified: boolean;
+          verified_at: string | null;          created_at: string;
           updated_at: string;
         };
         Insert: {
@@ -164,7 +188,31 @@ export type Database = {
           onboarding_submitted_at?: string | null;
           onboarding_reviewed_at?: string | null;
           rejection_reason?: string | null;
-          created_at?: string;
+
+          platform_stage?: string;
+          identity_status?: string;
+          identity_provider?: string | null;
+          identity_external_ref?: string | null;
+          identity_reviewed_at?: string | null;
+          identity_reviewed_by?: string | null;
+          background_status?: string;
+          background_provider?: string | null;
+          background_external_ref?: string | null;
+          background_reviewed_at?: string | null;
+          background_reviewed_by?: string | null;
+          phone_verified_at?: string | null;
+          email_verified_at?: string | null;
+          training_completed_at?: string | null;
+          assessment_passed_at?: string | null;
+          activated_at?: string | null;
+          trust_score?: number;
+          reliability_score?: number;
+          serious_flag_count?: number;
+          requires_admin_review?: boolean;
+          application?: Json;
+          application_submitted_at?: string | null;
+          maidlinx_verified?: boolean;
+          verified_at?: string | null;          created_at?: string;
           updated_at?: string;
         };
         Update: {
@@ -205,7 +253,95 @@ export type Database = {
           onboarding_submitted_at?: string | null;
           onboarding_reviewed_at?: string | null;
           rejection_reason?: string | null;
-          created_at?: string;
+
+          platform_stage?: string;
+          identity_status?: string;
+          identity_provider?: string | null;
+          identity_external_ref?: string | null;
+          identity_reviewed_at?: string | null;
+          identity_reviewed_by?: string | null;
+          background_status?: string;
+          background_provider?: string | null;
+          background_external_ref?: string | null;
+          background_reviewed_at?: string | null;
+          background_reviewed_by?: string | null;
+          phone_verified_at?: string | null;
+          email_verified_at?: string | null;
+          training_completed_at?: string | null;
+          assessment_passed_at?: string | null;
+          activated_at?: string | null;
+          trust_score?: number;
+          reliability_score?: number;
+          serious_flag_count?: number;
+          requires_admin_review?: boolean;
+          application?: Json;
+          application_submitted_at?: string | null;
+          maidlinx_verified?: boolean;
+          verified_at?: string | null;          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+
+      cleaner_approval_gates: {
+        Row: Record<string, unknown>;
+        Insert: Record<string, unknown>;
+        Update: Record<string, unknown>;
+        Relationships: [];
+      };
+      academy_modules: {
+        Row: Record<string, unknown>;
+        Insert: Record<string, unknown>;
+        Update: Record<string, unknown>;
+        Relationships: [];
+      };
+      cleaner_training_progress: {
+        Row: Record<string, unknown>;
+        Insert: Record<string, unknown>;
+        Update: Record<string, unknown>;
+        Relationships: [];
+      };
+      cleaner_assessment_attempts: {
+        Row: Record<string, unknown>;
+        Insert: Record<string, unknown>;
+        Update: Record<string, unknown>;
+        Relationships: [];
+      };
+      cleaner_trust_flags: {
+        Row: Record<string, unknown>;
+        Insert: Record<string, unknown>;
+        Update: Record<string, unknown>;
+        Relationships: [];
+      };
+      cleaner_platform_audit_log: {
+        Row: Record<string, unknown>;
+        Insert: Record<string, unknown>;
+        Update: Record<string, unknown>;
+        Relationships: [];
+      };
+      cleaner_live_locations: {
+        Row: {
+          booking_id: string;
+          cleaner_id: string;
+          lat: number;
+          lng: number;
+          accuracy: number | null;
+          updated_at: string;
+        };
+        Insert: {
+          booking_id: string;
+          cleaner_id: string;
+          lat: number;
+          lng: number;
+          accuracy?: number | null;
+          updated_at?: string;
+        };
+        Update: {
+          booking_id?: string;
+          cleaner_id?: string;
+          lat?: number;
+          lng?: number;
+          accuracy?: number | null;
           updated_at?: string;
         };
         Relationships: [];
@@ -489,7 +625,31 @@ export type Database = {
           onboarding_submitted_at: string | null;
           onboarding_reviewed_at: string | null;
           rejection_reason: string | null;
-          created_at: string;
+
+          platform_stage: string;
+          identity_status: string;
+          identity_provider: string | null;
+          identity_external_ref: string | null;
+          identity_reviewed_at: string | null;
+          identity_reviewed_by: string | null;
+          background_status: string;
+          background_provider: string | null;
+          background_external_ref: string | null;
+          background_reviewed_at: string | null;
+          background_reviewed_by: string | null;
+          phone_verified_at: string | null;
+          email_verified_at: string | null;
+          training_completed_at: string | null;
+          assessment_passed_at: string | null;
+          activated_at: string | null;
+          trust_score: number;
+          reliability_score: number;
+          serious_flag_count: number;
+          requires_admin_review: boolean;
+          application: Json;
+          application_submitted_at: string | null;
+          maidlinx_verified: boolean;
+          verified_at: string | null;          created_at: string;
           updated_at: string;
         };
         Insert: {
@@ -522,7 +682,31 @@ export type Database = {
           onboarding_submitted_at?: string | null;
           onboarding_reviewed_at?: string | null;
           rejection_reason?: string | null;
-          created_at?: string;
+
+          platform_stage?: string;
+          identity_status?: string;
+          identity_provider?: string | null;
+          identity_external_ref?: string | null;
+          identity_reviewed_at?: string | null;
+          identity_reviewed_by?: string | null;
+          background_status?: string;
+          background_provider?: string | null;
+          background_external_ref?: string | null;
+          background_reviewed_at?: string | null;
+          background_reviewed_by?: string | null;
+          phone_verified_at?: string | null;
+          email_verified_at?: string | null;
+          training_completed_at?: string | null;
+          assessment_passed_at?: string | null;
+          activated_at?: string | null;
+          trust_score?: number;
+          reliability_score?: number;
+          serious_flag_count?: number;
+          requires_admin_review?: boolean;
+          application?: Json;
+          application_submitted_at?: string | null;
+          maidlinx_verified?: boolean;
+          verified_at?: string | null;          created_at?: string;
           updated_at?: string;
         };
         Update: {
@@ -555,6 +739,30 @@ export type Database = {
           onboarding_submitted_at?: string | null;
           onboarding_reviewed_at?: string | null;
           rejection_reason?: string | null;
+          platform_stage?: string;
+          identity_status?: string;
+          identity_provider?: string | null;
+          identity_external_ref?: string | null;
+          identity_reviewed_at?: string | null;
+          identity_reviewed_by?: string | null;
+          background_status?: string;
+          background_provider?: string | null;
+          background_external_ref?: string | null;
+          background_reviewed_at?: string | null;
+          background_reviewed_by?: string | null;
+          phone_verified_at?: string | null;
+          email_verified_at?: string | null;
+          training_completed_at?: string | null;
+          assessment_passed_at?: string | null;
+          activated_at?: string | null;
+          trust_score?: number;
+          reliability_score?: number;
+          serious_flag_count?: number;
+          requires_admin_review?: boolean;
+          application?: Json;
+          application_submitted_at?: string | null;
+          maidlinx_verified?: boolean;
+          verified_at?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -642,6 +850,8 @@ export type Database = {
           quote_id: string | null;
           coupon_code: string | null;
           idempotency_key: string | null;
+          legal_consent_accepted_at: string | null;
+          legal_consent_policy_version: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -726,6 +936,8 @@ export type Database = {
           quote_id?: string | null;
           coupon_code?: string | null;
           idempotency_key?: string | null;
+          legal_consent_accepted_at?: string | null;
+          legal_consent_policy_version?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -810,6 +1022,8 @@ export type Database = {
           quote_id?: string | null;
           coupon_code?: string | null;
           idempotency_key?: string | null;
+          legal_consent_accepted_at?: string | null;
+          legal_consent_policy_version?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -1100,6 +1314,191 @@ export type Database = {
         Update: Record<string, unknown>;
         Relationships: [];
       };
+      ai_audit_log: {
+        Row: {
+          id: string;
+          agent_id: string;
+          action: string;
+          permission_level: string;
+          actor_profile_id: string | null;
+          entity_type: string | null;
+          entity_id: string | null;
+          summary: string | null;
+          metadata: Json;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          agent_id: string;
+          action: string;
+          permission_level: string;
+          actor_profile_id?: string | null;
+          entity_type?: string | null;
+          entity_id?: string | null;
+          summary?: string | null;
+          metadata?: Json;
+          created_at?: string;
+        };
+        Update: Record<string, unknown>;
+        Relationships: [];
+      };
+      ai_action_approvals: {
+        Row: {
+          id: string;
+          agent_id: string;
+          action: string;
+          permission_level: string;
+          status: string;
+          requested_by_profile_id: string | null;
+          decided_by_profile_id: string | null;
+          entity_type: string | null;
+          entity_id: string | null;
+          summary: string;
+          payload: Json;
+          decided_at: string | null;
+          created_at: string;
+        };
+        Insert: Record<string, unknown>;
+        Update: Record<string, unknown>;
+        Relationships: [];
+      };
+      business_events: {
+        Row: {
+          id: string;
+          event_type: string;
+          entity_type: string;
+          entity_id: string;
+          idempotency_key: string;
+          actor_type: string | null;
+          actor_id: string | null;
+          source: string;
+          payload: Json;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          event_type: string;
+          entity_type: string;
+          entity_id: string;
+          idempotency_key: string;
+          actor_type?: string | null;
+          actor_id?: string | null;
+          source?: string;
+          payload?: Json;
+          created_at?: string;
+        };
+        Update: Record<string, unknown>;
+        Relationships: [];
+      };
+      ai_recommendations: {
+        Row: {
+          id: string;
+          agent_id: string;
+          recommendation_type: string;
+          permission_level: string;
+          status: string;
+          title: string;
+          summary: string | null;
+          entity_type: string | null;
+          entity_id: string | null;
+          potential_cents_estimate: number | null;
+          confidence: number | null;
+          evidence: string | null;
+          payload: Json;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: Record<string, unknown>;
+        Update: Record<string, unknown>;
+        Relationships: [];
+      };
+      ai_decisions: {
+        Row: {
+          id: string;
+          agent_id: string;
+          decision_type: string;
+          permission_level: string;
+          recommendation_id: string | null;
+          decided_by: string;
+          decided_by_profile_id: string | null;
+          outcome: string;
+          summary: string;
+          payload: Json;
+          created_at: string;
+        };
+        Insert: Record<string, unknown>;
+        Update: Record<string, unknown>;
+        Relationships: [];
+      };
+      ai_actions: {
+        Row: {
+          id: string;
+          agent_id: string;
+          action: string;
+          permission_level: string;
+          status: string;
+          decision_id: string | null;
+          approval_id: string | null;
+          entity_type: string | null;
+          entity_id: string | null;
+          summary: string;
+          simulation: boolean;
+          payload: Json;
+          error: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: Record<string, unknown>;
+        Update: Record<string, unknown>;
+        Relationships: [];
+      };
+      ai_exceptions: {
+        Row: {
+          id: string;
+          agent_id: string | null;
+          exception_type: string;
+          severity: string;
+          status: string;
+          entity_type: string | null;
+          entity_id: string | null;
+          summary: string;
+          payload: Json;
+          created_at: string;
+          resolved_at: string | null;
+        };
+        Insert: Record<string, unknown>;
+        Update: Record<string, unknown>;
+        Relationships: [];
+      };
+      ai_feature_flags: {
+        Row: {
+          key: string;
+          enabled: boolean;
+          description: string | null;
+          metadata: Json;
+          updated_by_profile_id: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          key: string;
+          enabled?: boolean;
+          description?: string | null;
+          metadata?: Json;
+          updated_by_profile_id?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          key?: string;
+          enabled?: boolean;
+          description?: string | null;
+          metadata?: Json;
+          updated_by_profile_id?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       admin_permissions: {
         Row: Record<string, unknown>;
         Insert: Record<string, unknown>;
@@ -1341,6 +1740,166 @@ export type Database = {
           consumed_by_booking_id?: string | null;
           created_at?: string;
         };
+        Relationships: [];
+      };
+      pricing_rules: {
+        Row: {
+          id: string;
+          scope: string;
+          market_id: string | null;
+          dynamic_pricing_enabled: boolean;
+          demand_mult_min: number;
+          demand_mult_max: number;
+          supply_mult_min: number;
+          supply_mult_max: number;
+          min_total_cents: number | null;
+          max_total_cents: number | null;
+          min_contribution_margin_cents: number;
+          min_contribution_margin_pct: number;
+          cleaner_hourly_cents: number;
+          cleaners_default: number;
+          travel_base_cents: number;
+          complexity_cents_per_point: number;
+          recurring_weekly_mult: number;
+          recurring_biweekly_mult: number;
+          recurring_monthly_mult: number;
+          lead_time_same_day_mult: number;
+          lead_time_next_day_mult: number;
+          weekend_mult: number;
+          evening_mult: number;
+          max_discount_stack_pct: number;
+          params: Json;
+          is_active: boolean;
+          updated_by: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: Record<string, unknown>;
+        Update: Record<string, unknown>;
+        Relationships: [];
+      };
+      pricing_quotes: {
+        Row: {
+          id: string;
+          booking_quote_id: string | null;
+          quote_token: string;
+          market_id: string | null;
+          currency: string;
+          service_type: string;
+          input_snapshot: Json;
+          public_breakdown: Json;
+          calculation_audit: Json;
+          cost_estimate_cents: number;
+          contribution_margin_cents: number;
+          guardrail_applied: boolean;
+          dynamic_pricing_applied: boolean;
+          demand_multiplier: number;
+          supply_multiplier: number;
+          experiment_id: string | null;
+          experiment_variant: string | null;
+          discount_stack: Json;
+          subtotal_cents: number;
+          platform_fee_cents: number;
+          discount_cents: number;
+          total_cents: number;
+          expires_at: string;
+          consumed_by_booking_id: string | null;
+          created_at: string;
+        };
+        Insert: Record<string, unknown>;
+        Update: Record<string, unknown>;
+        Relationships: [];
+      };
+      pricing_experiments: {
+        Row: {
+          id: string;
+          key: string;
+          name: string;
+          description: string | null;
+          status: string;
+          variants: Json;
+          market_id: string | null;
+          started_at: string | null;
+          ended_at: string | null;
+          auto_deploy_winner: boolean;
+          created_by: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: Record<string, unknown>;
+        Update: Record<string, unknown>;
+        Relationships: [];
+      };
+      pricing_experiment_assignments: {
+        Row: {
+          id: string;
+          experiment_id: string;
+          anonymous_session_id: string;
+          variant_id: string;
+          pricing_quote_id: string | null;
+          booking_id: string | null;
+          converted: boolean;
+          revenue_cents: number | null;
+          created_at: string;
+        };
+        Insert: Record<string, unknown>;
+        Update: Record<string, unknown>;
+        Relationships: [];
+      };
+      funnel_events: {
+        Row: {
+          id: string;
+          event_name: string;
+          anonymous_session_id: string | null;
+          profile_id: string | null;
+          booking_id: string | null;
+          market_id: string | null;
+          utm_source: string | null;
+          utm_medium: string | null;
+          utm_campaign: string | null;
+          utm_content: string | null;
+          utm_term: string | null;
+          device_category: string | null;
+          browser_category: string | null;
+          props: Json;
+          created_at: string;
+        };
+        Insert: Record<string, unknown>;
+        Update: Record<string, unknown>;
+        Relationships: [];
+      };
+      market_demand: {
+        Row: {
+          id: string;
+          market_id: string;
+          bucket_start: string;
+          bucket_end: string;
+          demand_index: number;
+          booking_requests: number;
+          paid_bookings: number;
+          source: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: Record<string, unknown>;
+        Update: Record<string, unknown>;
+        Relationships: [];
+      };
+      cleaner_supply: {
+        Row: {
+          id: string;
+          market_id: string;
+          bucket_start: string;
+          bucket_end: string;
+          supply_index: number;
+          active_cleaners: number;
+          available_cleaners: number;
+          source: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: Record<string, unknown>;
+        Update: Record<string, unknown>;
         Relationships: [];
       };
       notification_outbox: {
@@ -1636,6 +2195,36 @@ export type Database = {
           booking_id?: string;
           claimed_by?: string;
           guest_email?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      launch_waitlist: {
+        Row: {
+          id: string;
+          email: string;
+          name: string | null;
+          market_id: string | null;
+          source: string | null;
+          page: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          email: string;
+          name?: string | null;
+          market_id?: string | null;
+          source?: string | null;
+          page?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          email?: string;
+          name?: string | null;
+          market_id?: string | null;
+          source?: string | null;
+          page?: string | null;
           created_at?: string;
         };
         Relationships: [];

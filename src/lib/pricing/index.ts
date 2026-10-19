@@ -24,3 +24,11 @@ export {
   computeDiscountCents,
   PromoValidationError,
 } from "@/lib/pricing/promos";
+export { resolveServerPricing } from "@/lib/pricing/resolve";
+export {
+  runPricingEngine,
+  DEFAULT_PRICING_RULES,
+  enforceMinContributionMargin,
+  stackDiscounts,
+} from "@/lib/pricing/engine";
+

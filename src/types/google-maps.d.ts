@@ -54,7 +54,79 @@ declare global {
       sessionToken?: AutocompleteSessionToken;
     }
 
+    /** Places API (New) — FormattedText */
+    interface FormattedText {
+      text?: string;
+    }
+
+    /** Places API (New) — address component */
+    interface AddressComponent {
+      longText?: string;
+      shortText?: string;
+      types: string[];
+    }
+
+    /** Places API (New) — PlacePrediction */
+    interface PlacePrediction {
+      placeId?: string;
+      text?: FormattedText;
+      mainText?: FormattedText;
+      secondaryText?: FormattedText;
+      toPlace(): Place;
+    }
+
+    /** Places API (New) — one suggestion row */
+    interface AutocompleteSuggestionResult {
+      placePrediction?: PlacePrediction;
+    }
+
+    interface AutocompleteRequest {
+      input: string;
+      includedRegionCodes?: string[];
+      includedPrimaryTypes?: string[];
+      sessionToken?: AutocompleteSessionToken;
+      locationBias?:
+        | LatLngLiteral
+        | LatLngBoundsLiteral
+        | { center: LatLngLiteral; radius: number };
+      language?: string;
+      region?: string;
+    }
+
+    interface SearchNearbyRequest {
+      fields: string[];
+      locationRestriction: { center: LatLngLiteral; radius: number };
+      rankPreference?: "DISTANCE" | "POPULARITY" | string;
+      maxResultCount?: number;
+      includedTypes?: string[];
+    }
+
     class AutocompleteSessionToken {}
+
+    class AutocompleteSuggestion {
+      static fetchAutocompleteSuggestions(
+        autocompleteRequest: AutocompleteRequest,
+      ): Promise<{ suggestions: AutocompleteSuggestionResult[] }>;
+    }
+
+    /** Places API (New) — Place */
+    class Place {
+      static searchNearby(
+        request: SearchNearbyRequest,
+      ): Promise<{ places: Place[] }>;
+
+      id?: string;
+      formattedAddress?: string;
+      displayName?: string;
+      addressComponents?: AddressComponent[];
+      location?: {
+        lat(): number;
+        lng(): number;
+      };
+      types?: string[];
+
+      fetchFields(options: { fields: string[] }): Promise<{ place: Place }>;
+    }
 
     class AutocompleteService {
       getPlacePredictions(
@@ -99,8 +171,60 @@ declare global {
   }
 
   namespace google.maps {
-    // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-    interface Map {}
+    interface MapOptions {
+      center?: LatLngLiteral;
+      zoom?: number;
+      disableDefaultUI?: boolean;
+      gestureHandling?: string;
+      clickableIcons?: boolean;
+      mapTypeControl?: boolean;
+      streetViewControl?: boolean;
+      fullscreenControl?: boolean;
+      zoomControl?: boolean;
+      styles?: Array<Record<string, unknown>>;
+    }
+
+    class Map {
+      constructor(mapDiv: HTMLElement, opts?: MapOptions);
+      setCenter(latLng: LatLngLiteral): void;
+      fitBounds(bounds: LatLngBounds, padding?: number | Padding): void;
+      panTo(latLng: LatLngLiteral): void;
+    }
+
+    interface Padding {
+      top: number;
+      right: number;
+      bottom: number;
+      left: number;
+    }
+
+    class LatLngBounds {
+      extend(point: LatLngLiteral): void;
+      isEmpty(): boolean;
+    }
+
+    interface MarkerOptions {
+      map?: Map | null;
+      position?: LatLngLiteral;
+      title?: string;
+      label?: string | { text: string; color?: string; fontWeight?: string };
+      icon?:
+        | string
+        | {
+            path?: unknown;
+            scale?: number;
+            fillColor?: string;
+            fillOpacity?: number;
+            strokeWeight?: number;
+            strokeColor?: string;
+          };
+    }
+
+    class Marker {
+      constructor(opts?: MarkerOptions);
+      setPosition(latLng: LatLngLiteral): void;
+      setMap(map: Map | null): void;
+    }
 
     interface LatLngLiteral {
       lat: number;
@@ -132,6 +256,8 @@ declare global {
         ) => void,
       ): void;
     }
+
+    function importLibrary(name: string): Promise<Record<string, unknown>>;
 
     namespace event {
       function removeListener(listener: MapsEventListener): void;

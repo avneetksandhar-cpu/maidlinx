@@ -1,6 +1,6 @@
 import { Suspense } from "react";
-import { AdminLineChart } from "@/components/admin/admin-charts";
 import { AdminHeader, AdminStatCard } from "@/components/admin/admin-header";
+import { AdminLineChart } from "@/components/admin/admin-charts";
 import { Card, CardContent } from "@/components/ui";
 import { getPlatformMetrics, getRevenueTrend } from "@/lib/admin/metrics";
 import { requireAdminPermission } from "@/lib/admin/session";
@@ -14,15 +14,28 @@ async function RevenueContent() {
 
   return (
     <>
-      <AdminHeader title="Revenue" description="Platform revenue, fees, and payout breakdown." />
+      <AdminHeader
+        title="Revenue"
+        description="Real booking metrics only — no invented production numbers."
+      />
 
       <div className="mb-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <AdminStatCard label="Gross revenue" value={formatAdminCurrency(metrics.totalRevenueCents)} />
-        <AdminStatCard label="Platform fees" value={formatAdminCurrency(metrics.platformFeesCents)} />
-        <AdminStatCard label="Pro payouts" value={formatAdminCurrency(metrics.proPayoutsCents)} />
+        <AdminStatCard label="Bookings (all)" value={String(metrics.totalBookings)} />
+        <AdminStatCard label="Completed" value={String(metrics.completedBookings)} />
         <AdminStatCard
-          label="Fee rate"
-          value={`${metrics.totalRevenueCents > 0 ? Math.round((metrics.platformFeesCents / metrics.totalRevenueCents) * 100) : 0}%`}
+          label="AOV (completed)"
+          value={formatAdminCurrency(metrics.averageOrderValueCents)}
+        />
+        <AdminStatCard label="Repeat rate" value={`${metrics.repeatRatePercent}%`} />
+        <AdminStatCard label="Cancel rate" value={`${metrics.cancelRatePercent}%`} />
+        <AdminStatCard label="Gross revenue" value={formatAdminCurrency(metrics.totalRevenueCents)} />
+        <AdminStatCard
+          label="Cleaner earnings"
+          value={formatAdminCurrency(metrics.proPayoutsCents)}
+        />
+        <AdminStatCard
+          label="Platform margin"
+          value={formatAdminCurrency(metrics.platformMarginCents)}
         />
       </div>
 

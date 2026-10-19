@@ -1,0 +1,43 @@
+{
+  "expo": {
+    "name": "Wingman",
+    "slug": "wingman",
+    "scheme": "wingman",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "icon": "./assets/icon.png",
+    "splash": {
+      "image": "./assets/splash-bg.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#09090d"
+    },
+    "platforms": ["ios"],
+    "ios": {
+      "bundleIdentifier": "com.wingman.miami",
+      "buildNumber": "1",
+      "supportsTablet": false,
+      "usesNonExemptEncryption": false,
+      "infoPlist": {
+        "NSAppTransportSecurity": {
+          "NSAllowsArbitraryLoads": false
+        },
+        "ITSAppUsesNonExemptEncryption": false
+      },
+      "privacyManifests": {
+        "NSPrivacyAccessedAPITypes": [
+          {
+            "NSPrivacyAccessedAPIType": "NSPrivacyAccessedAPICategoryUserDefaults",
+            "NSPrivacyAccessedAPITypeReasons": ["CA92.1"]
+          }
+        ]
+      }
+    },
+    "plugins": ["expo-router"],
+    "extra": {
+      "eas": {
+        "projectId": ""
+      }
+    }
+  }
+}

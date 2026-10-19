@@ -2,14 +2,16 @@ import type { BookingState } from "@/lib/bookings/booking-state";
 import { isQuoteOnlyService } from "@/config/services";
 
 /**
- * Multi-screen booking funnel routes (one decision per screen).
+ * Multi-screen booking funnel — address-first (founder UX):
+ * Welcome → Address → Category → Service → Details → …
  * Paths are App Router destinations under /book/*.
  */
 export const BOOKING_SCREENS = [
-  { id: "address", path: "/book/address", label: "Address", shortLabel: "Where" },
-  { id: "property", path: "/book/property", label: "Property", shortLabel: "Type" },
-  { id: "details", path: "/book/details", label: "Details", shortLabel: "Details" },
+  { id: "welcome", path: "/book/welcome", label: "Welcome", shortLabel: "Start" },
+  { id: "address", path: "/book/address", label: "Property", shortLabel: "Where" },
+  { id: "property", path: "/book/property", label: "Category", shortLabel: "What" },
   { id: "service", path: "/book/service", label: "Service", shortLabel: "Clean" },
+  { id: "details", path: "/book/details", label: "Details", shortLabel: "Details" },
   { id: "addons", path: "/book/addons", label: "Add-ons", shortLabel: "Extras" },
   { id: "date", path: "/book/date", label: "Date", shortLabel: "Date" },
   { id: "time", path: "/book/time", label: "Time", shortLabel: "Time" },
@@ -47,7 +49,7 @@ export function bookingPath(id: BookingScreenId, query?: Record<string, string>)
 
 export function bookingStatusPath(id: string, token?: string | null): string {
   const q = token ? `?token=${encodeURIComponent(token)}` : "";
-  return `/booking/${id}${q}`;
+  return `/bookings/${id}${q}`;
 }
 
 export function isAddressComplete(state: BookingState): boolean {
@@ -127,41 +129,47 @@ export function isReviewReady(state: BookingState): boolean {
   return (
     isAddressComplete(state) &&
     isPropertyComplete(state) &&
-    isDetailsComplete(state) &&
     isServiceComplete(state) &&
+    isDetailsComplete(state) &&
     isExtrasComplete(state) &&
     isScheduleComplete(state)
   );
 }
 
+/**
+ * Guard: prerequisites that must be true before entering a screen.
+ * Welcome + address have no category prerequisites (address-first).
+ */
 const COMPLETION: Record<BookingScreenId, (state: BookingState) => boolean> = {
+  welcome: () => true,
   address: () => true,
   property: isAddressComplete,
-  details: (s) => isAddressComplete(s) && isPropertyComplete(s),
-  service: (s) => isAddressComplete(s) && isPropertyComplete(s) && isDetailsComplete(s),
+  service: (s) => isAddressComplete(s) && isPropertyComplete(s),
+  details: (s) =>
+    isAddressComplete(s) && isPropertyComplete(s) && isServiceComplete(s),
   addons: (s) =>
     isAddressComplete(s) &&
     isPropertyComplete(s) &&
-    isDetailsComplete(s) &&
-    isServiceComplete(s),
+    isServiceComplete(s) &&
+    isDetailsComplete(s),
   date: (s) =>
     isAddressComplete(s) &&
     isPropertyComplete(s) &&
-    isDetailsComplete(s) &&
     isServiceComplete(s) &&
+    isDetailsComplete(s) &&
     isExtrasComplete(s),
   time: (s) =>
     isAddressComplete(s) &&
     isPropertyComplete(s) &&
-    isDetailsComplete(s) &&
     isServiceComplete(s) &&
+    isDetailsComplete(s) &&
     isExtrasComplete(s) &&
     isDateComplete(s),
   access: (s) =>
     isAddressComplete(s) &&
     isPropertyComplete(s) &&
-    isDetailsComplete(s) &&
     isServiceComplete(s) &&
+    isDetailsComplete(s) &&
     isExtrasComplete(s) &&
     isScheduleComplete(s),
   review: isReviewReady,
@@ -194,8 +202,8 @@ export function getGuardRedirect(
 
   if (!isAddressComplete(state)) return BOOKING_SCREEN_PATHS.address;
   if (!isPropertyComplete(state)) return BOOKING_SCREEN_PATHS.property;
-  if (!isDetailsComplete(state)) return BOOKING_SCREEN_PATHS.details;
   if (!isServiceComplete(state)) return BOOKING_SCREEN_PATHS.service;
+  if (!isDetailsComplete(state)) return BOOKING_SCREEN_PATHS.details;
   if (!isExtrasComplete(state)) return BOOKING_SCREEN_PATHS.addons;
   if (!isDateComplete(state)) return BOOKING_SCREEN_PATHS.date;
   if (!isTimeComplete(state)) return BOOKING_SCREEN_PATHS.time;
@@ -210,12 +218,15 @@ export function getPreviousScreen(
   if (index <= 0) return null;
 
   let prev = BOOKING_SCREENS[index - 1]!.id;
+  if (prev === "welcome") {
+    return "welcome";
+  }
   if (
     prev === "addons" &&
     state.serviceType &&
     isQuoteOnlyService(state.serviceType)
   ) {
-    prev = "service";
+    prev = "details";
   }
   if (prev === "time" && state.schedulePreset === "asap") {
     prev = "date";
@@ -244,7 +255,7 @@ export function getNextScreen(
   return next;
 }
 
-/** Resolve entry for /book — returning customers with a saved usual can jump ahead lightly. */
+/** Resolve entry for /book — address-first (skip welcome splash). */
 export function getBookingEntryPath(options?: {
   hasUsualClean?: boolean;
   prefillAddress?: boolean;
@@ -254,10 +265,23 @@ export function getBookingEntryPath(options?: {
   return BOOKING_SCREEN_PATHS.address;
 }
 
+/**
+ * Furthest incomplete screen for abandoned-draft recovery.
+ */
+export function getFurthestScreenPath(state: BookingState): string {
+  if (!isAddressComplete(state)) return BOOKING_SCREEN_PATHS.address;
+  if (!isPropertyComplete(state)) return BOOKING_SCREEN_PATHS.property;
+  if (!isServiceComplete(state)) return BOOKING_SCREEN_PATHS.service;
+  if (!isDetailsComplete(state)) return BOOKING_SCREEN_PATHS.details;
+  if (!isExtrasComplete(state)) return BOOKING_SCREEN_PATHS.addons;
+  if (!isDateComplete(state)) return BOOKING_SCREEN_PATHS.date;
+  if (!isTimeComplete(state)) return BOOKING_SCREEN_PATHS.time;
+  if (!isAccessComplete()) return BOOKING_SCREEN_PATHS.access;
+  if (!isReviewReady(state)) return BOOKING_SCREEN_PATHS.review;
+  return BOOKING_SCREEN_PATHS.payment;
+}
+
 export function isBookingFlowPathname(pathname: string): boolean {
-  return (
-    pathname === "/book" ||
-    pathname.startsWith("/book/") ||
-    pathname.startsWith("/booking/")
-  );
+  // Post-booking `/bookings/*` uses the customer shell — not the question funnel.
+  return pathname === "/book" || pathname.startsWith("/book/");
 }

@@ -22,18 +22,24 @@ export function AdminLineChart({
   return (
     <div className={cn("space-y-3", className)}>
       <div className="flex h-48 items-end gap-1 border-b border-border pb-2">
-        {data.map((point) => {
-          const height = (point.value / max) * 100;
-          return (
-            <div key={point.label} className="group flex flex-1 flex-col items-center gap-1">
-              <div
-                className="w-full rounded-t bg-gold/80 transition-all group-hover:bg-gold"
-                style={{ height: `${Math.max(height, 2)}%` }}
-                title={`${point.label}: ${fmt(point.value)}`}
-              />
-            </div>
-          );
-        })}
+        {data.length === 0 || data.every((d) => d.value === 0) ? (
+          <p className="flex h-full w-full items-center justify-center text-sm text-ink-muted">
+            No data yet
+          </p>
+        ) : (
+          data.map((point) => {
+            const height = point.value <= 0 ? 0 : (point.value / max) * 100;
+            return (
+              <div key={point.label} className="group flex flex-1 flex-col items-center gap-1">
+                <div
+                  className="w-full rounded-t bg-gold/80 transition-all group-hover:bg-gold"
+                  style={{ height: `${height}%` }}
+                  title={`${point.label}: ${fmt(point.value)}`}
+                />
+              </div>
+            );
+          })
+        )}
       </div>
       <div className="flex gap-1 overflow-hidden">
         {data.filter((_, i) => i % Math.ceil(data.length / 7) === 0).map((point) => (
@@ -55,6 +61,12 @@ export function AdminBarChart({
 }) {
   const max = Math.max(...data.map((d) => d.value), 1);
 
+  if (data.length === 0) {
+    return (
+      <p className={cn("py-6 text-center text-sm text-ink-muted", className)}>No data yet</p>
+    );
+  }
+
   return (
     <div className={cn("space-y-3", className)}>
       {data.map((point) => (
@@ -66,7 +78,7 @@ export function AdminBarChart({
           <div className="h-2 overflow-hidden rounded-full bg-surface-muted">
             <div
               className="h-full rounded-full bg-ink transition-all"
-              style={{ width: `${(point.value / max) * 100}%` }}
+              style={{ width: `${point.value <= 0 ? 0 : (point.value / max) * 100}%` }}
             />
           </div>
         </div>
@@ -82,12 +94,18 @@ export function AdminDonutChart({
   data: ChartPoint[];
   className?: string;
 }) {
-  const total = data.reduce((s, d) => s + d.value, 0) || 1;
+  const rawTotal = data.reduce((s, d) => s + d.value, 0);
   const colors = ["#0f1f3d", "#0d9488", "#4a5568", "#718096", "#14b8a6", "#e2e8f0"];
+
+  if (data.length === 0 || rawTotal === 0) {
+    return (
+      <p className={cn("py-6 text-center text-sm text-ink-muted", className)}>No data yet</p>
+    );
+  }
 
   let cumulative = 0;
   const segments = data.map((point, i) => {
-    const pct = point.value / total;
+    const pct = point.value / rawTotal;
     const start = cumulative;
     cumulative += pct;
     return { ...point, start, pct, color: colors[i % colors.length] };
@@ -101,7 +119,7 @@ export function AdminDonutChart({
     <div className={cn("flex flex-wrap items-center gap-6", className)}>
       <div
         className="h-36 w-36 shrink-0 rounded-full"
-        style={{ background: total > 0 ? `conic-gradient(${gradient})` : "#e5e5e5" }}
+        style={{ background: `conic-gradient(${gradient})` }}
       />
       <div className="space-y-2">
         {data.map((point, i) => (

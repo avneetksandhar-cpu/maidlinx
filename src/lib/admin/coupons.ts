@@ -9,6 +9,7 @@ export interface Coupon {
   discountValue: number;
   minOrderCents: number;
   maxUses: number | null;
+  maxUsesPerCustomer?: number | null;
   usedCount: number;
   validFrom: string | null;
   validUntil: string | null;
@@ -37,6 +38,8 @@ function mapCoupon(row: Record<string, unknown>): Coupon {
     discountValue: Number(row.discount_value),
     minOrderCents: Number(row.min_order_cents),
     maxUses: row.max_uses ? Number(row.max_uses) : null,
+    maxUsesPerCustomer:
+      row.max_uses_per_customer != null ? Number(row.max_uses_per_customer) : null,
     usedCount: Number(row.used_count),
     validFrom: row.valid_from ? String(row.valid_from) : null,
     validUntil: row.valid_until ? String(row.valid_until) : null,
@@ -59,11 +62,12 @@ export async function createCoupon(
       discount_value: input.discountValue,
       min_order_cents: input.minOrderCents,
       max_uses: input.maxUses,
+      max_uses_per_customer: input.maxUsesPerCustomer ?? null,
       valid_from: input.validFrom,
       valid_until: input.validUntil,
       is_active: input.isActive,
       created_by: adminId,
-    })
+    } as never)
     .select("*")
     .single();
 

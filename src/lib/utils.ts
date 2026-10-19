@@ -1,5 +1,6 @@
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
+import { getSiteUrl } from "@/config/env";
 
 export function cn(...inputs: ClassValue[]): string {
   return twMerge(clsx(inputs));
@@ -16,8 +17,9 @@ export function formatCurrency(
   }).format(amountInCents / 100);
 }
 
+/** Absolute app URL. Uses getSiteUrl() — never hardcodes localhost in production. */
 export function absoluteUrl(path: string): string {
-  const base = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+  const base = getSiteUrl();
   return `${base.replace(/\/$/, "")}${path.startsWith("/") ? path : `/${path}`}`;
 }
 

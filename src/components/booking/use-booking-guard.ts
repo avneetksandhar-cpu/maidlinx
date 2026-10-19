@@ -4,9 +4,15 @@ import { useEffect, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
 import { useBooking } from "@/components/booking/booking-provider";
 import {
+  BOOKING_SCREEN_PATHS,
   getGuardRedirect,
   type BookingScreenId,
 } from "@/lib/bookings/booking-routes";
+import {
+  bookingSignInHref,
+  isBookingAuthRequired,
+} from "@/lib/bookings/booking-auth";
+import { useAuthSession } from "@/hooks/use-auth-session";
 import { trackBookingScreen, trackFunnelEvent } from "@/lib/analytics/booking-funnel";
 
 function subscribeToUrl(onStoreChange: () => void) {
@@ -22,10 +28,11 @@ function getResumeParamServerSnapshot(): boolean {
   return false;
 }
 
-/** Redirect back if prior required steps are incomplete. */
+/** Redirect back if prior required steps are incomplete; auth after address. */
 export function useBookingGuard(screenId: BookingScreenId) {
   const router = useRouter();
   const { state, hydrated } = useBooking();
+  const authStatus = useAuthSession();
   const resumeParam = useSyncExternalStore(
     subscribeToUrl,
     getResumeParamSnapshot,
@@ -34,6 +41,10 @@ export function useBookingGuard(screenId: BookingScreenId) {
 
   const allowResumePayment =
     screenId === "payment" && Boolean(resumeParam || state.bookingId);
+
+  const needsAuth = isBookingAuthRequired(screenId);
+  const authBlocked = needsAuth && authStatus === "guest";
+  const authLoading = needsAuth && authStatus === "loading";
 
   useEffect(() => {
     if (!hydrated) return;
@@ -46,8 +57,13 @@ export function useBookingGuard(screenId: BookingScreenId) {
         to: redirect,
       });
       router.replace(redirect);
+      return;
     }
-  }, [hydrated, screenId, state, router, allowResumePayment]);
+    if (authBlocked) {
+      const resumePath = BOOKING_SCREEN_PATHS[screenId];
+      router.replace(bookingSignInHref(resumePath));
+    }
+  }, [hydrated, screenId, state, router, allowResumePayment, authBlocked]);
 
   useEffect(() => {
     if (!hydrated) return;
@@ -56,16 +72,16 @@ export function useBookingGuard(screenId: BookingScreenId) {
       return;
     }
     const redirect = getGuardRedirect(screenId, state);
-    if (redirect) return;
+    if (redirect || authBlocked || authLoading) return;
     trackBookingScreen(screenId);
-  }, [hydrated, screenId, allowResumePayment]); // eslint-disable-line react-hooks/exhaustive-deps -- fire once per allowed screen
+  }, [hydrated, screenId, allowResumePayment, authBlocked, authLoading]); // eslint-disable-line react-hooks/exhaustive-deps -- fire once per allowed screen
 
   const blocked =
-    !hydrated
+    !hydrated || authLoading
       ? true
       : allowResumePayment
         ? false
-        : Boolean(getGuardRedirect(screenId, state));
+        : Boolean(getGuardRedirect(screenId, state)) || authBlocked;
 
-  return { state, hydrated, blocked };
+  return { state, hydrated, blocked, authStatus };
 }

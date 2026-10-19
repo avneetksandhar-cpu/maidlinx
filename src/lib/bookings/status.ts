@@ -72,6 +72,17 @@ export const ACTIVE_JOB_STATUSES: BookingStatus[] = [
   "in_progress",
 ];
 
+/**
+ * Statuses where customer live-map tracking is allowed (cleaner en route / arrived).
+ * Maps to marketplace `on_the_way` / `arrived` (not a separate EN_ROUTE enum).
+ */
+export const LIVE_LOCATION_STATUSES: BookingStatus[] = ["on_the_way", "arrived"];
+
+export function isLiveLocationStatus(status: string): boolean {
+  const normalized = normalizeBookingStatus(status);
+  return (LIVE_LOCATION_STATUSES as readonly string[]).includes(normalized);
+}
+
 /** Jobs visible in the cleaner marketplace (unassigned, paid). */
 export const AVAILABLE_JOB_STATUSES: BookingStatus[] = ["awaiting_assignment", "offered"];
 

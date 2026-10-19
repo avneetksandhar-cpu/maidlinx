@@ -1,12 +1,12 @@
 "use client";
 
 import { useMemo } from "react";
-import { Check, Zap, Sun, CalendarDays, CalendarRange } from "lucide-react";
+import { Zap, Sun, CalendarDays, CalendarRange } from "lucide-react";
 import { ARRIVAL_WINDOWS, type ArrivalWindowId } from "@/lib/bookings/constants";
 import type { SchedulePreset } from "@/lib/bookings/booking-state";
 import { resolveSchedulePreset } from "@/lib/bookings/schedule-presets";
 import { suggestArrivalWindows } from "@/lib/availability/windows";
-import { Input, Label } from "@/components/ui";
+import { BookingCalendar } from "@/components/booking/booking-calendar";
 import { cn } from "@/lib/utils";
 
 const PRESETS: Array<{
@@ -61,7 +61,9 @@ export function ScheduleWhenSelector({
     (mode === "time" || mode === "all") &&
     Boolean(schedulePreset) &&
     (mode === "time" || schedulePreset !== "asap");
-  const showDatePicker = showPresets && schedulePreset === "date";
+  const showDatePicker =
+    (showPresets && schedulePreset === "date") ||
+    (mode === "date" && Boolean(schedulePreset));
 
   const suggestedWindows = useMemo(() => {
     if (!date || !showWindows) return [];
@@ -69,7 +71,7 @@ export function ScheduleWhenSelector({
       marketId: marketId || "UNKNOWN",
       date,
       durationMinutes,
-      // V1: no live supply — architecture ready via supplyByWindow later.
+      // V1: no invented supply — architecture ready via supplyByWindow later.
     });
   }, [date, durationMinutes, marketId, showWindows]);
 
@@ -87,77 +89,77 @@ export function ScheduleWhenSelector({
   return (
     <div className="space-y-6">
       {showPresets ? (
-      <fieldset>
-        <legend className="mb-3 block text-sm font-medium text-ink-muted">
-          When do you need us?
-        </legend>
-        <div className="grid grid-cols-2 gap-2.5">
-          {PRESETS.map((preset) => {
-            const selected = schedulePreset === preset.id;
-            const Icon = preset.icon;
-            return (
-              <button
-                key={preset.id}
-                type="button"
-                onClick={() => {
-                  const resolved = resolveSchedulePreset(preset.id, {
-                    date,
-                    arrivalWindow: arrivalWindow as ArrivalWindowId | undefined,
-                  });
-                  onPresetChange(preset.id, resolved);
-                }}
-                aria-pressed={selected}
-                data-selected={selected}
-                className={cn(
-                  "flex min-h-[4.75rem] flex-col items-start gap-1.5 rounded-xl border border-border bg-surface p-3.5 text-left transition-all duration-150",
-                  "hover:border-border-strong active:scale-[0.98]",
-                  selected && "border-accent bg-accent-muted",
-                )}
-              >
-                <Icon
-                  className={cn("size-4", selected ? "text-accent" : "text-navy")}
-                  strokeWidth={2}
-                  aria-hidden
-                />
-                <span className="text-sm font-semibold text-ink">{preset.label}</span>
-                <span className="text-xs text-ink-muted">{preset.description}</span>
-              </button>
-            );
-          })}
-        </div>
-        {errors.schedulePreset ? (
-          <p className="mt-2 text-sm text-error">{errors.schedulePreset}</p>
-        ) : null}
-      </fieldset>
+        <fieldset>
+          <legend className="mb-3 block text-[15px] font-medium text-[var(--ml-dark-ink)]">
+            When do you need us?
+          </legend>
+          <div className="grid grid-cols-2 gap-2.5">
+            {PRESETS.map((preset) => {
+              const selected = schedulePreset === preset.id;
+              const Icon = preset.icon;
+              return (
+                <button
+                  key={preset.id}
+                  type="button"
+                  onClick={() => {
+                    const resolved = resolveSchedulePreset(preset.id, {
+                      date,
+                      arrivalWindow: arrivalWindow as ArrivalWindowId | undefined,
+                    });
+                    onPresetChange(preset.id, resolved);
+                  }}
+                  aria-pressed={selected}
+                  data-selected={selected}
+                  className={cn(
+                    "flex min-h-[4.25rem] flex-col items-start gap-1 rounded-2xl border p-3.5 text-left transition-all duration-200",
+                    "hover:border-[var(--ml-dark-border-strong)] active:scale-[0.99]",
+                    selected
+                      ? "border-[var(--ml-dark-mint)] bg-[var(--ml-dark-surface)] shadow-[0_0_0_1px_rgb(8_224_212_/_0.3)]"
+                      : "border-[var(--ml-dark-border)] bg-[var(--ml-dark-surface)]",
+                  )}
+                >
+                  <Icon
+                    className={cn(
+                      "size-4",
+                      selected ? "text-[var(--ml-dark-mint)]" : "text-[var(--ml-dark-ink)]",
+                    )}
+                    strokeWidth={2}
+                    aria-hidden
+                  />
+                  <span className="text-[15px] font-semibold text-[var(--ml-dark-ink)]">
+                    {preset.label}
+                  </span>
+                  <span className="text-sm text-[var(--ml-dark-ink-muted)]">
+                    {preset.description}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+          {errors.schedulePreset ? (
+            <p className="mt-2 text-sm text-error">{errors.schedulePreset}</p>
+          ) : null}
+        </fieldset>
       ) : null}
 
       {showDatePicker ? (
         <div>
-          <Label htmlFor="date" className="text-sm text-ink-muted">
-            Preferred date
-          </Label>
-          <Input
-            id="date"
-            type="date"
-            min={minDate}
-            value={date ?? ""}
-            onChange={(e) => onDateChange(e.target.value)}
-            invalid={Boolean(errors.date)}
-            className="booking-input-lg mt-2 rounded-xl"
+          <p className="mb-3 text-[15px] font-medium text-[var(--ml-dark-ink)]">Preferred date</p>
+          <BookingCalendar
+            value={date}
+            minDate={minDate}
+            onChange={onDateChange}
+            error={errors.date}
           />
-          {errors.date ? <p className="mt-2 text-sm text-error">{errors.date}</p> : null}
         </div>
       ) : null}
 
       {showWindows ? (
         <fieldset>
-          <legend className="mb-3 block text-sm font-medium text-ink-muted">
-            Arrival window
-            <span className="ml-1 font-normal text-ink-subtle">
-              (preference — live availability coming soon)
-            </span>
+          <legend className="mb-3 block text-[15px] font-medium text-[var(--ml-dark-ink)]">
+            Available times
           </legend>
-          <div className="grid gap-2.5">
+          <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3">
             {windows.map((window) => {
               const selected = arrivalWindow === window.id;
               const disabled = window.available === false;
@@ -170,28 +172,14 @@ export function ScheduleWhenSelector({
                   aria-pressed={selected}
                   data-selected={selected}
                   className={cn(
-                    "booking-select-card items-start",
-                    disabled && "cursor-not-allowed opacity-45",
+                    "rounded-2xl border px-3 py-3.5 text-center text-sm font-semibold transition-all duration-150",
+                    disabled && "cursor-not-allowed opacity-40",
+                    selected
+                      ? "border-transparent bg-[var(--ml-dark-mint)] text-[var(--color-accent-foreground)] shadow-[0_0_20px_rgb(8_224_212_/_0.28)]"
+                      : "border-[var(--ml-dark-border)] bg-[var(--ml-dark-surface)] text-[var(--ml-dark-ink)] hover:border-[var(--ml-dark-border-strong)]",
                   )}
                 >
-                  <span className="min-w-0 flex-1">
-                    <span className="block text-base font-semibold text-ink">{window.label}</span>
-                    <span className="mt-0.5 block text-sm text-ink-muted">
-                      {window.description}
-                      {disabled ? " · Unavailable" : ""}
-                    </span>
-                  </span>
-                  <span
-                    className={cn(
-                      "mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full border-2 transition-colors duration-150",
-                      selected
-                        ? "border-accent bg-accent text-white"
-                        : "border-border bg-surface text-transparent",
-                    )}
-                    aria-hidden
-                  >
-                    <Check className="size-3.5" strokeWidth={3} />
-                  </span>
+                  {window.label}
                 </button>
               );
             })}
@@ -203,8 +191,8 @@ export function ScheduleWhenSelector({
       ) : null}
 
       {(mode === "date" || mode === "all") && schedulePreset === "asap" && date ? (
-        <p className="rounded-xl bg-accent-muted/60 px-4 py-3 text-sm text-ink">
-          We&apos;ll aim for the soonest window today
+        <p className="rounded-2xl border border-[var(--ml-dark-border)] bg-[var(--ml-dark-surface)] px-4 py-3.5 text-[15px] text-[var(--ml-dark-ink-muted)]">
+          We&apos;ll aim for the soonest available window
           {arrivalWindow
             ? ` (${ARRIVAL_WINDOWS.find((w) => w.id === arrivalWindow)?.label?.toLowerCase()})`
             : ""}
@@ -213,7 +201,9 @@ export function ScheduleWhenSelector({
       ) : null}
 
       {mode === "time" && !date ? (
-        <p className="text-sm text-ink-muted">Pick a day first, then choose a window.</p>
+        <p className="text-[15px] text-[var(--ml-dark-ink-muted)]">
+          Pick a day first, then choose a window.
+        </p>
       ) : null}
     </div>
   );

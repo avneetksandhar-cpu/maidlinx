@@ -1,4 +1,4 @@
-import { jsonError, jsonSuccess } from "@/lib/api/response";
+import { adminCatchStatus, jsonError, jsonSuccess } from "@/lib/api/response";
 import { getAuditHistory } from "@/lib/admin/audit";
 import { getSystemLogs } from "@/lib/admin/audit";
 import { listAdminUsers, updateAdminPermissions } from "@/lib/admin/permissions-store";
@@ -30,7 +30,7 @@ export async function GET(request: Request) {
 
     return jsonError("Invalid type.", 400);
   } catch (error) {
-    return jsonError(error instanceof Error ? error.message : "Unable to load.", 403);
+    return jsonError(error instanceof Error ? error.message : "Unable to load.", adminCatchStatus(error));
   }
 }
 

@@ -1,4 +1,4 @@
-import { StubPage } from "@/components/layout/StubPage";
+import { OperatorDashboard } from "@/features/operator/components/OperatorDashboard";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -6,10 +6,5 @@ export const metadata: Metadata = {
 };
 
 export default function AdminPage() {
-  return (
-    <StubPage
-      title="Admin"
-      description="Host verification, experience management, and analytics. Coming soon."
-    />
-  );
+  return <OperatorDashboard />;
 }
