@@ -13,14 +13,29 @@ interface AuthFormProps {
   mode: AuthMode;
 }
 
+function buildAuthHref(base: string, role: string, next: string) {
+  const params = new URLSearchParams();
+  if (role === "cleaner") params.set("role", "cleaner");
+  if (next) params.set("next", next);
+  const qs = params.toString();
+  return qs ? `${base}?${qs}` : base;
+}
+
 export function AuthForm({ mode }: AuthFormProps) {
   const supabase = useSupabase();
   const router = useRouter();
   const searchParams = useSearchParams();
   const roleParam = searchParams?.get("role");
-  const signupRole = roleParam === "cleaner" ? "cleaner" : "customer";
-  const defaultNext = signupRole === "cleaner" ? routes.proHome : routes.account;
-  const nextPath = searchParams?.get("next") ?? defaultNext;
+  const nextParam = searchParams?.get("next") ?? "";
+  const signupRole =
+    roleParam === "cleaner" ||
+    nextParam.startsWith("/cleaner") ||
+    nextParam.startsWith("/pro")
+      ? "cleaner"
+      : "customer";
+  const defaultNext =
+    signupRole === "cleaner" ? routes.cleanerApplication : routes.account;
+  const nextPath = nextParam || defaultNext;
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -31,7 +46,11 @@ export function AuthForm({ mode }: AuthFormProps) {
   const [error, setError] = useState<string | null>(null);
 
   const submitLabel = mode === "sign-in" ? "Sign in" : "Create account";
-  const alternateHref = mode === "sign-in" ? routes.signUp : routes.signIn;
+  const alternateHref = buildAuthHref(
+    mode === "sign-in" ? routes.signUp : routes.signIn,
+    signupRole,
+    nextPath,
+  );
   const alternateLabel =
     mode === "sign-in" ? "Need an account? Sign up" : "Already have an account? Sign in";
 
@@ -39,6 +58,19 @@ export function AuthForm({ mode }: AuthFormProps) {
     () => !supabase || !email || !password || (mode === "sign-up" && (!firstName || !lastName)),
     [supabase, email, password, mode, firstName, lastName],
   );
+
+  async function finalizeCleanerApplicant() {
+    if (signupRole !== "cleaner") return;
+    const res = await fetch("/api/auth/cleaner-applicant", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ explicit: true, next: nextPath }),
+    });
+    const json = (await res.json().catch(() => ({}))) as { error?: string };
+    if (!res.ok) {
+      throw new Error(json.error ?? "Could not start cleaner application.");
+    }
+  }
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -58,13 +90,14 @@ export function AuthForm({ mode }: AuthFormProps) {
           password,
         });
         if (signInError) throw signInError;
+        await finalizeCleanerApplicant();
         router.push(nextPath);
         router.refresh();
         return;
       }
 
       const redirectTo = `${window.location.origin}/auth/callback?next=${encodeURIComponent(nextPath)}`;
-      const { error: signUpError } = await supabase.auth.signUp({
+      const { data, error: signUpError } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -78,7 +111,18 @@ export function AuthForm({ mode }: AuthFormProps) {
       });
       if (signUpError) throw signUpError;
 
-      setMessage("Check your email to confirm your account, then sign in.");
+      if (data.session) {
+        await finalizeCleanerApplicant();
+        router.push(nextPath);
+        router.refresh();
+        return;
+      }
+
+      setMessage(
+        signupRole === "cleaner"
+          ? "Check your email to confirm your account. After confirming you’ll continue to the cleaner application."
+          : "Check your email to confirm your account, then sign in.",
+      );
     } catch (err) {
       setError(err instanceof Error ? err.message : "Authentication failed.");
     } finally {
@@ -101,6 +145,12 @@ export function AuthForm({ mode }: AuthFormProps) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
+      {signupRole === "cleaner" ? (
+        <p className="rounded-xl border border-[var(--ml-dark-border)] bg-[var(--ml-dark-surface)] px-3 py-2 text-sm text-[var(--ml-dark-ink-muted)]">
+          Cleaner apply · create account → application → pending review → approved jobs
+        </p>
+      ) : null}
+
       {mode === "sign-up" ? (
         <div className="grid gap-4 sm:grid-cols-2">
           <div>

@@ -21,6 +21,23 @@ function homeForRole(role: UserRole): string {
   return "/account";
 }
 
+function isSafeNextPath(next: string | null): next is string {
+  return Boolean(next && next.startsWith("/") && !next.startsWith("//") && !next.includes("://"));
+}
+
+function canRoleAccessPath(role: UserRole, pathname: string): boolean {
+  if (matchesPrefix(pathname, ADMIN_PREFIXES) || matchesPrefix(pathname, ADMIN_API_PREFIXES)) {
+    return role === "admin";
+  }
+  if (matchesPrefix(pathname, CLEANER_PREFIXES) || matchesPrefix(pathname, CLEANER_API_PREFIXES)) {
+    return role === "cleaner" || role === "admin";
+  }
+  if (matchesPrefix(pathname, CUSTOMER_PREFIXES)) {
+    return role === "customer" || role === "admin";
+  }
+  return true;
+}
+
 /** Matches ADMIN_BOOTSTRAP_EMAIL so promoteBootstrapAdminIfNeeded can run server-side. */
 function isBootstrapAdminEmail(email: string | null | undefined): boolean {
   const bootstrap = process.env.ADMIN_BOOTSTRAP_EMAIL?.toLowerCase()?.trim();
@@ -95,6 +112,9 @@ export async function updateSession(request: NextRequest) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = "/sign-in";
     redirectUrl.searchParams.set("next", pathname);
+    if (matchesPrefix(pathname, CLEANER_PREFIXES)) {
+      redirectUrl.searchParams.set("role", "cleaner");
+    }
     return NextResponse.redirect(redirectUrl);
   }
 
@@ -108,9 +128,15 @@ export async function updateSession(request: NextRequest) {
     const role = normalizeRole(profile?.role);
 
     if (isAuthRoute) {
+      const requestedNext = request.nextUrl.searchParams.get("next");
       const redirectUrl = request.nextUrl.clone();
-      redirectUrl.pathname = homeForRole(role);
-      redirectUrl.search = "";
+      if (isSafeNextPath(requestedNext) && canRoleAccessPath(role, requestedNext)) {
+        redirectUrl.pathname = requestedNext;
+        redirectUrl.search = "";
+      } else {
+        redirectUrl.pathname = homeForRole(role);
+        redirectUrl.search = "";
+      }
       return NextResponse.redirect(redirectUrl);
     }
 
@@ -128,7 +154,11 @@ export async function updateSession(request: NextRequest) {
 
     if (matchesPrefix(pathname, CLEANER_PREFIXES) && role !== "cleaner" && role !== "admin") {
       const redirectUrl = request.nextUrl.clone();
-      redirectUrl.pathname = homeForRole(role);
+      // Send aspiring cleaners back through apply → signup with intent preserved.
+      redirectUrl.pathname = "/sign-up";
+      redirectUrl.search = "";
+      redirectUrl.searchParams.set("role", "cleaner");
+      redirectUrl.searchParams.set("next", pathname);
       return NextResponse.redirect(redirectUrl);
     }
 

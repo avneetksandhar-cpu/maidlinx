@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { SiteLogo } from "@/components/brand/site-logo";
-import { ThemeToggle } from "@/components/dashboard/theme-toggle";
 import { PlatformUserMenu } from "@/components/layout/platform-user-menu";
 import { routes } from "@/config/site";
 import { cn } from "@/lib/utils";
@@ -19,7 +18,6 @@ function isActive(pathname: string, item: (typeof NAV_ITEMS)[number]): boolean {
   if ("exact" in item && item.exact) {
     return pathname === "/cleaner" || pathname === "/pro";
   }
-  // /pro/* mirrors /cleaner/*; highlight either prefix.
   const proMatch = item.match.replace(/^\/cleaner/, "/pro");
   return pathname.startsWith(item.match) || pathname.startsWith(proMatch);
 }
@@ -29,20 +27,17 @@ export function ProNav() {
 
   return (
     <>
-      <header className="sticky top-0 z-40 border-b border-border bg-surface/95 backdrop-blur lg:hidden">
+      <header className="sticky top-0 z-40 border-b border-[var(--ml-dark-border)] bg-[var(--ml-dark-bg)]/95 backdrop-blur lg:hidden">
         <div className="flex h-14 items-center justify-between px-4">
-          <SiteLogo variant="mark" href={routes.cleanerDashboard} />
-          <div className="flex items-center gap-1">
-            <ThemeToggle compact />
-            <PlatformUserMenu />
-          </div>
+          <SiteLogo variant="mark" tone="brand" href={routes.cleanerDashboard} />
+          <PlatformUserMenu />
         </div>
       </header>
 
-      <aside className="hidden w-56 shrink-0 flex-col bg-navy text-white lg:flex">
-        <div className="flex h-16 flex-col justify-center border-b border-white/10 px-5">
-          <SiteLogo variant="horizontal" tone="onDark" href={routes.cleanerDashboard} />
-          <p className="mt-1 text-xs text-white/55">Cleaner portal</p>
+      <aside className="hidden w-56 shrink-0 flex-col border-r border-[var(--ml-dark-border)] bg-[var(--ml-dark-bg-elevated)] lg:flex">
+        <div className="flex h-16 flex-col justify-center border-b border-[var(--ml-dark-border)] px-5">
+          <SiteLogo variant="horizontal" tone="brand" href={routes.cleanerDashboard} />
+          <p className="mt-1 text-xs text-[var(--ml-dark-ink-muted)]">Cleaner portal</p>
         </div>
         <nav className="flex-1 space-y-1 p-3">
           {NAV_ITEMS.map((item) => {
@@ -54,8 +49,8 @@ export function ProNav() {
                 className={cn(
                   "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
                   active
-                    ? "bg-accent text-accent-foreground"
-                    : "text-white/70 hover:bg-white/10 hover:text-white",
+                    ? "bg-[var(--ml-dark-mint)] text-[var(--color-accent-foreground)] shadow-[0_0_20px_rgb(8_224_212_/_0.25)]"
+                    : "text-[var(--ml-dark-ink-muted)] hover:bg-[var(--ml-dark-surface)] hover:text-[var(--ml-dark-ink)]",
                 )}
               >
                 <item.icon className="h-5 w-5 shrink-0" />
@@ -64,28 +59,33 @@ export function ProNav() {
             );
           })}
           <Link
+            href={routes.cleanerApplication}
+            className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-[var(--ml-dark-ink-subtle)] hover:bg-[var(--ml-dark-surface)] hover:text-[var(--ml-dark-ink)]"
+          >
+            Application
+          </Link>
+          <Link
             href={routes.cleanerOnboarding}
-            className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-white/55 hover:bg-white/10 hover:text-white"
+            className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-[var(--ml-dark-ink-subtle)] hover:bg-[var(--ml-dark-surface)] hover:text-[var(--ml-dark-ink)]"
           >
             Onboarding
           </Link>
           <Link
             href={routes.cleanerDocuments}
-            className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-white/55 hover:bg-white/10 hover:text-white"
+            className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-[var(--ml-dark-ink-subtle)] hover:bg-[var(--ml-dark-surface)] hover:text-[var(--ml-dark-ink)]"
           >
             Documents
           </Link>
         </nav>
-        <div className="mt-auto space-y-2 border-t border-white/10 p-4">
-          <ThemeToggle className="w-full justify-start text-white/80" />
+        <div className="mt-auto space-y-2 border-t border-[var(--ml-dark-border)] p-4">
           <div className="flex items-center justify-between px-1">
-            <span className="text-sm text-white/55">Account</span>
+            <span className="text-sm text-[var(--ml-dark-ink-muted)]">Account</span>
             <PlatformUserMenu />
           </div>
         </div>
       </aside>
 
-      <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-surface/95 backdrop-blur lg:hidden">
+      <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-[var(--ml-dark-border)] bg-[var(--ml-dark-bg)]/95 backdrop-blur lg:hidden">
         <div className="mx-auto grid max-w-lg grid-cols-4 gap-1 px-2 py-2 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
           {NAV_ITEMS.map((item) => {
             const active = isActive(pathname, item);
@@ -95,7 +95,7 @@ export function ProNav() {
                 href={item.href}
                 className={cn(
                   "flex min-h-12 flex-col items-center justify-center gap-0.5 rounded-lg px-1 py-2 text-[11px] font-medium transition-colors",
-                  active ? "text-navy" : "text-ink-muted",
+                  active ? "text-[var(--ml-dark-mint)]" : "text-[var(--ml-dark-ink-muted)]",
                 )}
               >
                 <item.icon className="h-5 w-5" />

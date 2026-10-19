@@ -12,9 +12,15 @@
     "test:watch": "vitest",
     "db:types": "supabase gen types typescript --local > src/types/database.types.ts",
     "content-studio:render": "node scripts/content-studio/render.mjs",
-    "content-studio:render:ep01": "node scripts/content-studio/render.mjs --episode=001-spilled-last-summer"
+    "content-studio:render:ep01": "node scripts/content-studio/render.mjs --episode=001-spilled-last-summer",
+    "cap:sync": "npx cap sync ios",
+    "cap:open": "npx cap open ios"
   },
   "dependencies": {
+    "@capacitor/core": "^7.6.9",
+    "@capacitor/ios": "^7.6.9",
+    "@capacitor/splash-screen": "^7.0.5",
+    "@capacitor/status-bar": "^7.0.6",
     "@hookform/resolvers": "^5.2.2",
     "@sentry/nextjs": "^10.70.0",
     "@stripe/react-stripe-js": "^3.10.0",
@@ -32,6 +38,7 @@
     "zod": "^3.24.2"
   },
   "devDependencies": {
+    "@capacitor/cli": "^7.6.9",
     "@tailwindcss/postcss": "^4.1.18",
     "@types/node": "^22.15.29",
     "@types/react": "^19.2.7",

@@ -1,11 +1,11 @@
 {
   "name": "MaidLinx",
   "short_name": "MaidLinx",
-  "description": "Book trusted home cleaning in minutes. Simple online booking for one-time, deep, move-in/move-out and recurring cleaning.",
+  "description": "Request trusted home cleaning in minutes — like a ride for your space.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#0d9488",
+  "background_color": "#0a0c0b",
+  "theme_color": "#0a0c0b",
   "lang": "en",
   "scope": "/",
   "icons": [

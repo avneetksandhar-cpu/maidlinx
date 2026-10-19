@@ -89,6 +89,18 @@ export async function ensureProfileForUser(input: EnsureProfileInput): Promise<A
     if (!existing.phone && input.phone) updates.phone = input.phone;
     if (!existing.avatar_url && input.avatarUrl) updates.avatar_url = input.avatarUrl;
 
+    // One-way customer → cleaner when signup metadata / apply intent requests it.
+    // Never self-assign admin from metadata (bootstrap path only).
+    const requestedRole = normalizeRole(input.role ?? null);
+    const currentRole = normalizeRole(String(existing.role));
+    if (
+      requestedRole === "cleaner" &&
+      currentRole === "customer" &&
+      !isBootstrapAdminEmail(input.email)
+    ) {
+      updates.role = "cleaner";
+    }
+
     if (Object.keys(updates).length > 0) {
       await supabase.from("profiles").update(updates as never).eq("id", input.userId);
     }

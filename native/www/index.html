@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#0a0c0b" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <title>MaidLinx</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        min-height: 100%;
+        background: #0a0c0b;
+        color: #f5f7f6;
+        font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui,
+          sans-serif;
+      }
+      main {
+        display: grid;
+        place-items: center;
+        min-height: 100dvh;
+        padding: 2rem;
+        text-align: center;
+      }
+      a {
+        color: #08e0d4;
+      }
+    </style>
+    <script>
+      // Capacitor production shell uses server.url; this file is the offline fallback.
+      if (typeof window !== "undefined" && !window.Capacitor) {
+        window.location.replace("https://www.maidlinx.com/");
+      }
+    </script>
+  </head>
+  <body>
+    <main>
+      <div>
+        <p>MaidLinx</p>
+        <p><a href="https://www.maidlinx.com/">Open app</a></p>
+      </div>
+    </main>
+  </body>
+</html>

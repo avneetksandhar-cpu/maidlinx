@@ -2,6 +2,13 @@
 
 Format: date · decision · owner · rationale · status
 
+## 2026-10-19 — Native iOS = Capacitor shell; www stays app-open dark web
+
+- **Decision:** Ship MaidLinx toward App Store as a **Capacitor iOS shell** (`com.maidlinx.app`) that loads production www (`https://www.maidlinx.com`). Production web must serve the **app shell** (standalone meta, dark theme, AppOpenHome — not marketing-site chrome). Capacitor `ios/` stays in-repo for later Xcode/TestFlight; it is **not** required for www. Stripe LIVE stays OFF. App Store submission requires founder approval.
+- **Owner:** Founder / Product + Lead Engineer
+- **Rationale:** Keeps Next.js + Supabase + Stripe marketplace backend intact; avoids RN rewrite; matches “app not website” while www remains the bookable surface.
+- **Status:** Accepted
+
 ## 2026-10-18 — Product vision: Uber-like cleaning marketplace + dual insured supply + B2B
 
 - **Decision:** MaidLinx is an **app-style cleaning marketplace** (request → match → track → complete), not a brochure site. **Supply** = (1) insured individual subcontractor cleaners and (2) insured cleaning companies joining as subcontractors — both require **insurance attestation + document metadata for ops review** (no fake verification). **B2B / commercial demand** is a priority channel (`/for-business` → owner CRM). UI primary actions use **logo-family teal** `#0d9488` (logo fill `#08E0D4` is decorative). Do **not** redesign the whole app; scoped UX + supply-join + lean B2B only. Stripe LIVE stays OFF. No invented cleaner ops data.

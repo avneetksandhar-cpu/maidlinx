@@ -5,12 +5,15 @@ import { AuthForm } from "@/components/auth/auth-form";
 
 export default function SignUpPage() {
   return (
-    <div className="min-h-screen bg-background px-4 py-16">
+    <div className="min-h-dvh px-4 py-16">
       <Container narrow>
-        <SiteLogo className="mb-8" priority />
-        <Heading as="h1">Create your account</Heading>
-        <Text muted className="mt-3">
-          Customers can book cleans; cleaners can sign up to accept jobs after onboarding.
+        <SiteLogo className="mb-8" tone="brand" priority />
+        <Heading as="h1" className="text-[var(--ml-dark-ink)]">
+          Create your account
+        </Heading>
+        <Text muted className="mt-3 text-[var(--ml-dark-ink-muted)]">
+          Customers book cleans. Cleaners apply, complete onboarding, then get approved for
+          jobs.
         </Text>
         <div className="mt-8">
           <Suspense fallback={<Text muted>Loading…</Text>}>

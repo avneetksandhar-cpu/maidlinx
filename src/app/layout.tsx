@@ -68,18 +68,25 @@ export const metadata: Metadata = {
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
-    statusBarStyle: "default",
+    statusBarStyle: "black-translucent",
     title: siteConfig.name,
   },
   other: {
     "mobile-web-app-capable": "yes",
+    "apple-mobile-web-app-capable": "yes",
+    "apple-mobile-web-app-status-bar-style": "black-translucent",
   },
 };
 
 export const viewport: Viewport = {
-  themeColor: "#08e0d4",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#0a0c0b" },
+    { media: "(prefers-color-scheme: dark)", color: "#0a0c0b" },
+  ],
+  colorScheme: "dark",
   width: "device-width",
   initialScale: 1,
+  viewportFit: "cover",
 };
 
 export default function RootLayout({
@@ -89,7 +96,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${dmSans.variable} ${fraunces.variable}`}>
-      <body className="min-h-screen bg-background font-sans text-ink antialiased">
+      <body className="min-h-screen bg-[var(--ml-dark-bg)] font-sans text-ink antialiased">
         <AppProviders>{children}</AppProviders>
         <ServiceWorkerRegister />
       </body>

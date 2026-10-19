@@ -39,6 +39,14 @@ yarn-error.log*
 # vercel
 .vercel
 
+# Capacitor / Xcode local artifacts (keep ios/ project sources)
+ios/App/Pods
+ios/App/Podfile.lock
+ios/DerivedData
+ios/App/App/public
+*.xcuserstate
+xcuserdata/
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
