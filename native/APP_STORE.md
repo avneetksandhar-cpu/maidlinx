@@ -22,7 +22,7 @@
 | `capacitor.config.ts` | Done — appId, splash, status bar, Stripe TEST allowNavigation |
 | `npx cap add ios` | Done — `ios/` created |
 | Brand App Icon (1024) | Done — from `public/brand/icon-512.png` (mark only) |
-| Brand Splash | Done — `#0a0c0b` + `maidlinx-mark.png` |
+| Brand Splash | Done — `#003474` + `maidlinx-mark.png` |
 | Deep link `maidlinx://` | Done — Info.plist + Cap `AppDelegate` proxy |
 | Offline empty state | Done — `native/www/index.html` |
 | Location purpose strings | Done — Info.plist (matches real web geolocation / live job tracking) |
@@ -38,7 +38,7 @@
 | Delta | Status |
 |-------|--------|
 | Splash (`@capacitor/splash-screen` + branded Splash.imageset + LaunchScreen) | Implemented |
-| Status bar (`@capacitor/status-bar` + light content on `#0a0c0b`) | Implemented |
+| Status bar (`@capacitor/status-bar` + light content on `#003474`) | Implemented |
 | Safe areas (`contentInset: automatic` + offline CSS + www `viewport-fit=cover`) | Implemented |
 | App icons from real MaidLinx logo | Implemented |
 | Deep link scheme `maidlinx://` | Implemented |
