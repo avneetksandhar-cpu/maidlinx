@@ -15,6 +15,7 @@ import {
   getNextScreen,
   isAddressComplete,
 } from "@/lib/bookings/booking-routes";
+import { bookingSignInHref } from "@/lib/bookings/booking-auth";
 import { buildAddressStatePatch } from "@/lib/bookings/booking-helpers";
 import { resolveServiceArea } from "@/lib/service-area";
 import type { BookingState } from "@/lib/bookings/booking-state";
@@ -25,6 +26,7 @@ import {
   resolveWaitlistReason,
 } from "@/lib/markets/booking-availability";
 import { WaitlistSignup } from "@/components/waitlist/waitlist-signup";
+import { useAuthSession } from "@/hooks/use-auth-session";
 import { cn } from "@/lib/utils";
 import { routes } from "@/config/site";
 import Link from "next/link";
@@ -33,7 +35,20 @@ export function AddressScreen() {
   const router = useRouter();
   const { updateState } = useBooking();
   const { state, hydrated, blocked } = useBookingGuard("address");
+  const authStatus = useAuthSession();
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
+
+  /** Persist address in draft, then auth gate (or next slide if already signed in). */
+  const continueAfterAddress = (merged: BookingState) => {
+    if (authStatus === "loading") return;
+    const nextId = getNextScreen("address", merged);
+    const nextPath = BOOKING_SCREEN_PATHS[nextId];
+    if (authStatus !== "authenticated") {
+      router.push(bookingSignInHref(nextPath));
+      return;
+    }
+    router.push(nextPath);
+  };
 
   const applyAddress = (value: Partial<BookingState>, autoAdvance = false) => {
     const next = buildAddressStatePatch(state, value);
@@ -49,7 +64,7 @@ export function AddressScreen() {
         placeId: value.googlePlaceId,
       });
       const merged = { ...state, ...next };
-      router.push(BOOKING_SCREEN_PATHS[getNextScreen("address", merged)]);
+      continueAfterAddress(merged);
     }
   };
 
@@ -86,7 +101,7 @@ export function AddressScreen() {
       onContinue={() => {
         if (!isAddressComplete(state)) return;
         trackBookingEvent("address_selected", { marketId: state.marketId });
-        router.push(BOOKING_SCREEN_PATHS[getNextScreen("address", state)]);
+        continueAfterAddress(state);
       }}
     >
       <div className="space-y-5">
@@ -98,29 +113,36 @@ export function AddressScreen() {
               state: patch.state,
               country: patch.country,
             });
-            updateState({
-              ...patch,
-              marketId: area.marketId,
-              zoneId: area.zoneId,
-              inServiceArea: area.inServiceArea,
-              marketName: area.marketName ?? null,
-            });
-            if (area.inServiceArea) {
-              const usual = readUsualClean();
-              const full = usual ? usualCleanToBookingPatch(usual) : patch;
+            if (!area.inServiceArea) {
               updateState({
-                ...full,
+                ...patch,
                 marketId: area.marketId,
                 zoneId: area.zoneId,
                 inServiceArea: area.inServiceArea,
                 marketName: area.marketName ?? null,
               });
-              router.push(
-                full.serviceType
-                  ? BOOKING_SCREEN_PATHS.review
-                  : BOOKING_SCREEN_PATHS.service,
-              );
+              return;
             }
+            const usual = readUsualClean();
+            const full = usual ? usualCleanToBookingPatch(usual) : patch;
+            const merged = {
+              ...state,
+              ...full,
+              marketId: area.marketId,
+              zoneId: area.zoneId,
+              inServiceArea: area.inServiceArea,
+              marketName: area.marketName ?? null,
+            };
+            updateState(merged);
+            // Draft is persisted — auth gate, then review (usual) or property.
+            const resume = full.serviceType
+              ? BOOKING_SCREEN_PATHS.review
+              : BOOKING_SCREEN_PATHS.property;
+            if (authStatus !== "authenticated") {
+              router.push(bookingSignInHref(resume));
+              return;
+            }
+            router.push(resume);
           }}
         />
 

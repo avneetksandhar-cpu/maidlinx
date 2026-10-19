@@ -11,6 +11,11 @@ import {
   isScheduleComplete,
 } from "@/lib/bookings/booking-routes";
 import { DEFAULT_BOOKING_STATE, type BookingState } from "@/lib/bookings/booking-state";
+import {
+  BOOKING_RESUME_AFTER_AUTH,
+  bookingSignInHref,
+  isBookingAuthRequired,
+} from "@/lib/bookings/booking-auth";
 
 function baseAddress(overrides: Partial<BookingState> = {}): BookingState {
   return {
@@ -26,35 +31,33 @@ function baseAddress(overrides: Partial<BookingState> = {}): BookingState {
   };
 }
 
-describe("booking route guards (category-first)", () => {
-  it("starts at welcome", () => {
-    expect(getBookingEntryPath()).toBe(BOOKING_SCREEN_PATHS.welcome);
+describe("booking route guards (address-first)", () => {
+  it("starts at address", () => {
+    expect(getBookingEntryPath()).toBe(BOOKING_SCREEN_PATHS.address);
   });
 
-  it("allows category without address", () => {
-    expect(getGuardRedirect("property", DEFAULT_BOOKING_STATE)).toBeNull();
+  it("allows address without category", () => {
+    expect(getGuardRedirect("address", DEFAULT_BOOKING_STATE)).toBeNull();
     expect(getGuardRedirect("welcome", DEFAULT_BOOKING_STATE)).toBeNull();
   });
 
-  it("requires category before service", () => {
-    expect(getGuardRedirect("service", DEFAULT_BOOKING_STATE)).toBe(
-      BOOKING_SCREEN_PATHS.property,
+  it("requires address before category", () => {
+    expect(getGuardRedirect("property", DEFAULT_BOOKING_STATE)).toBe(
+      BOOKING_SCREEN_PATHS.address,
     );
   });
 
-  it("requires service before address", () => {
-    const withProperty = { ...DEFAULT_BOOKING_STATE, propertyType: "house" as const };
-    expect(getGuardRedirect("address", withProperty)).toBe(BOOKING_SCREEN_PATHS.service);
+  it("requires category before service when address is set", () => {
+    expect(getGuardRedirect("service", baseAddress())).toBe(BOOKING_SCREEN_PATHS.property);
   });
 
-  it("allows address when category + service are set", () => {
-    const state = {
-      ...DEFAULT_BOOKING_STATE,
-      propertyType: "house" as const,
-      serviceType: "standard" as const,
-      serviceTierId: "standard",
-    };
-    expect(getGuardRedirect("address", state)).toBeNull();
+  it("allows category when address is complete", () => {
+    expect(getGuardRedirect("property", baseAddress())).toBeNull();
+  });
+
+  it("advances address → property", () => {
+    expect(getNextScreen("address", baseAddress())).toBe("property");
+    expect(getPreviousScreen("property", baseAddress())).toBe("address");
   });
 
   it("requires address before details", () => {
@@ -76,7 +79,7 @@ describe("booking route guards (category-first)", () => {
       serviceType: "post_construction",
       serviceTierId: "pro",
     });
-    expect(getNextScreen("service", state)).toBe("address");
+    expect(getNextScreen("service", state)).toBe("details");
     expect(getGuardRedirect("addons", state)).toBe(BOOKING_SCREEN_PATHS.date);
     expect(getPreviousScreen("date", state)).toBe("details");
   });
@@ -170,5 +173,15 @@ describe("booking route guards (category-first)", () => {
       serviceAnswers: { moveDirection: "move_out" },
     };
     expect(isDetailsComplete(complete)).toBe(true);
+  });
+
+  it("gates auth after address (property+), not on address itself", () => {
+    expect(isBookingAuthRequired("address")).toBe(false);
+    expect(isBookingAuthRequired("welcome")).toBe(false);
+    expect(isBookingAuthRequired("property")).toBe(true);
+    expect(isBookingAuthRequired("payment")).toBe(true);
+    expect(BOOKING_RESUME_AFTER_AUTH).toBe(BOOKING_SCREEN_PATHS.property);
+    expect(bookingSignInHref()).toContain("from=booking");
+    expect(bookingSignInHref()).toContain(encodeURIComponent(BOOKING_SCREEN_PATHS.property));
   });
 });

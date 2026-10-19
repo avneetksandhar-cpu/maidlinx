@@ -8,6 +8,8 @@ interface OAuthButtonsProps {
   /** customer | cleaner — preserved through OAuth callback */
   role: "customer" | "cleaner";
   nextPath: string;
+  /** Large mint/dark CTAs for booking gate (default). */
+  size?: "md" | "lg";
 }
 
 function GoogleGlyph({ className }: { className?: string }) {
@@ -48,10 +50,14 @@ function AppleGlyph({ className }: { className?: string }) {
   );
 }
 
-const rowClass =
+const rowClassMd =
   "flex w-full items-center justify-center gap-3 rounded-2xl border border-[var(--ml-dark-border-strong)] bg-[var(--ml-dark-surface)] px-4 py-3.5 text-[15px] font-semibold text-[var(--ml-dark-ink)] transition-colors hover:border-[var(--ml-dark-mint)] hover:bg-[var(--ml-dark-surface-2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ml-dark-mint)]/50 disabled:cursor-not-allowed disabled:opacity-60";
 
-export function OAuthButtons({ role, nextPath }: OAuthButtonsProps) {
+const rowClassLg =
+  "flex h-14 w-full items-center justify-center gap-3 rounded-2xl border border-[var(--ml-dark-border-strong)] bg-[var(--ml-dark-surface)] px-4 text-base font-semibold text-[var(--ml-dark-ink)] shadow-[0_0_20px_rgb(8_224_212_/_0.12)] transition-colors hover:border-[var(--ml-dark-mint)] hover:bg-[var(--ml-dark-surface-2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ml-dark-mint)]/50 disabled:cursor-not-allowed disabled:opacity-60";
+
+export function OAuthButtons({ role, nextPath, size = "lg" }: OAuthButtonsProps) {
+  const rowClass = size === "lg" ? rowClassLg : rowClassMd;
   const supabase = useSupabase();
   const [loading, setLoading] = useState<OAuthProvider | null>(null);
   const [error, setError] = useState<string | null>(null);

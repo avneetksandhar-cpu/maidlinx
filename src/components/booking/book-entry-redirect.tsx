@@ -1,19 +1,26 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { BOOKING_SCREEN_PATHS, getBookingEntryPath } from "@/lib/bookings/booking-routes";
+import {
+  BOOKING_SCREEN_PATHS,
+  getBookingEntryPath,
+  getFurthestScreenPath,
+  isAddressComplete,
+} from "@/lib/bookings/booking-routes";
+import { bookingSignInHref } from "@/lib/bookings/booking-auth";
 import { readUsualClean } from "@/lib/bookings/usual-clean";
 import { useBooking } from "@/components/booking/booking-provider";
-import { Suspense } from "react";
+import { useAuthSession } from "@/hooks/use-auth-session";
 
 function BookEntryInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { hydrated, state } = useBooking();
+  const authStatus = useAuthSession();
 
   useEffect(() => {
-    if (!hydrated) return;
+    if (!hydrated || authStatus === "loading") return;
 
     const resume = searchParams?.get("resume");
     const token = searchParams?.get("token");
@@ -29,11 +36,16 @@ function BookEntryInner() {
     const qs = searchParams?.toString() ?? "";
     // Rebook: prefill is applied — jump to date so customer only picks schedule.
     if (searchParams?.get("rebook") === "1" && state.line1 && state.serviceType) {
-      router.replace(qs ? `${BOOKING_SCREEN_PATHS.date}?${qs}` : BOOKING_SCREEN_PATHS.date);
+      const target = BOOKING_SCREEN_PATHS.date;
+      if (authStatus !== "authenticated") {
+        router.replace(bookingSignInHref(qs ? `${target}?${qs}` : target));
+        return;
+      }
+      router.replace(qs ? `${target}?${qs}` : target);
       return;
     }
 
-    // Returning customer with usual clean — skip welcome, land on address/property.
+    // Returning customer with usual clean — land on address (or resume mid-funnel).
     const usual = readUsualClean();
     const hasUsual = Boolean(usual?.line1 && usual.serviceType);
     if (hasUsual || searchParams?.get("skipWelcome") === "1") {
@@ -42,29 +54,31 @@ function BookEntryInner() {
       return;
     }
 
-    // Draft already mid-funnel — resume at furthest unfinished step via property/service.
-    if (state.propertyType && state.serviceType) {
-      if (!state.line1) {
-        router.replace(qs ? `${BOOKING_SCREEN_PATHS.address}?${qs}` : BOOKING_SCREEN_PATHS.address);
+    // Draft already has address — resume furthest step (auth gate if needed).
+    if (isAddressComplete(state)) {
+      const furthest = getFurthestScreenPath(state);
+      if (authStatus !== "authenticated") {
+        router.replace(bookingSignInHref(furthest));
         return;
       }
-      router.replace(qs ? `${BOOKING_SCREEN_PATHS.details}?${qs}` : BOOKING_SCREEN_PATHS.details);
+      router.replace(qs ? `${furthest}?${qs}` : furthest);
       return;
     }
 
-    if (state.propertyType) {
-      router.replace(qs ? `${BOOKING_SCREEN_PATHS.service}?${qs}` : BOOKING_SCREEN_PATHS.service);
-      return;
-    }
-
-    router.replace(qs ? `${BOOKING_SCREEN_PATHS.welcome}?${qs}` : BOOKING_SCREEN_PATHS.welcome);
+    // Default: address first.
+    const entry = getBookingEntryPath();
+    router.replace(qs ? `${entry}?${qs}` : entry);
   }, [
     hydrated,
+    authStatus,
     router,
     searchParams,
     state.line1,
     state.propertyType,
     state.serviceType,
+    state.city,
+    state.postalCode,
+    state.marketId,
   ]);
 
   return (

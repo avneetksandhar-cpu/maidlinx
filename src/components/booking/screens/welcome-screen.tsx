@@ -20,7 +20,7 @@ export function WelcomeScreen() {
 
   const start = () => {
     trackBookingEvent("booking_started", { entry: "welcome" });
-    router.push(BOOKING_SCREEN_PATHS.property);
+    router.push(BOOKING_SCREEN_PATHS.address);
   };
 
   if (!hydrated || blocked) {
@@ -66,10 +66,11 @@ export function WelcomeScreen() {
 
         <div className="mt-auto flex flex-col items-stretch text-center sm:items-center">
           <h1 className="mx-auto max-w-md text-[1.85rem] font-semibold leading-tight tracking-tight text-white sm:text-[2.15rem]">
-            Request a clean in minutes.
+            Come home to clean.
           </h1>
           <p className="mx-auto mt-3 max-w-sm text-[15px] leading-relaxed text-[var(--ml-dark-ink-muted)]">
-            Choose · confirm · track your MaidLinx Pro.
+            Book reliable home cleaning in your area, see your price upfront, and choose a time that
+            works.
           </p>
 
           <Button
@@ -79,7 +80,7 @@ export function WelcomeScreen() {
             className="booking-cta-btn mt-8 h-14 w-full max-w-sm rounded-2xl text-base font-semibold shadow-[0_0_32px_rgb(8_224_212_/_0.3)]"
             onClick={start}
           >
-            Get Started
+            Check availability
             <span aria-hidden>→</span>
           </Button>
 
