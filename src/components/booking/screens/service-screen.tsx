@@ -54,12 +54,45 @@ export function ServiceScreen() {
     );
   }
 
+  const addressLine = [state.line1, state.city].filter(Boolean).join(", ");
+
   return (
     <BookingFlowChrome
       screenId="service"
-      title="Select a service"
-      subtitle="Tap to continue — final price confirmed before pay."
+      title="New booking"
+      subtitle="Choose a clean — final price confirmed before pay."
       hideCta
+      locationSlot={
+        addressLine ? (
+          <div className="flex items-center gap-3 rounded-2xl border border-[var(--ml-dark-border)] bg-[var(--ml-dark-surface)] p-3">
+            <span
+              className="flex size-12 shrink-0 items-center justify-center rounded-xl text-[var(--color-accent-foreground)]"
+              style={{
+                background:
+                  "linear-gradient(145deg, rgb(8 224 212 / 0.35) 0%, #08e0d4 70%, #003474 160%)",
+              }}
+              aria-hidden
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                <path
+                  d="M4 10.5 12 4l8 6.5V20a1 1 0 0 1-1 1h-5v-6H10v6H5a1 1 0 0 1-1-1v-9.5Z"
+                  stroke="currentColor"
+                  strokeWidth="1.75"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </span>
+            <div className="min-w-0">
+              <p className="truncate text-sm font-semibold text-white">
+                {state.line1 || "Property"}
+              </p>
+              <p className="truncate text-xs text-[var(--ml-dark-ink-muted)]">
+                {[state.city, state.state, state.postalCode].filter(Boolean).join(", ")}
+              </p>
+            </div>
+          </div>
+        ) : null
+      }
     >
       <ServiceTierSelector
         propertyType={state.propertyType}

@@ -99,7 +99,17 @@ export function ReviewScreen() {
       : (state.extras ?? [])
           .map((id) => BOOKING_EXTRAS.find((e) => e.id === id)?.label ?? id)
           .join(", ");
-  const whenLabel = [state.date, state.arrivalWindow, state.schedulePreset]
+  const frequencyLabel =
+    state.recurringFrequency && state.recurringFrequency !== "one_time"
+      ? state.recurringFrequency === "weekly"
+        ? "Weekly"
+        : state.recurringFrequency === "biweekly"
+          ? "Every 2 weeks"
+          : state.recurringFrequency === "monthly"
+            ? "Monthly"
+            : null
+      : "One-time";
+  const whenLabel = [state.date, state.arrivalWindow, frequencyLabel]
     .filter(Boolean)
     .join(" · ");
   const accessLabel = state.accessNotes?.trim() || "None added";
@@ -179,6 +189,11 @@ export function ReviewScreen() {
           />
           <Row label="Add-ons" value={extrasLabel} href={BOOKING_SCREEN_PATHS.addons} />
           <Row label="When" value={whenLabel || "—"} href={BOOKING_SCREEN_PATHS.date} />
+          <Row
+            label="Frequency"
+            value={frequencyLabel ?? "One-time"}
+            href={BOOKING_SCREEN_PATHS.date}
+          />
         </div>
 
         <PriceSummary

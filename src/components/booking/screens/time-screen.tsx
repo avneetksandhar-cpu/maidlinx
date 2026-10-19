@@ -41,8 +41,8 @@ export function TimeScreen() {
   return (
     <BookingFlowChrome
       screenId="time"
-      title="What time works?"
-      subtitle="Tap a window to continue."
+      title="Choose a time"
+      subtitle="Morning, afternoon, or evening — unavailable windows stay disabled."
       hideCta
     >
       <ScheduleWhenSelector

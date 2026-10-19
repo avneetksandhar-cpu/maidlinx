@@ -6,7 +6,7 @@ import { ARRIVAL_WINDOWS, type ArrivalWindowId } from "@/lib/bookings/constants"
 import type { SchedulePreset } from "@/lib/bookings/booking-state";
 import { resolveSchedulePreset } from "@/lib/bookings/schedule-presets";
 import { suggestArrivalWindows } from "@/lib/availability/windows";
-import { BookingCalendar } from "@/components/booking/booking-calendar";
+import { DateStrip } from "@/components/booking/date-strip";
 import { cn } from "@/lib/utils";
 
 const PRESETS: Array<{
@@ -144,8 +144,8 @@ export function ScheduleWhenSelector({
 
       {showDatePicker ? (
         <div>
-          <p className="mb-3 text-[15px] font-medium text-[var(--ml-dark-ink)]">Preferred date</p>
-          <BookingCalendar
+          <p className="mb-3 text-[15px] font-medium text-[var(--ml-dark-ink)]">Select date</p>
+          <DateStrip
             value={date}
             minDate={minDate}
             onChange={onDateChange}
@@ -157,12 +157,16 @@ export function ScheduleWhenSelector({
       {showWindows ? (
         <fieldset>
           <legend className="mb-3 block text-[15px] font-medium text-[var(--ml-dark-ink)]">
-            Available times
+            Select time
           </legend>
-          <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3">
+          <div className="grid gap-2.5">
             {windows.map((window) => {
               const selected = arrivalWindow === window.id;
               const disabled = window.available === false;
+              const meta = ARRIVAL_WINDOWS.find((w) => w.id === window.id);
+              const rangeLabel = meta
+                ? `${meta.label} (${formatWindowRange(meta.startHour, meta.endHour)})`
+                : window.label;
               return (
                 <button
                   key={window.id}
@@ -172,14 +176,23 @@ export function ScheduleWhenSelector({
                   aria-pressed={selected}
                   data-selected={selected}
                   className={cn(
-                    "rounded-2xl border px-3 py-3.5 text-center text-sm font-semibold transition-all duration-150",
+                    "rounded-2xl border px-4 py-4 text-left text-[15px] font-semibold transition-all duration-150",
                     disabled && "cursor-not-allowed opacity-40",
                     selected
-                      ? "border-transparent bg-[var(--ml-dark-mint)] text-[var(--color-accent-foreground)] shadow-[0_0_20px_rgb(8_224_212_/_0.28)]"
+                      ? "border-[var(--ml-dark-mint)] bg-[var(--ml-dark-surface)] text-[var(--ml-dark-ink)] shadow-[0_0_0_1px_rgb(8_224_212_/_0.35)]"
                       : "border-[var(--ml-dark-border)] bg-[var(--ml-dark-surface)] text-[var(--ml-dark-ink)] hover:border-[var(--ml-dark-border-strong)]",
                   )}
                 >
-                  {window.label}
+                  <span className="block">{rangeLabel}</span>
+                  {disabled ? (
+                    <span className="mt-1 block text-sm font-normal text-[var(--ml-dark-ink-muted)]">
+                      Unavailable
+                    </span>
+                  ) : window.description ? (
+                    <span className="mt-1 block text-sm font-normal text-[var(--ml-dark-ink-muted)]">
+                      {window.description}
+                    </span>
+                  ) : null}
                 </button>
               );
             })}
@@ -207,4 +220,13 @@ export function ScheduleWhenSelector({
       ) : null}
     </div>
   );
+}
+
+function formatWindowRange(startHour: number, endHour: number): string {
+  const fmt = (h: number) => {
+    const suffix = h >= 12 ? "pm" : "am";
+    const hour12 = h % 12 === 0 ? 12 : h % 12;
+    return `${hour12}${suffix}`;
+  };
+  return `${fmt(startHour)} - ${fmt(endHour)}`;
 }

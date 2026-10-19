@@ -1,14 +1,14 @@
 import { normalizeBookingStatus, type BookingStatus } from "@/lib/bookings/status";
 
 /**
- * Customer-facing timeline (reference post-booking dashboard):
- * Booked → Confirmed → On the way → Cleaning → Complete
+ * Customer-facing timeline (design-spec screen 4):
+ * Booked → Cleaner assigned → On the way → Complete
+ * Never invents assignment — "Cleaner assigned" only completes when a real Pro is assigned.
  */
 export const CUSTOMER_TIMELINE_STEPS = [
   { key: "booked", label: "Booked" },
-  { key: "confirmed", label: "Confirmed" },
+  { key: "cleaner_assigned", label: "Cleaner assigned" },
   { key: "on_the_way", label: "On the way" },
-  { key: "cleaning", label: "Cleaning" },
   { key: "complete", label: "Complete" },
 ] as const;
 
@@ -36,23 +36,21 @@ function timelineIndexForStatus(status: string): number {
     case "confirmed":
     case "awaiting_assignment":
     case "offered":
+      // Booked is complete; Cleaner assigned is current while we find a real Pro.
+      return 1;
     case "assigned":
     case "accepted":
       return 1;
     case "on_the_way":
-      return 2;
     case "arrived":
-      // Customer timeline collapses arrived into "on the way" index historically;
-      // live job timeline uses a dedicated Arrived step via liveJobIndexForStatus.
-      return 2;
     case "in_progress":
-      return 3;
+      return 2;
     case "completed":
-      return 4;
+      return 3;
     case "cancelled":
       return -1;
     default:
-      return 1;
+      return 0;
   }
 }
 
@@ -125,18 +123,26 @@ export function getCustomerTimelineState(status: string): {
       String(normalized),
     );
 
-  const steps = CUSTOMER_TIMELINE_STEPS.map((step, index) => ({
-    key: step.key,
-    label: step.label,
-    state:
-      currentIndex < 0
-        ? ("upcoming" as const)
-        : index < currentIndex
-          ? ("complete" as const)
-          : index === currentIndex
-            ? ("current" as const)
-            : ("upcoming" as const),
-  }));
+  // When a Pro is already assigned (but not en route), both Booked + Cleaner assigned
+  // read as complete checks — matching the design reference (no fake "on the way").
+  const assignedWaiting =
+    normalized === "assigned" || normalized === "accepted";
+
+  const steps = CUSTOMER_TIMELINE_STEPS.map((step, index) => {
+    if (currentIndex < 0) {
+      return { key: step.key, label: step.label, state: "upcoming" as const };
+    }
+    if (index < currentIndex) {
+      return { key: step.key, label: step.label, state: "complete" as const };
+    }
+    if (index === currentIndex) {
+      if (assignedWaiting) {
+        return { key: step.key, label: step.label, state: "complete" as const };
+      }
+      return { key: step.key, label: step.label, state: "current" as const };
+    }
+    return { key: step.key, label: step.label, state: "upcoming" as const };
+  });
 
   return { steps, currentIndex, findingProfessional, showCleaner };
 }

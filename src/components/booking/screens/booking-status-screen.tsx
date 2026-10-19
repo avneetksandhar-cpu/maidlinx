@@ -325,9 +325,18 @@ export function BookingStatusScreen({
             <BookingStatusTimeline status={booking.status} variant="live" />
           </div>
         ) : (
-          <div className="mt-8">
-            <p className="mb-3 text-sm font-medium text-[var(--ml-dark-ink-muted)]">Progress</p>
-            <BookingStatusTimeline status={booking.status} />
+          <div className="mt-8 rounded-2xl border border-[var(--ml-dark-border)] bg-[var(--ml-dark-surface)] px-4 py-5">
+            <p className="mb-4 text-sm font-medium text-[var(--ml-dark-ink-muted)]">Status</p>
+            <BookingStatusTimeline
+              status={booking.status}
+              assignedDetail={
+                booking.cleaner
+                  ? [booking.cleaner.firstName, booking.cleaner.lastName]
+                      .filter(Boolean)
+                      .join(" ") || "Your MaidLinx Pro"
+                  : null
+              }
+            />
           </div>
         )}
 
@@ -385,7 +394,7 @@ export function BookingStatusScreen({
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <Link href={routes.dashboardBookings} className="sm:flex-1">
               <Button variant="primary" className="booking-cta-btn w-full rounded-2xl">
-                View my bookings
+                View booking →
               </Button>
             </Link>
             <Link href={routes.home} className="sm:flex-1">

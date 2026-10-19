@@ -38,9 +38,9 @@ export function EmptyState({ title, description, actionLabel, actionHref }: Empt
 export function BookEmptyState() {
   return (
     <EmptyState
-      title="Ready for a fresh space?"
-      description="Schedule your first clean in minutes with transparent, upfront pricing."
-      actionLabel="Book a clean"
+      title="No upcoming cleans"
+      description="Schedule a clean for one of your properties — pricing is confirmed before you pay."
+      actionLabel="+ Schedule a clean"
       actionHref={routes.book}
     />
   );
