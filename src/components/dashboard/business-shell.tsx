@@ -29,7 +29,7 @@ interface BusinessShellProps {
 }
 
 /**
- * B2B / multi-property customer chrome — dark navy sidebar (design-spec).
+ * B2B / multi-property customer chrome — near-black sidebar + mint active (design-spec).
  * Residential customers keep CustomerShell instead.
  */
 export function BusinessShell({ children, firstName }: BusinessShellProps) {
@@ -37,9 +37,13 @@ export function BusinessShell({ children, firstName }: BusinessShellProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
-    <div className="flex min-h-dvh bg-background text-ink">
-      {/* Desktop dark sidebar */}
-      <aside className="hidden w-60 shrink-0 flex-col bg-navy text-white lg:flex">
+    <div
+      data-theme="ml-dark"
+      className="flex min-h-dvh bg-[var(--ml-dark-bg)] text-[var(--ml-dark-ink)]"
+      style={{ fontFamily: "var(--ml-font-ios)" }}
+    >
+      {/* Desktop near-black sidebar */}
+      <aside className="hidden w-60 shrink-0 flex-col border-r border-[var(--ml-dark-border)] bg-[var(--ml-dark-bg)] text-white lg:flex">
         <div className="flex h-16 items-center px-5">
           <SiteLogo variant="horizontal" tone="onDark" href={routes.dashboard} />
         </div>
@@ -53,7 +57,7 @@ export function BusinessShell({ children, firstName }: BusinessShellProps) {
                 className={cn(
                   "rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
                   active
-                    ? "bg-accent text-accent-foreground"
+                    ? "bg-[var(--ml-dark-mint)] text-[var(--color-accent-foreground)] shadow-[0_0_20px_rgb(8_224_212_/_0.25)]"
                     : "text-white/75 hover:bg-white/10 hover:text-white",
                 )}
               >
@@ -62,24 +66,24 @@ export function BusinessShell({ children, firstName }: BusinessShellProps) {
             );
           })}
         </nav>
-        <div className="mt-auto border-t border-white/10 p-4">
+        <div className="mt-auto border-t border-[var(--ml-dark-border)] p-4">
           <p className="truncate text-sm font-medium text-white">
             {firstName?.trim() || "Account"}
           </p>
-          <p className="mt-0.5 text-xs text-white/55">Business</p>
+          <p className="mt-0.5 text-xs text-[var(--ml-dark-ink-muted)]">Business</p>
           <div className="mt-3">
             <PlatformUserMenu />
           </div>
         </div>
       </aside>
 
-      <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-40 flex h-14 items-center justify-between border-b border-border bg-surface/95 px-4 backdrop-blur lg:hidden">
-          <SiteLogo variant="mark" href={routes.dashboard} />
+      <div className="flex min-w-0 flex-1 flex-col bg-[var(--ml-dark-bg)]">
+        <header className="sticky top-0 z-40 flex h-14 items-center justify-between border-b border-[var(--ml-dark-border)] bg-[var(--ml-dark-bg)]/95 px-4 backdrop-blur lg:hidden">
+          <SiteLogo variant="mark" tone="onDark" href={routes.dashboard} />
           <Button
             variant="ghost"
             size="sm"
-            className="h-9 w-9 px-0"
+            className="h-9 w-9 px-0 text-white hover:bg-white/10"
             aria-label="Open menu"
             onClick={() => setMobileOpen(true)}
           >
@@ -91,11 +95,11 @@ export function BusinessShell({ children, firstName }: BusinessShellProps) {
           <div className="fixed inset-0 z-50 lg:hidden">
             <button
               type="button"
-              className="absolute inset-0 bg-ink/50"
+              className="absolute inset-0 bg-black/60"
               aria-label="Close menu"
               onClick={() => setMobileOpen(false)}
             />
-            <aside className="absolute inset-y-0 left-0 flex w-72 flex-col bg-navy text-white shadow-elevated">
+            <aside className="absolute inset-y-0 left-0 flex w-72 flex-col border-r border-[var(--ml-dark-border)] bg-[var(--ml-dark-bg)] text-white shadow-[var(--shadow-elevated)]">
               <div className="flex h-14 items-center justify-between px-4">
                 <SiteLogo variant="horizontal" tone="onDark" href={routes.dashboard} />
                 <Button
@@ -123,7 +127,7 @@ export function BusinessShell({ children, firstName }: BusinessShellProps) {
                       className={cn(
                         "rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
                         active
-                          ? "bg-accent text-accent-foreground"
+                          ? "bg-[var(--ml-dark-mint)] text-[var(--color-accent-foreground)]"
                           : "text-white/75 hover:bg-white/10",
                       )}
                     >
@@ -132,7 +136,7 @@ export function BusinessShell({ children, firstName }: BusinessShellProps) {
                   );
                 })}
               </nav>
-              <div className="border-t border-white/10 p-4">
+              <div className="border-t border-[var(--ml-dark-border)] p-4">
                 <PlatformUserMenu />
               </div>
             </aside>

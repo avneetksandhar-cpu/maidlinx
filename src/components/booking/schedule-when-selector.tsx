@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { Check, Zap, Sun, CalendarDays, CalendarRange } from "lucide-react";
+import { Zap, Sun, CalendarDays, CalendarRange } from "lucide-react";
 import { ARRIVAL_WINDOWS, type ArrivalWindowId } from "@/lib/bookings/constants";
 import type { SchedulePreset } from "@/lib/bookings/booking-state";
 import { resolveSchedulePreset } from "@/lib/bookings/schedule-presets";

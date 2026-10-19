@@ -76,20 +76,20 @@ export function MatchingStep({ booking, accessToken, bookingState }: MatchingSte
             </span>
           </div>
         ) : (
-          <div className="mx-auto mb-6 flex size-16 items-center justify-center rounded-full bg-[#F1F8F5] text-accent">
+          <div className="mx-auto mb-6 flex size-16 items-center justify-center rounded-full bg-accent text-accent-foreground shadow-[0_0_24px_rgb(8_224_212_/_0.3)]">
             <span className="text-2xl font-semibold">✓</span>
           </div>
         )}
 
         <Heading as="h2" className="text-[1.75rem] font-bold tracking-tight md:text-[2rem]">
-          {finding ? "You’re booked" : "You’re all set"}
+          {finding ? "Booking confirmed!" : "You’re all set"}
         </Heading>
         <Text muted className="mt-2 text-[16px] md:text-[17px]">
           {finding
             ? "Finding your MaidLinx Pro for this clean…"
             : "Your cleaner has been assigned. Check your email for details."}
         </Text>
-        <p className="mt-3 inline-flex items-center rounded-full bg-[#F1F8F5] px-3.5 py-1.5 text-sm font-semibold tabular-nums text-accent">
+        <p className="mt-3 inline-flex items-center rounded-full bg-accent-muted px-3.5 py-1.5 text-sm font-semibold tabular-nums text-accent">
           Booking #{reference}
         </p>
       </div>
@@ -99,31 +99,33 @@ export function MatchingStep({ booking, accessToken, bookingState }: MatchingSte
         <BookingStatusTimeline status={booking.status} />
       </div>
 
-      <dl className="mx-auto mt-8 max-w-[680px] space-y-3 rounded-2xl border border-[#E2E9E6] bg-white p-5 text-[15px] shadow-soft">
+      <dl className="mx-auto mt-8 max-w-[680px] space-y-3 rounded-2xl border border-border bg-surface p-5 text-[15px] shadow-soft">
         <div className="flex justify-between gap-4">
           <dt className="text-ink-muted">Status</dt>
-          <dd className="font-medium">{getBookingStatusLabel(booking.status)}</dd>
+          <dd className="font-medium text-ink">{getBookingStatusLabel(booking.status)}</dd>
         </div>
         <div className="flex justify-between gap-4">
           <dt className="text-ink-muted">Service</dt>
-          <dd className="font-medium capitalize">{booking.service_type.replace(/_/g, " ")}</dd>
+          <dd className="font-medium capitalize text-ink">
+            {booking.service_type.replace(/_/g, " ")}
+          </dd>
         </div>
         <div className="flex justify-between gap-4">
           <dt className="text-ink-muted">Deposit paid</dt>
-          <dd className="font-medium">
+          <dd className="font-medium text-ink">
             {formatCurrency(calculateDepositCents(booking.total_cents), booking.currency)}
           </dd>
         </div>
         <div className="flex justify-between gap-4">
           <dt className="text-ink-muted">Address</dt>
-          <dd className="text-right font-medium">
+          <dd className="text-right font-medium text-ink">
             {booking.address_line1}, {booking.address_city}
           </dd>
         </div>
       </dl>
 
       {bookingState && !savedUsual ? (
-        <div className="mx-auto mt-6 max-w-[680px] rounded-2xl bg-[#F1F8F5] px-5 py-4 text-left">
+        <div className="mx-auto mt-6 max-w-[680px] rounded-2xl border border-border bg-surface-muted px-5 py-4 text-left">
           <p className="font-semibold text-ink">Save these details for next time?</p>
           <p className="mt-1 text-sm text-ink-muted">
             We’ll remember this property, service, and extras for faster rebooking.

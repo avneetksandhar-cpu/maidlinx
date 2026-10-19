@@ -220,12 +220,12 @@ export function SavedPlaceChips({
       <p
         className={cn(
           "text-xs font-medium uppercase tracking-wide",
-          isHero ? "text-teal-100/80" : "text-ink-muted",
+          isHero ? "text-teal-100/80" : "text-[var(--color-ink-muted)]",
         )}
       >
-        Saved & recent
+        Saved properties
       </p>
-      <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
+      <div className="grid gap-2">
         {chips.map((chip) => {
           const Icon = chip.icon;
           return (
@@ -241,25 +241,27 @@ export function SavedPlaceChips({
                 onSelect({ ...address, source: chip.source });
               }}
               className={cn(
-                "flex min-h-12 min-w-[7.5rem] shrink-0 items-center gap-2.5 rounded-xl px-3 py-2 text-left transition-transform active:scale-[0.98]",
+                "flex min-h-14 w-full items-center gap-3 rounded-2xl px-4 py-3 text-left transition-transform active:scale-[0.99]",
                 isHero
                   ? "bg-white/12 ring-1 ring-white/20 hover:bg-white/18"
-                  : "border border-border bg-surface hover:border-border-strong",
+                  : "border border-[var(--color-border)] bg-[var(--color-surface)] hover:border-[var(--color-accent)]/50",
               )}
             >
               <span
                 className={cn(
-                  "flex size-9 shrink-0 items-center justify-center rounded-lg",
-                  isHero ? "bg-white/15 text-white" : "bg-surface-muted text-navy",
+                  "flex size-10 shrink-0 items-center justify-center rounded-xl",
+                  isHero
+                    ? "bg-white/15 text-white"
+                    : "bg-[var(--color-accent-muted)] text-[var(--color-accent)]",
                 )}
               >
                 <Icon className="size-4" strokeWidth={2} aria-hidden />
               </span>
-              <span className="min-w-0">
+              <span className="min-w-0 flex-1">
                 <span
                   className={cn(
                     "block text-sm font-semibold",
-                    isHero ? "text-white" : "text-ink",
+                    isHero ? "text-white" : "text-[var(--color-ink)]",
                   )}
                 >
                   {chip.label}
@@ -267,7 +269,7 @@ export function SavedPlaceChips({
                 <span
                   className={cn(
                     "block truncate text-xs",
-                    isHero ? "text-white/65" : "text-ink-muted",
+                    isHero ? "text-white/65" : "text-[var(--color-ink-muted)]",
                   )}
                 >
                   {chip.hint}

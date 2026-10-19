@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { SiteLogo } from "@/components/brand/site-logo";
 import { BookingReviewCard } from "@/components/post-booking/booking-review-card";
 import { LiveStatusCard } from "@/components/post-booking/live-status-card";
 import { UpcomingBookingCard } from "@/components/post-booking/upcoming-booking-card";
@@ -67,12 +68,14 @@ export function PostBookingDashboard({
 
   if (loading || !booking) {
     return (
-      <div className="flex min-h-[50dvh] flex-col items-center justify-center px-4 text-center">
-        <div className="mb-4 size-10 animate-pulse rounded-full bg-[var(--maidlinx-mint)]" />
-        <p className="font-display text-xl font-semibold text-[var(--maidlinx-ink)]">
-          Finding your MaidLinx Pro…
-        </p>
-        <p className="mt-2 text-sm text-[var(--maidlinx-muted)]">
+      <div
+        data-theme="ml-dark"
+        className="flex min-h-[50dvh] flex-col items-center justify-center bg-[var(--ml-dark-bg)] px-4 text-center"
+        style={{ fontFamily: "var(--ml-font-ios)" }}
+      >
+        <SiteLogo variant="mark" tone="brand" href={routes.home} className="mb-4 animate-pulse" />
+        <p className="text-xl font-semibold text-white">Finding your MaidLinx Pro…</p>
+        <p className="mt-2 text-sm text-[var(--ml-dark-ink-muted)]">
           {error ?? "Loading your booking…"}
         </p>
       </div>
@@ -82,12 +85,16 @@ export function PostBookingDashboard({
   if (!isBookingPaymentConfirmed(booking.status) && !booking.quote_requested) {
     if (booking.status === "pending_payment") {
       return (
-        <div className="mx-auto max-w-lg py-12 text-center">
-          <h1 className="font-display text-2xl font-bold">Confirming payment…</h1>
-          <p className="mt-2 text-[var(--maidlinx-muted)]">This usually takes a few seconds.</p>
+        <div
+          data-theme="ml-dark"
+          className="mx-auto max-w-lg bg-[var(--ml-dark-bg)] py-12 text-center"
+          style={{ fontFamily: "var(--ml-font-ios)" }}
+        >
+          <h1 className="text-2xl font-bold text-white">Confirming payment…</h1>
+          <p className="mt-2 text-[var(--ml-dark-ink-muted)]">This usually takes a few seconds.</p>
           <Button
             variant="secondary"
-            className="mt-6"
+            className="mt-6 border-[var(--ml-dark-border-strong)] bg-transparent text-white hover:bg-[var(--ml-dark-surface-2)]"
             onClick={() => {
               void fetchBooking(bookingId, accessToken).then(setBooking);
             }}
@@ -104,74 +111,100 @@ export function PostBookingDashboard({
   const timeline = getCustomerTimelineState(booking.status);
 
   return (
-    <div className="space-y-6 lg:mx-auto lg:grid lg:max-w-[1100px] lg:grid-cols-[minmax(0,1fr)_minmax(280px,360px)] lg:items-start lg:gap-8 lg:space-y-0">
-      <div className="space-y-6">
-        <header className="space-y-1">
-          <p className="text-base text-[var(--maidlinx-text)]">Hi, {name}</p>
-          <h1 className="font-display text-[1.65rem] font-bold leading-tight tracking-tight text-[var(--maidlinx-ink)] sm:text-[1.85rem]">
-            {cleaningToday
-              ? "You’ve got a cleaning today."
-              : timeline.findingProfessional
-                ? "You’re booked."
-                : "Your cleaning is on the calendar."}
-          </h1>
-          <p className="text-[15px] text-[var(--maidlinx-muted)]">
-            Sit back, we’ve got it from here.
-          </p>
-        </header>
-
-        <div className="flex items-center gap-3 overflow-hidden rounded-2xl bg-[var(--maidlinx-mint)] p-4">
-          <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-white text-[var(--maidlinx-green)]">
-            <ShieldIcon />
-          </span>
-          <p className="text-sm leading-snug text-[var(--maidlinx-text)]">
-            Your home, your time. We handle the cleaning so you can focus on what matters.
-          </p>
-        </div>
-
-        <LiveStatusCard booking={booking} accessToken={accessToken} />
-        {booking.status === "completed" ? (
-          <div className="space-y-4 rounded-2xl border border-border bg-surface p-5 shadow-soft">
-            <h2 className="font-display text-xl font-semibold text-navy">
-              Cleaning completed!
-            </h2>
-            <p className="text-sm text-ink-muted">
-              Thanks for booking with MaidLinx. Rate your cleaners, view your invoice, or book again.
+    <div
+      data-theme="ml-dark"
+      className="min-h-[50dvh] bg-[var(--ml-dark-bg)] text-[var(--ml-dark-ink)]"
+      style={{ fontFamily: "var(--ml-font-ios)" }}
+    >
+      <div className="space-y-6 px-1 lg:mx-auto lg:grid lg:max-w-[1100px] lg:grid-cols-[minmax(0,1fr)_minmax(280px,360px)] lg:items-start lg:gap-8 lg:space-y-0">
+        <div className="space-y-6">
+          <header className="space-y-1">
+            <p className="text-base text-[var(--ml-dark-ink-muted)]">Hi, {name}</p>
+            <h1 className="text-[1.65rem] font-semibold leading-tight tracking-tight text-white sm:text-[1.85rem]">
+              {cleaningToday
+                ? "You’ve got a cleaning today."
+                : timeline.findingProfessional
+                  ? "You’re booked."
+                  : "Your cleaning is on the calendar."}
+            </h1>
+            <p className="text-[15px] text-[var(--ml-dark-ink-muted)]">
+              Sit back, we’ve got it from here.
             </p>
-            <BookingReviewCard bookingId={booking.id} />
-            <div className="grid gap-2 sm:grid-cols-2">
-              <Link href={routes.dashboardInvoices}>
-                <Button variant="secondary" className="w-full">
-                  View invoice
-                </Button>
-              </Link>
-              <Link href={`${routes.book}?rebook=1`}>
-                <Button variant="secondary" className="w-full">
-                  Book again
-                </Button>
-              </Link>
-            </div>
-            <p className="text-center text-xs text-ink-subtle">
-              Tips are not available in TEST checkout yet — leave a review to thank your team.
+          </header>
+
+          <div className="flex items-center gap-3 overflow-hidden rounded-2xl border border-[var(--ml-dark-border)] bg-[var(--ml-dark-surface)] p-4">
+            <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-[var(--ml-dark-mint)] text-[var(--color-accent-foreground)]">
+              <ShieldIcon />
+            </span>
+            <p className="text-sm leading-snug text-[var(--ml-dark-ink-muted)]">
+              Your home, your time. We handle the cleaning so you can focus on what matters.
             </p>
           </div>
-        ) : null}
-      </div>
 
-      <div className="space-y-6">
-        <UpcomingBookingCard booking={booking} showViewAll />
+          <LiveStatusCard booking={booking} accessToken={accessToken} />
 
-        <div className="flex flex-col gap-3 sm:flex-row lg:flex-col">
-          <Link href={routes.dashboardBookings} className="sm:flex-1">
-            <Button variant="secondary" className="w-full">
-              View my bookings
-            </Button>
-          </Link>
-          <Link href={routes.book} className="sm:flex-1">
-            <Button variant="primary" className="w-full">
-              Book another clean
-            </Button>
-          </Link>
+          {booking.status === "completed" ? (
+            <div className="space-y-4 rounded-2xl border border-[var(--ml-dark-border)] bg-[var(--ml-dark-surface)] p-5 shadow-[var(--shadow-card)]">
+              <div className="flex flex-col items-center text-center">
+                <div
+                  className="mb-4 flex size-14 items-center justify-center rounded-full bg-[var(--ml-dark-mint)] text-[var(--color-accent-foreground)] shadow-[0_0_24px_rgb(8_224_212_/_0.3)]"
+                  aria-hidden
+                >
+                  <span className="text-2xl font-bold leading-none">✓</span>
+                </div>
+                <h2 className="text-xl font-semibold text-white">Cleaning completed!</h2>
+                <p className="mt-2 text-sm text-[var(--ml-dark-ink-muted)]">
+                  Thanks for booking with MaidLinx. Rate your cleaners, view your invoice, or book
+                  again.
+                </p>
+              </div>
+
+              <BookingReviewCard bookingId={booking.id} />
+
+              <div className="grid gap-2 sm:grid-cols-2">
+                <Link href={routes.dashboardInvoices}>
+                  <Button
+                    variant="secondary"
+                    className="w-full rounded-2xl border-[var(--ml-dark-border-strong)] bg-transparent text-white hover:bg-[var(--ml-dark-surface-2)]"
+                  >
+                    View invoice
+                  </Button>
+                </Link>
+                <Link href={`${routes.book}?rebook=1`}>
+                  <Button
+                    variant="secondary"
+                    className="w-full rounded-2xl border-[var(--ml-dark-border-strong)] bg-transparent text-white hover:bg-[var(--ml-dark-surface-2)]"
+                  >
+                    Book again
+                  </Button>
+                </Link>
+              </div>
+
+              <p className="text-center text-xs text-[var(--ml-dark-ink-subtle)]">
+                Tips are not available in TEST checkout yet — leave a review to thank your team.
+              </p>
+            </div>
+          ) : null}
+        </div>
+
+        <div className="space-y-6">
+          <UpcomingBookingCard booking={booking} showViewAll />
+
+          <div className="flex flex-col gap-3 sm:flex-row lg:flex-col">
+            <Link href={routes.dashboardBookings} className="sm:flex-1">
+              <Button
+                variant="secondary"
+                className="w-full rounded-2xl border-[var(--ml-dark-border-strong)] bg-transparent text-white hover:bg-[var(--ml-dark-surface-2)]"
+              >
+                View my bookings
+              </Button>
+            </Link>
+            <Link href={routes.book} className="sm:flex-1">
+              <Button variant="primary" className="booking-cta-btn w-full rounded-2xl">
+                Book another clean
+              </Button>
+            </Link>
+          </div>
         </div>
       </div>
     </div>

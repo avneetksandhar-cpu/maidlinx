@@ -78,13 +78,11 @@ export function UpcomingBookingCard({
   return (
     <section className={cn("space-y-3", className)}>
       <div className="flex items-center justify-between">
-        <h2 className="font-display text-lg font-semibold text-[var(--maidlinx-ink)]">
-          Upcoming booking
-        </h2>
+        <h2 className="text-lg font-semibold text-white">Upcoming booking</h2>
         {showViewAll ? (
           <Link
             href={routes.dashboardBookings}
-            className="text-sm font-medium text-[var(--maidlinx-green)] hover:text-[var(--maidlinx-green-dark)]"
+            className="text-sm font-medium text-[var(--ml-dark-mint)] hover:text-[var(--color-accent-hover)]"
           >
             View all ›
           </Link>
@@ -93,13 +91,13 @@ export function UpcomingBookingCard({
 
       <Link
         href={href}
-        className="flex items-start gap-3 rounded-2xl border border-[var(--maidlinx-border)] bg-white p-4 shadow-soft transition-shadow hover:shadow-card"
+        className="flex items-start gap-3 rounded-2xl border border-[var(--ml-dark-border)] bg-[var(--ml-dark-surface)] p-4 shadow-[var(--shadow-soft)] transition-colors hover:border-[var(--ml-dark-mint)]/40"
       >
-        <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-[var(--maidlinx-mint)] text-[var(--maidlinx-green)]">
+        <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-[var(--ml-dark-mint)]/15 text-[var(--ml-dark-mint)]">
           <CalendarDollarIcon />
         </span>
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-semibold text-[var(--maidlinx-ink)]">
+          <p className="text-sm font-semibold text-white">
             {formatRelativeDay(source.scheduledAt)} ·{" "}
             {formatBookingTimeRange(
               source.scheduledAt,
@@ -107,20 +105,20 @@ export function UpcomingBookingCard({
               source.arrivalWindowEnd,
             )}
           </p>
-          <p className="mt-0.5 text-sm text-[var(--maidlinx-text)]">
+          <p className="mt-0.5 text-sm text-[var(--ml-dark-ink-muted)]">
             {getServiceLabel(source.serviceType)}
           </p>
-          <p className="mt-0.5 truncate text-sm text-[var(--maidlinx-muted)]">
+          <p className="mt-0.5 truncate text-sm text-[var(--ml-dark-ink-subtle)]">
             {formatAddress(source.addressLine1, source.addressCity, source.addressState)}
           </p>
         </div>
         <div className="shrink-0 text-right">
           {paid ? (
-            <span className="inline-flex rounded-full bg-[var(--maidlinx-mint)] px-2.5 py-0.5 text-xs font-semibold text-[var(--maidlinx-green)]">
+            <span className="inline-flex rounded-full bg-[var(--ml-dark-mint)]/15 px-2.5 py-0.5 text-xs font-semibold text-[var(--ml-dark-mint)]">
               Paid
             </span>
           ) : null}
-          <p className="mt-1 text-sm font-semibold tabular-nums text-[var(--maidlinx-ink)]">
+          <p className="mt-1 text-sm font-semibold tabular-nums text-white">
             {isStoredBooking(booking)
               ? formatCurrency(source.totalCents, source.currency)
               : formatBookingTotal(source.totalCents, source.currency)}

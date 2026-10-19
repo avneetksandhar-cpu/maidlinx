@@ -186,7 +186,14 @@ export function PriceSummary({
 
   if (variant === "embedded") {
     return (
-      <div className={cn("rounded-2xl bg-surface-muted/80 p-5", className)}>{content}</div>
+      <div
+        className={cn(
+          "rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-5",
+          className,
+        )}
+      >
+        {content}
+      </div>
     );
   }
 

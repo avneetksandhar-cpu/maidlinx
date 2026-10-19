@@ -44,7 +44,10 @@ export function ServiceScreen() {
 
   if (!hydrated || blocked) {
     return (
-      <div className="flex min-h-[40dvh] items-center justify-center text-sm text-ink-muted">
+      <div
+        data-theme="ml-dark"
+        className="flex min-h-[40dvh] items-center justify-center bg-[var(--ml-dark-bg)] text-sm text-[var(--ml-dark-ink-muted)]"
+      >
         Loading…
       </div>
     );

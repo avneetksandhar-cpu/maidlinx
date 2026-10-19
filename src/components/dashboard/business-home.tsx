@@ -16,7 +16,7 @@ interface BusinessHomeProps {
 }
 
 /**
- * Multi-property B2B overview — stats + upcoming + properties (design-spec).
+ * Multi-property B2B overview — dark cards + mint Book a Cleaning CTA (design-spec).
  * All figures come from real dashboard queries; zeros when empty.
  */
 export function BusinessHome({
@@ -35,15 +35,19 @@ export function BusinessHome({
     <div className="space-y-8">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <header className="space-y-1">
-          <h1 className="font-display text-2xl font-semibold tracking-tight text-navy sm:text-3xl">
+          <h1 className="text-2xl font-semibold tracking-tight text-white sm:text-3xl">
             {greeting}, {name}.
           </h1>
-          <p className="text-sm text-ink-muted">
+          <p className="text-sm text-[var(--ml-dark-ink-muted)]">
             Manage cleans across your properties — book, track, and invoice in one place.
           </p>
         </header>
         <Link href={routes.book}>
-          <Button variant="primary" size="lg" className="rounded-2xl">
+          <Button
+            variant="primary"
+            size="lg"
+            className="booking-cta-btn rounded-2xl shadow-[0_0_24px_rgb(8_224_212_/_0.28)]"
+          >
             + Book a Cleaning
           </Button>
         </Link>
@@ -59,18 +63,21 @@ export function BusinessHome({
       <section className="grid gap-8 lg:grid-cols-2">
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <h2 className="font-display text-lg font-semibold text-navy">Upcoming Bookings</h2>
+            <h2 className="text-lg font-semibold text-white">Upcoming Bookings</h2>
             <Link
               href={routes.dashboardBookings}
-              className="text-sm font-medium text-navy underline-offset-4 hover:underline"
+              className="text-sm font-medium text-[var(--ml-dark-mint)] underline-offset-4 hover:underline"
             >
               View all
             </Link>
           </div>
           {upcoming.length === 0 ? (
-            <p className="rounded-2xl border border-dashed border-border bg-surface px-4 py-8 text-center text-sm text-ink-muted">
+            <p className="rounded-2xl border border-dashed border-[var(--ml-dark-border)] bg-[var(--ml-dark-surface)] px-4 py-8 text-center text-sm text-[var(--ml-dark-ink-muted)]">
               No upcoming cleans yet.{" "}
-              <Link href={routes.book} className="font-medium text-navy underline-offset-4 hover:underline">
+              <Link
+                href={routes.book}
+                className="font-medium text-[var(--ml-dark-mint)] underline-offset-4 hover:underline"
+              >
                 Book one
               </Link>
             </p>
@@ -80,14 +87,14 @@ export function BusinessHome({
                 <li key={b.id}>
                   <Link
                     href={routes.bookingDetail(b.id)}
-                    className="flex items-start justify-between gap-3 rounded-2xl border border-border bg-surface px-4 py-3.5 shadow-soft transition-colors hover:border-accent/50"
+                    className="flex items-start justify-between gap-3 rounded-2xl border border-[var(--ml-dark-border)] bg-[var(--ml-dark-surface)] px-4 py-3.5 shadow-[var(--shadow-soft)] transition-colors hover:border-[var(--ml-dark-mint)]/40"
                   >
                     <div className="min-w-0">
-                      <p className="truncate text-sm font-semibold text-navy">
+                      <p className="truncate text-sm font-semibold text-white">
                         {b.addressLine1 || "Property"}
                         {b.addressCity ? `, ${b.addressCity}` : ""}
                       </p>
-                      <p className="mt-0.5 text-xs text-ink-muted">
+                      <p className="mt-0.5 text-xs text-[var(--ml-dark-ink-muted)]">
                         {formatWhen(b.scheduledAt)} · {b.serviceType}
                       </p>
                     </div>
@@ -101,16 +108,16 @@ export function BusinessHome({
 
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <h2 className="font-display text-lg font-semibold text-navy">Your Properties</h2>
+            <h2 className="text-lg font-semibold text-white">Your Properties</h2>
             <Link
               href={routes.dashboardSavedPlaces}
-              className="text-sm font-medium text-navy underline-offset-4 hover:underline"
+              className="text-sm font-medium text-[var(--ml-dark-mint)] underline-offset-4 hover:underline"
             >
               Manage
             </Link>
           </div>
           {properties.length === 0 ? (
-            <p className="rounded-2xl border border-dashed border-border bg-surface px-4 py-8 text-center text-sm text-ink-muted">
+            <p className="rounded-2xl border border-dashed border-[var(--ml-dark-border)] bg-[var(--ml-dark-surface)] px-4 py-8 text-center text-sm text-[var(--ml-dark-ink-muted)]">
               Save addresses as you book to build your property list.
             </p>
           ) : (
@@ -118,21 +125,21 @@ export function BusinessHome({
               {properties.slice(0, 6).map((p) => (
                 <li
                   key={p.id}
-                  className="flex items-center gap-3 rounded-2xl border border-border bg-surface px-4 py-3.5 shadow-soft"
+                  className="flex items-center gap-3 rounded-2xl border border-[var(--ml-dark-border)] bg-[var(--ml-dark-surface)] px-4 py-3.5 shadow-[var(--shadow-soft)]"
                 >
                   <span
-                    className="flex size-11 shrink-0 items-center justify-center rounded-xl text-navy"
+                    className="flex size-11 shrink-0 items-center justify-center rounded-xl text-[var(--color-accent-foreground)]"
                     style={{
                       background:
-                        "linear-gradient(145deg, #e6fffc 0%, #08e0d4 70%, #003474 160%)",
+                        "linear-gradient(145deg, rgb(8 224 212 / 0.35) 0%, #08e0d4 70%, #003474 160%)",
                     }}
                     aria-hidden
                   >
                     <HomeMark />
                   </span>
                   <div className="min-w-0">
-                    <p className="truncate text-sm font-semibold text-navy">{p.label}</p>
-                    <p className="truncate text-xs text-ink-muted">
+                    <p className="truncate text-sm font-semibold text-white">{p.label}</p>
+                    <p className="truncate text-xs text-[var(--ml-dark-ink-muted)]">
                       {p.addressLine1}
                       {p.city ? `, ${p.city}` : ""}
                     </p>
@@ -149,9 +156,11 @@ export function BusinessHome({
 
 function StatCard({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl border border-border bg-surface px-4 py-4 shadow-soft">
-      <p className="text-xs font-medium tracking-wide text-ink-muted uppercase">{label}</p>
-      <p className="mt-1.5 font-display text-2xl font-semibold tabular-nums text-navy">{value}</p>
+    <div className="rounded-2xl border border-[var(--ml-dark-border)] bg-[var(--ml-dark-surface)] px-4 py-4 shadow-[var(--shadow-soft)]">
+      <p className="text-xs font-medium tracking-wide text-[var(--ml-dark-ink-muted)] uppercase">
+        {label}
+      </p>
+      <p className="mt-1.5 text-2xl font-semibold tabular-nums text-white">{value}</p>
     </div>
   );
 }

@@ -16,6 +16,7 @@ interface CustomerHomeDashboardProps {
 
 /**
  * Customer home (/dashboard, /account): featured active booking or empty CTA.
+ * Active / upcoming states use ml-dark to match post-booking screens 7–10.
  */
 export function CustomerHomeDashboard({
   firstName,
@@ -60,49 +61,62 @@ export function CustomerHomeDashboard({
 
   if (activeBooking) {
     return (
-      <div className="space-y-6 lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(280px,360px)] lg:items-start lg:gap-8 lg:space-y-0">
-        <div className="space-y-6">
-          <header className="space-y-1">
-            <p className="text-base text-[var(--maidlinx-text)]">Hi, {name}</p>
-            <h1 className="font-display text-[1.65rem] font-bold tracking-tight text-[var(--maidlinx-ink)]">
-              You’ve got a cleaning coming up.
-            </h1>
-            <p className="text-[15px] text-[var(--maidlinx-muted)]">
-              Sit back, we’ve got it from here.
-            </p>
-          </header>
-          <LiveStatusCard booking={activeBooking} />
-        </div>
-        <div className="space-y-6">
-          {nextUpcoming ? (
-            <UpcomingBookingCard booking={nextUpcoming} showViewAll />
-          ) : (
-            <UpcomingBookingCard booking={activeBooking} showViewAll />
-          )}
-          <Link href={routes.book}>
-            <Button variant="secondary" className="w-full">
-              Book another clean
-            </Button>
-          </Link>
+      <div
+        data-theme="ml-dark"
+        className="rounded-3xl bg-[var(--ml-dark-bg)] p-4 text-[var(--ml-dark-ink)] sm:p-6"
+        style={{ fontFamily: "var(--ml-font-ios)" }}
+      >
+        <div className="space-y-6 lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(280px,360px)] lg:items-start lg:gap-8 lg:space-y-0">
+          <div className="space-y-6">
+            <header className="space-y-1">
+              <p className="text-base text-[var(--ml-dark-ink-muted)]">Hi, {name}</p>
+              <h1 className="text-[1.65rem] font-semibold tracking-tight text-white">
+                You’ve got a cleaning coming up.
+              </h1>
+              <p className="text-[15px] text-[var(--ml-dark-ink-muted)]">
+                Sit back, we’ve got it from here.
+              </p>
+            </header>
+            <LiveStatusCard booking={activeBooking} />
+          </div>
+          <div className="space-y-6">
+            {nextUpcoming ? (
+              <UpcomingBookingCard booking={nextUpcoming} showViewAll />
+            ) : (
+              <UpcomingBookingCard booking={activeBooking} showViewAll />
+            )}
+            <Link href={routes.book}>
+              <Button
+                variant="secondary"
+                className="w-full rounded-2xl border-[var(--ml-dark-border-strong)] bg-transparent text-white hover:bg-[var(--ml-dark-surface-2)]"
+              >
+                Book another clean
+              </Button>
+            </Link>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <div
+      data-theme="ml-dark"
+      className="space-y-6 rounded-3xl bg-[var(--ml-dark-bg)] p-4 text-[var(--ml-dark-ink)] sm:p-6"
+      style={{ fontFamily: "var(--ml-font-ios)" }}
+    >
       <header className="space-y-1">
-        <p className="text-base text-[var(--maidlinx-text)]">Hi, {name}</p>
-        <h1 className="font-display text-[1.65rem] font-bold tracking-tight text-[var(--maidlinx-ink)]">
+        <p className="text-base text-[var(--ml-dark-ink-muted)]">Hi, {name}</p>
+        <h1 className="text-[1.65rem] font-semibold tracking-tight text-white">
           Your upcoming cleans
         </h1>
-        <p className="text-[15px] text-[var(--maidlinx-muted)]">
+        <p className="text-[15px] text-[var(--ml-dark-ink-muted)]">
           Sit back, we’ve got it from here.
         </p>
       </header>
       {nextUpcoming ? <UpcomingBookingCard booking={nextUpcoming} showViewAll /> : null}
       <Link href={routes.book}>
-        <Button variant="accent" className="w-full">
+        <Button variant="primary" className="booking-cta-btn w-full rounded-2xl">
           Book a clean
         </Button>
       </Link>

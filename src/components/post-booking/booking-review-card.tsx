@@ -70,19 +70,22 @@ export function BookingReviewCard({ bookingId }: BookingReviewCardProps) {
 
   if (loading) {
     return (
-      <section className="rounded-2xl border border-[var(--maidlinx-border)] bg-white p-4">
-        <p className="text-sm text-[var(--maidlinx-muted)]">Checking review status…</p>
+      <section className="rounded-2xl border border-[var(--ml-dark-border)] bg-[var(--ml-dark-surface-2)] p-4">
+        <p className="text-sm text-[var(--ml-dark-ink-muted)]">Checking review status…</p>
       </section>
     );
   }
 
   if (done && existing) {
     return (
-      <section className="rounded-2xl border border-[var(--maidlinx-border)] bg-white p-4">
-        <h2 className="font-display text-lg font-semibold text-[var(--maidlinx-ink)]">
+      <section className="rounded-2xl border border-[var(--ml-dark-border)] bg-[var(--ml-dark-surface-2)] p-4">
+        <h2 className="flex items-center gap-2 text-lg font-semibold text-white">
+          <span className="text-[var(--ml-dark-mint)]" aria-hidden>
+            ★
+          </span>
           Thanks for your review
         </h2>
-        <p className="mt-1 text-sm text-[var(--maidlinx-muted)]">
+        <p className="mt-1 text-sm text-[var(--ml-dark-ink-muted)]">
           You rated this clean {existing.rating}/5
           {existing.comment ? ` — “${existing.comment}”` : ""}.
         </p>
@@ -91,11 +94,14 @@ export function BookingReviewCard({ bookingId }: BookingReviewCardProps) {
   }
 
   return (
-    <section className="rounded-2xl border border-[var(--maidlinx-border)] bg-white p-4">
-      <h2 className="font-display text-lg font-semibold text-[var(--maidlinx-ink)]">
-        Rate your clean
+    <section className="rounded-2xl border border-[var(--ml-dark-border)] bg-[var(--ml-dark-surface-2)] p-4">
+      <h2 className="flex items-center gap-2 text-lg font-semibold text-white">
+        <span className="text-[var(--ml-dark-mint)]" aria-hidden>
+          ★
+        </span>
+        Rate your cleaners
       </h2>
-      <p className="mt-1 text-sm text-[var(--maidlinx-muted)]">
+      <p className="mt-1 text-sm text-[var(--ml-dark-ink-muted)]">
         Help other customers — and your Pro — with an honest rating.
       </p>
 
@@ -109,8 +115,8 @@ export function BookingReviewCard({ bookingId }: BookingReviewCardProps) {
             onClick={() => setRating(value)}
             className={
               rating === value
-                ? "h-10 min-w-10 rounded-lg bg-[var(--maidlinx-green)] px-3 text-sm font-semibold text-white"
-                : "h-10 min-w-10 rounded-lg border border-[var(--maidlinx-border)] bg-white px-3 text-sm font-medium text-[var(--maidlinx-ink)]"
+                ? "h-10 min-w-10 rounded-lg bg-[var(--ml-dark-mint)] px-3 text-sm font-semibold text-[var(--color-accent-foreground)]"
+                : "h-10 min-w-10 rounded-lg border border-[var(--ml-dark-border-strong)] bg-transparent px-3 text-sm font-medium text-white"
             }
           >
             {value}
@@ -125,12 +131,13 @@ export function BookingReviewCard({ bookingId }: BookingReviewCardProps) {
           placeholder="Optional comments"
           rows={3}
           maxLength={2000}
+          className="border-[var(--ml-dark-border)] bg-[var(--ml-dark-bg)] text-white placeholder:text-[var(--ml-dark-ink-subtle)]"
         />
       </div>
 
-      {error ? <p className="mt-2 text-sm text-red-700">{error}</p> : null}
+      {error ? <p className="mt-2 text-sm text-red-400">{error}</p> : null}
 
-      <Button className="mt-4 w-full" onClick={submit} disabled={pending}>
+      <Button variant="primary" className="booking-cta-btn mt-4 w-full rounded-2xl" onClick={submit} disabled={pending}>
         {pending ? "Submitting…" : "Submit review"}
       </Button>
     </section>

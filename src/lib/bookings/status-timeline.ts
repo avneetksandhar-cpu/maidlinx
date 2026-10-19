@@ -12,7 +12,19 @@ export const CUSTOMER_TIMELINE_STEPS = [
   { key: "complete", label: "Complete" },
 ] as const;
 
+/**
+ * Live job progress (design-spec screens 8–10):
+ * On the way → Arrived → Cleaning → Completed
+ */
+export const LIVE_JOB_TIMELINE_STEPS = [
+  { key: "on_the_way", label: "On the way" },
+  { key: "arrived", label: "Arrived" },
+  { key: "cleaning", label: "Cleaning" },
+  { key: "completed", label: "Completed" },
+] as const;
+
 export type CustomerTimelineKey = (typeof CUSTOMER_TIMELINE_STEPS)[number]["key"];
+export type LiveJobTimelineKey = (typeof LIVE_JOB_TIMELINE_STEPS)[number]["key"];
 
 function timelineIndexForStatus(status: string): number {
   const normalized = normalizeBookingStatus(status);
@@ -28,7 +40,10 @@ function timelineIndexForStatus(status: string): number {
     case "accepted":
       return 1;
     case "on_the_way":
+      return 2;
     case "arrived":
+      // Customer timeline collapses arrived into "on the way" index historically;
+      // live job timeline uses a dedicated Arrived step via liveJobIndexForStatus.
       return 2;
     case "in_progress":
       return 3;
@@ -38,6 +53,24 @@ function timelineIndexForStatus(status: string): number {
       return -1;
     default:
       return 1;
+  }
+}
+
+function liveJobIndexForStatus(status: string): number {
+  const normalized = normalizeBookingStatus(status);
+
+  switch (normalized as BookingStatus) {
+    case "on_the_way":
+      return 0;
+    case "arrived":
+      return 1;
+    case "in_progress":
+      return 2;
+    case "completed":
+      return 3;
+    default:
+      // Pre-en-route statuses: nothing current on the live bar yet.
+      return -1;
   }
 }
 
@@ -106,4 +139,30 @@ export function getCustomerTimelineState(status: string): {
   }));
 
   return { steps, currentIndex, findingProfessional, showCleaner };
+}
+
+/** Live job stepper: On the way → Arrived → Cleaning → Completed. */
+export function getLiveJobTimelineState(status: string): {
+  steps: Array<{
+    key: LiveJobTimelineKey;
+    label: string;
+    state: "complete" | "current" | "upcoming";
+  }>;
+  currentIndex: number;
+} {
+  const currentIndex = liveJobIndexForStatus(status);
+  const steps = LIVE_JOB_TIMELINE_STEPS.map((step, index) => ({
+    key: step.key,
+    label: step.label,
+    state:
+      currentIndex < 0
+        ? ("upcoming" as const)
+        : index < currentIndex
+          ? ("complete" as const)
+          : index === currentIndex
+            ? ("current" as const)
+            : ("upcoming" as const),
+  }));
+
+  return { steps, currentIndex };
 }
