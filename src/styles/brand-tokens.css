@@ -55,6 +55,7 @@
 /* Scoped dark theme for /book/* shell + B2B dashboard */
 [data-theme="ml-dark"] {
   --color-background: var(--ml-dark-bg);
+  --color-bg: var(--ml-dark-bg);
   --color-surface: var(--ml-dark-surface);
   --color-surface-muted: var(--ml-dark-surface-2);
   --color-surface-elevated: var(--ml-dark-bg-elevated);
@@ -65,8 +66,9 @@
   --color-accent-hover: #06c9bf;
   --color-accent-muted: rgb(8 224 212 / 0.12);
   --color-accent-foreground: #003474;
-  --color-navy: var(--ml-dark-ink);
-  --color-navy-light: #c8d0cc;
+  /* Keep brand navy as logo navy (not ink/white) for accents & on-teal labels */
+  --color-navy: #003474;
+  --color-navy-light: #a8b8c8;
   --color-teal: var(--ml-dark-mint);
   --color-teal-muted: rgb(8 224 212 / 0.18);
   --color-border: var(--ml-dark-border);
@@ -79,9 +81,9 @@
   --maidlinx-text: var(--ml-dark-ink);
   --maidlinx-muted: var(--ml-dark-ink-muted);
   --maidlinx-border: var(--ml-dark-border);
-  --shadow-soft: 0 1px 2px rgb(0 0 0 / 0.35);
-  --shadow-card: 0 4px 16px rgb(0 0 0 / 0.45);
-  --shadow-elevated: 0 12px 32px rgb(0 0 0 / 0.5);
+  --shadow-soft: 0 1px 2px rgb(0 20 50 / 0.35);
+  --shadow-card: 0 4px 16px rgb(0 20 50 / 0.4);
+  --shadow-elevated: 0 12px 32px rgb(0 20 50 / 0.45);
   color-scheme: dark;
   font-family: var(--ml-font-ios);
 }
