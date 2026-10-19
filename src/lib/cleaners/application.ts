@@ -107,8 +107,9 @@ export async function saveCleanerApplication(input: {
   const now = new Date().toISOString();
   const supabase = createAdminClient();
 
+  // Write canonical cleaners table — professionals view is often stale without platform cols.
   const { data, error } = await supabase
-    .from("professionals")
+    .from("cleaners")
     .update({
       application: parsed as unknown as Json,
       application_submitted_at: input.submit ? now : undefined,
@@ -119,7 +120,7 @@ export async function saveCleanerApplication(input: {
       transportation: parsed.transportation,
       languages: parsed.languages,
       market_id: parsed.marketId ?? undefined,
-    })
+    } as never)
     .eq("id", input.professionalId)
     .select("application, application_submitted_at")
     .single();
@@ -165,7 +166,7 @@ export async function getCleanerApplication(
   if (!hasAdminEnv()) return null;
   const supabase = createAdminClient();
   const { data, error } = await supabase
-    .from("professionals")
+    .from("cleaners")
     .select("application")
     .eq("id", professionalId)
     .maybeSingle();

@@ -67,3 +67,64 @@ $$;
 
 comment on function public.handle_new_user() is
   'Creates public.users (+ customers/cleaners). Admin only via app.admin_bootstrap_email; cleaner via signup metadata. Applicants are never auto-verified.';
+
+-- Refresh professionals compat view so platform columns are visible (fixes stale schema cache).
+-- App signup/application paths write public.cleaners directly; this keeps /professionals callers working.
+drop view if exists public.professionals cascade;
+
+create view public.professionals
+with (security_invoker = true)
+as
+select
+  id,
+  user_id as profile_id,
+  bio,
+  years_experience,
+  service_radius_km,
+  is_verified,
+  is_active,
+  rating_average,
+  rating_count,
+  onboarding_status,
+  onboarding_checklist,
+  is_online,
+  last_online_at,
+  stripe_connect_status,
+  stripe_connect_id,
+  market_id,
+  languages,
+  transportation,
+  agreements_accepted_at,
+  onboarding_submitted_at,
+  onboarding_reviewed_at,
+  rejection_reason,
+  platform_stage,
+  identity_status,
+  identity_provider,
+  identity_external_ref,
+  identity_reviewed_at,
+  identity_reviewed_by,
+  background_status,
+  background_provider,
+  background_external_ref,
+  background_reviewed_at,
+  background_reviewed_by,
+  phone_verified_at,
+  email_verified_at,
+  training_completed_at,
+  assessment_passed_at,
+  activated_at,
+  trust_score,
+  reliability_score,
+  serious_flag_count,
+  requires_admin_review,
+  application,
+  application_submitted_at,
+  maidlinx_verified,
+  verified_at,
+  created_at,
+  updated_at
+from public.cleaners;
+
+comment on view public.professionals is
+  'Compat view over cleaners including Cleaner Platform V1 fields. Signup/application prefer cleaners table.';
