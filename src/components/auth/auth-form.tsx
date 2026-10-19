@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useSupabase } from "@/components/providers/supabase-provider";
+import { OAuthButtons, OAuthDivider } from "@/components/auth/oauth-buttons";
 import { Button, Input, Label, Text } from "@/components/ui";
 import { routes } from "@/config/site";
 import Link from "next/link";
@@ -150,6 +151,9 @@ export function AuthForm({ mode }: AuthFormProps) {
           Cleaner apply · create account → application → pending review → approved jobs
         </p>
       ) : null}
+
+      <OAuthButtons role={signupRole} nextPath={nextPath} />
+      <OAuthDivider />
 
       {mode === "sign-up" ? (
         <div className="grid gap-4 sm:grid-cols-2">

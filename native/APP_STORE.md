@@ -45,8 +45,43 @@ Requires: macOS, Xcode, Apple Developer team, CocoaPods.
 6. TestFlight internal build + founder review
 7. Do **not** enable Stripe LIVE for App Store review until Product says yes
 
+## Sign in with Apple (native)
+
+Web Google + Apple OAuth already ships via Supabase (`docs/OAUTH_SETUP.md`). The Capacitor
+shell loads `www.maidlinx.com`, so **web OAuth works inside the WKWebView** for many flows.
+
+**App Store guideline 4.8:** if the app offers third-party login (Google), Apple usually
+requires a native **Sign in with Apple** option as well. Plan before TestFlight external:
+
+### HUMAN_ACTION_REQUIRED (native Apple)
+
+1. Apple Developer → Identifiers → App ID `com.maidlinx.app` → enable **Sign In with Apple**
+2. Xcode capability: Sign in with Apple on the iOS target
+3. Add a native plugin (recommended):
+   - `@capacitor-community/apple-sign-in` **or** Capacitor Social Login
+4. Exchange the Apple identity token with Supabase (do **not** invent a parallel session):
+
+```ts
+// Pseudocode — wire after plugin is installed; keep role/next from auth screens
+const { identityToken } = await AppleSignIn.authorize();
+await supabase.auth.signInWithIdToken({
+  provider: "apple",
+  token: identityToken,
+});
+// Then POST /api/auth/cleaner-applicant when role=cleaner (same as web)
+```
+
+5. Services ID / key used for **web** Apple in Supabase may differ from the **App ID**
+   native flow — follow current Supabase “Sign in with Apple” native docs
+6. Google native (optional later): Google Sign-In SDK → `signInWithIdToken({ provider: "google" })`
+7. Stripe LIVE stays **OFF** until founder approval
+
+Until native Apple is wired, the web “Continue with Apple” button remains the App Store
+fallback inside the remote-URL shell — confirm with App Review policy before submit.
+
 ## What this does NOT do
 
 - Does not rewrite MaidLinx to React Native
 - Does not enable live payments
 - Does not submit to the App Store
+- Does not enable Stripe LIVE
