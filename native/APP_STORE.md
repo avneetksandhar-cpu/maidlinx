@@ -1,87 +1,133 @@
 # MaidLinx — App Store / Capacitor iOS shell
 
-## Strategy
+**Status (2026-10-19):** iOS project scaffolded and branded. Signed archive **blocked** on this Mac — see [HUMAN_ACTION_REQUIRED](#human_action_required). Do **not** submit without founder approval. Stripe LIVE stays **OFF**.
 
-**Capacitor iOS shell** wrapping the live Next.js app at `https://www.maidlinx.com`.
-Web remains the source of truth (booking, auth, Stripe TEST). Native project is for
-Xcode → TestFlight → App Store later.
+| Item | Value |
+|------|--------|
+| Bundle ID | `com.maidlinx.app` |
+| Display name | MaidLinx |
+| URL scheme | `maidlinx://` |
+| Strategy | Capacitor remote-URL shell → `https://www.maidlinx.com` |
+| Marketing version | `1.0` (build `1`) |
+| Xcode project | `ios/App/App.xcworkspace` |
+| Device install this session | **No** |
+| ASC listing drafts | [`native/ASC_PREP.md`](./ASC_PREP.md) (prep only) |
 
-- Bundle ID: `com.maidlinx.app`
-- Display name: MaidLinx
-- Stripe LIVE: **OFF** (founder approval required)
-- App Store submission: **founder approval required**
+---
 
-## Web app shell (production www)
+## IOS_BUILD_STATUS
 
-Already shipped on tip / production after deploy:
+| Step | Result |
+|------|--------|
+| `capacitor.config.ts` | Done — appId, splash, status bar, Stripe TEST allowNavigation |
+| `npx cap add ios` | Done — `ios/` created |
+| Brand App Icon (1024) | Done — from `public/brand/icon-512.png` (mark only) |
+| Brand Splash | Done — `#0a0c0b` + `maidlinx-mark.png` |
+| Deep link `maidlinx://` | Done — Info.plist + Cap `AppDelegate` proxy |
+| Offline empty state | Done — `native/www/index.html` |
+| Location purpose strings | Done — Info.plist (matches real web geolocation / live job tracking) |
+| CocoaPods CLI | Installed (`pod 1.17.0`) |
+| `npx cap sync ios` / `pod install` | **Failed** — needs full Xcode.app (CLT alone insufficient) |
+| `xcodebuild archive` | **Failed** — no `/Applications/Xcode.app`, no `iphoneos` SDK, **0** codesigning identities |
+| TestFlight / App Store submit | **Not attempted** |
 
-- `/` → dark **AppOpenHome** (no marketing chrome)
-- PWA `display: standalone`, dark `theme_color` / `background_color`
-- `apple-mobile-web-app-*` + `viewport-fit=cover`
-- Booking funnel uses sticky CTAs + safe-area insets
+---
 
-## Open in Xcode
+## Native-value deltas (beyond WKWebView)
 
-`ios/` is generated on a Mac with CocoaPods (not committed until first successful `cap add`):
+| Delta | Status |
+|-------|--------|
+| Splash (`@capacitor/splash-screen` + branded Splash.imageset + LaunchScreen) | Implemented |
+| Status bar (`@capacitor/status-bar` + light content on `#0a0c0b`) | Implemented |
+| Safe areas (`contentInset: automatic` + offline CSS + www `viewport-fit=cover`) | Implemented |
+| App icons from real MaidLinx logo | Implemented |
+| Deep link scheme `maidlinx://` | Implemented |
+| Offline empty state (`native/www`) | Implemented |
+| Location purpose strings (real web geolocation / cleaner live share) | Implemented |
+| Portrait lock (iPhone) | Implemented |
+| Push delivery | **Stub docs only** — no APNs, no fake delivery |
+| Share sheet | Not wired — do not fake |
+| Native Sign in with Apple SDK | HUMAN_ACTION_REQUIRED (web OAuth interim) |
+
+---
+
+## Open / sync / archive (after Xcode)
 
 ```bash
 cd /Users/avnee/website
 npm install
-# once: brew install cocoapods
-npx cap add ios    # first time only
+bash native/scripts/generate-ios-assets.sh   # optional: refresh icons/splash
+sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
 npx cap sync ios
 npx cap open ios
+# Xcode: Signing Team → Product → Archive → Distribute (TestFlight)
 ```
 
-Requires: macOS, Xcode, Apple Developer team, CocoaPods.
+CLI archive:
 
-## Human actions still required
-
-1. Apple Developer Program enrollment + team assigned to `com.maidlinx.app`
-2. App icons / splash assets sized for App Store Connect (use `public/brand/`)
-3. Privacy policy URL (live legal page) + App Privacy questionnaire
-4. Screenshots for iPhone sizes
-5. Payment policy: marketplace uses Stripe **outside** IAP — confirm Apple guideline fit before submit
-6. TestFlight internal build + founder review
-7. Do **not** enable Stripe LIVE for App Store review until Product says yes
-
-## Sign in with Apple (native)
-
-Web Google + Apple OAuth already ships via Supabase (`docs/OAUTH_SETUP.md`). The Capacitor
-shell loads `www.maidlinx.com`, so **web OAuth works inside the WKWebView** for many flows.
-
-**App Store guideline 4.8:** if the app offers third-party login (Google), Apple usually
-requires a native **Sign in with Apple** option as well. Plan before TestFlight external:
-
-### HUMAN_ACTION_REQUIRED (native Apple)
-
-1. Apple Developer → Identifiers → App ID `com.maidlinx.app` → enable **Sign In with Apple**
-2. Xcode capability: Sign in with Apple on the iOS target
-3. Add a native plugin (recommended):
-   - `@capacitor-community/apple-sign-in` **or** Capacitor Social Login
-4. Exchange the Apple identity token with Supabase (do **not** invent a parallel session):
-
-```ts
-// Pseudocode — wire after plugin is installed; keep role/next from auth screens
-const { identityToken } = await AppleSignIn.authorize();
-await supabase.auth.signInWithIdToken({
-  provider: "apple",
-  token: identityToken,
-});
-// Then POST /api/auth/cleaner-applicant when role=cleaner (same as web)
+```bash
+cd ios/App
+xcodebuild -workspace App.xcworkspace \
+  -scheme App \
+  -configuration Release \
+  -destination 'generic/platform=iOS' \
+  -archivePath "$HOME/Desktop/MaidLinx.xcarchive" \
+  archive
 ```
 
-5. Services ID / key used for **web** Apple in Supabase may differ from the **App ID**
-   native flow — follow current Supabase “Sign in with Apple” native docs
-6. Google native (optional later): Google Sign-In SDK → `signInWithIdToken({ provider: "google" })`
-7. Stripe LIVE stays **OFF** until founder approval
+---
 
-Until native Apple is wired, the web “Continue with Apple” button remains the App Store
-fallback inside the remote-URL shell — confirm with App Review policy before submit.
+## HUMAN_ACTION_REQUIRED
+
+Exact founder steps (this machine cannot complete signing):
+
+### A. Toolchain (blocking now)
+
+1. Install **Xcode** from the Mac App Store (full app — not Command Line Tools only).
+2. Open Xcode once → accept license → install components.
+3. `sudo xcode-select -s /Applications/Xcode.app/Contents/Developer`
+4. Confirm: `xcodebuild -version` prints an Xcode version (not a CLT error).
+5. `cd /Users/avnee/website && npx cap sync ios` (must finish `pod install` cleanly).
+
+### B. Signing / device
+
+6. Apple Developer Program → App ID **`com.maidlinx.app`**.
+7. Xcode → `ios/App/App.xcworkspace` → Signing & Capabilities → select Team; Automatic signing ON.
+8. Confirm certs: `security find-identity -v -p codesigning` (must list identities).
+9. Run on Simulator or a physical iPhone (Development signing), or Archive → TestFlight.
+10. Device install was **not** possible in this session (no Xcode / no identities).
+
+### C. App Store Connect (do not submit yet)
+
+11. Create ASC app record for `com.maidlinx.app`.
+12. Fill listing from `native/ASC_PREP.md`; privacy questionnaire + privacy URL.
+13. Screenshots for required iPhone sizes.
+14. Payments: Stripe marketplace **outside** IAP — confirm guideline notes before review.
+15. **Stripe LIVE OFF** until founder approval.
+16. **Do not submit** for App Review until founder explicitly approves.
+
+### D. Sign in with Apple (native) if Google login is offered
+
+17. Enable Sign In with Apple on the App ID + Xcode capability.
+18. Wire `@capacitor-community/apple-sign-in` → Supabase `signInWithIdToken` (see `docs/OAUTH_SETUP.md`).
+19. Until then, web Continue with Apple inside the shell is interim — confirm App Review risk.
+
+### E. Push stub (later — do not claim in marketing)
+
+20. Enable Push on App ID + Xcode capability only when Product prioritizes APNs.
+21. Add real plugin + server sender; never advertise push until that ships.
+
+### F. Universal Links (optional)
+
+22. Associated Domains `applinks:www.maidlinx.com` + hosted `apple-app-site-association`.
+23. Keep `maidlinx://` as fallback.
+
+---
 
 ## What this does NOT do
 
 - Does not rewrite MaidLinx to React Native
-- Does not enable live payments
+- Does not enable Stripe LIVE or wallets LIVE
 - Does not submit to the App Store
-- Does not enable Stripe LIVE
+- Does not deliver push notifications
+- Does not invent Share / features the web app does not use

@@ -5,6 +5,8 @@ import { normalizeRole } from "@/lib/auth/roles";
 import type { UserRole } from "@/lib/auth/types";
 
 const AUTH_ROUTES = ["/sign-in", "/sign-up", "/forgot-password", "/reset-password"];
+/** Recovery session must stay on this page to set a new password. */
+const AUTH_ROUTES_ALLOW_SESSION = ["/reset-password"];
 const CUSTOMER_PREFIXES = ["/dashboard", "/account"];
 const CLEANER_PREFIXES = ["/cleaner", "/pro"];
 const CLEANER_API_PREFIXES = ["/api/cleaner", "/api/pro"];
@@ -128,6 +130,10 @@ export async function updateSession(request: NextRequest) {
     const role = normalizeRole(profile?.role);
 
     if (isAuthRoute) {
+      // Password recovery lands here with a session — do not bounce to account home.
+      if (AUTH_ROUTES_ALLOW_SESSION.some((route) => pathname.startsWith(route))) {
+        return supabaseResponse;
+      }
       const requestedNext = request.nextUrl.searchParams.get("next");
       const redirectUrl = request.nextUrl.clone();
       if (isSafeNextPath(requestedNext) && canRoleAccessPath(role, requestedNext)) {

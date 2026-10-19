@@ -35,6 +35,11 @@ async function SettingsContent() {
     { href: routes.cleanerProfile, label: "Profile", hint: "Name, bio, radius" },
     { href: routes.cleanerRatings, label: "Ratings", hint: "Customer feedback" },
     { href: routes.cleanerEarnings, label: "Earnings", hint: "Payouts & history" },
+    {
+      href: routes.cleanerAccountDelete,
+      label: "Delete account",
+      hint: "Anonymize profile and disable sign-in",
+    },
   ];
 
   return (

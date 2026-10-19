@@ -29,6 +29,7 @@ const clientSchema = z.object({
   NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string().min(1).optional(),
   NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: z.string().min(1).optional(),
   NEXT_PUBLIC_DEPOSIT_PERCENT: z.coerce.number().min(1).max(100).optional(),
+  NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: z.string().min(1).optional(),
   NEXT_PUBLIC_SENTRY_DSN: z.string().url().optional(),
 });
 
@@ -58,6 +59,8 @@ export function getClientEnv(): ClientEnv {
     NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
     NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY,
     NEXT_PUBLIC_DEPOSIT_PERCENT: process.env.NEXT_PUBLIC_DEPOSIT_PERCENT,
+    NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY,
+    NEXT_PUBLIC_SENTRY_DSN: process.env.NEXT_PUBLIC_SENTRY_DSN,
   });
   if (!parsed.success) {
     throw new Error(formatZodError("client", parsed.error));

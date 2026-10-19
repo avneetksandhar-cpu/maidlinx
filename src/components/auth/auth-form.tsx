@@ -318,6 +318,17 @@ export function AuthForm({ mode }: AuthFormProps) {
             />
           </div>
 
+          {mode === "sign-in" ? (
+            <Text muted className="text-sm">
+              <Link
+                href={routes.forgotPassword}
+                className="font-medium text-accent hover:text-accent-hover"
+              >
+                Forgot password?
+              </Link>
+            </Text>
+          ) : null}
+
           <Button type="submit" fullWidth disabled={passwordDisabled || loading}>
             {loading ? "Please wait…" : submitLabel}
           </Button>
