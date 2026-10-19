@@ -64,3 +64,6 @@ next-env.d.ts
 !/content-studio/audio/sfx/.gitkeep
 /content-studio/audio/bgm/*
 !/content-studio/audio/bgm/.gitkeep
+
+# local scratch / browser profiles (avoid EMFILE watch storms)
+/tmp/
