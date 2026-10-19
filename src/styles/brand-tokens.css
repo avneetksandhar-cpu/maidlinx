@@ -29,7 +29,7 @@
   --shadow-soft: 0 1px 2px rgb(0 52 116 / 0.04);
   --shadow-card: 0 1px 3px rgb(0 52 116 / 0.05), 0 4px 12px rgb(0 52 116 / 0.04);
 
-  /* Premium dark (booking funnel / business dashboard) */
+  /* Premium dark (booking funnel / business dashboard / Capacitor app) */
   --ml-dark-bg: #0a0c0b;
   --ml-dark-bg-elevated: #111413;
   --ml-dark-surface: #151917;
@@ -41,8 +41,14 @@
   --ml-dark-ink-subtle: #6b7370;
   --ml-dark-mint: #08e0d4;
   --ml-dark-mint-glow: 0 0 24px rgb(8 224 212 / 0.28);
+  /* Solid teal app chrome (design reference header bar) */
+  --ml-app-header: #08e0d4;
+  --ml-app-header-ink: #003474;
   --ml-font-ios: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display",
     "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  /* Shared mobile card radius / tap target */
+  --ml-card-radius: 1rem;
+  --ml-tap-min: 2.75rem;
 }
 
 /* Scoped dark theme for /book/* shell + B2B dashboard */
