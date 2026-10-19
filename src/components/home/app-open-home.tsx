@@ -7,7 +7,7 @@ import { MapPin } from "lucide-react";
 import { SiteLogo } from "@/components/brand/site-logo";
 import { Button } from "@/components/ui";
 import { AuthControls } from "@/components/layout/auth-controls";
-import { MobileBottomNav } from "@/components/booking/mobile-bottom-nav";
+import { CustomerBottomNav } from "@/components/customer/customer-bottom-nav";
 import { BOOKING_SCREEN_PATHS } from "@/lib/bookings/booking-routes";
 import { routes } from "@/config/site";
 import { trackBookingEvent } from "@/lib/analytics/booking";
@@ -114,7 +114,7 @@ export function AppOpenHome() {
         </div>
       </main>
 
-      <MobileBottomNav className="border-[var(--ml-dark-border)] bg-[var(--ml-dark-bg)]/95 text-[var(--ml-dark-ink)] [&_a]:text-[var(--ml-dark-ink-muted)] [&_a.text-accent]:text-[var(--ml-dark-mint)]" />
+      <CustomerBottomNav />
     </div>
   );
 }

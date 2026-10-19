@@ -3,11 +3,12 @@
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 import { SiteLogo } from "@/components/brand/site-logo";
+import { CustomerBottomNav } from "@/components/customer/customer-bottom-nav";
 import { routes } from "@/config/site";
 
 /**
  * Dark iOS chrome for live job status (Uber arriving loop).
- * Keeps marketing/account chrome off the critical post-pay path.
+ * Bottom tabs stay so customers can jump Home / Bookings / Account.
  */
 export function LiveJobShell({ children }: { children: React.ReactNode }) {
   return (
@@ -36,9 +37,10 @@ export function LiveJobShell({ children }: { children: React.ReactNode }) {
           </Link>
         </div>
       </header>
-      <main className="mx-auto w-full max-w-[680px] flex-1 px-4 py-5 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
+      <main className="mx-auto w-full max-w-[680px] flex-1 px-4 py-5 pb-[calc(5.5rem+env(safe-area-inset-bottom))]">
         {children}
       </main>
+      <CustomerBottomNav />
     </div>
   );
 }

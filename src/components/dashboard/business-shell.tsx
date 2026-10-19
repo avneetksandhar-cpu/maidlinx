@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { SiteLogo } from "@/components/brand/site-logo";
+import { CustomerBottomNav } from "@/components/customer/customer-bottom-nav";
 import { PlatformUserMenu } from "@/components/layout/platform-user-menu";
 import { Button } from "@/components/ui";
 import { routes } from "@/config/site";
@@ -143,9 +144,13 @@ export function BusinessShell({ children, firstName }: BusinessShellProps) {
           </div>
         ) : null}
 
-        <main id="main-content" className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:px-6 lg:py-8">
+        <main
+          id="main-content"
+          className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 pb-[calc(5.5rem+env(safe-area-inset-bottom))] sm:px-6 lg:pb-8 lg:py-8"
+        >
           {children}
         </main>
+        <CustomerBottomNav />
       </div>
     </div>
   );
