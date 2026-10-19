@@ -82,7 +82,7 @@ export function CustomerShell({ children, contentClassName }: CustomerShellProps
                 { href: routes.dashboardBookings, label: "Bookings" },
                 { href: routes.dashboardSupport, label: "Support" },
                 { href: routes.dashboardProfile, label: "Account" },
-                { href: routes.bookWelcome, label: "Request a clean" },
+                { href: routes.book, label: "Check availability" },
               ].map((item) => (
                 <Link
                   key={item.href}

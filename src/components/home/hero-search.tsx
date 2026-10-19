@@ -41,7 +41,7 @@ export function HeroSearch({
           onClick={onFindCleaners}
           className="h-[56px] w-full rounded-[14px] px-6 text-base font-semibold sm:h-[58px] sm:w-[260px]"
         >
-          Find cleaners
+          Check availability
           <ChevronRight className="size-5" aria-hidden />
         </Button>
       ) : (

@@ -4,17 +4,17 @@ const ITEMS = [
   {
     icon: ShieldCheck,
     title: "Screened professionals",
-    description: "Pros complete MaidLinx onboarding before jobs",
+    description: "Pros complete MaidLinx onboarding and screening gates before jobs",
   },
   {
     icon: Star,
-    title: "Satisfaction focused",
-    description: "We're here to make things right",
+    title: "Published policies",
+    description: "Cancellation, refund, and damage claim paths are linked under Legal",
   },
   {
     icon: Calendar,
-    title: "Easy booking",
-    description: "Book online in minutes",
+    title: "Upfront pricing",
+    description: "Checkout uses the same server quote you preview",
   },
 ] as const;
 

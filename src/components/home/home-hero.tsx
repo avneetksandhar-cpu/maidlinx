@@ -5,7 +5,6 @@ import { HeroSearch } from "@/components/home/hero-search";
 import { PopularServices } from "@/components/home/popular-services";
 import { TrustCard } from "@/components/home/trust-card";
 import { MapPreview } from "@/components/home/map-preview";
-import { BookingPreview } from "@/components/home/booking-preview";
 import { TrustBar } from "@/components/home/trust-bar";
 import type { BookingState } from "@/lib/bookings/booking-state";
 import type { WaitlistReason } from "@/lib/markets/booking-availability";
@@ -46,9 +45,9 @@ export function HomeHero({
             </div>
 
             <h1 className="relative mt-5 max-w-[16ch] font-display text-[2.875rem] leading-[0.98] font-bold tracking-tight text-[var(--maidlinx-ink)] sm:text-[3.5rem] lg:text-[4.75rem]">
-              MaidLinx
+              Come home
               <br />
-              <span className="text-[var(--maidlinx-green)]">cleaning, on demand.</span>
+              <span className="text-[var(--maidlinx-green)]">to clean.</span>
               <span className="absolute top-2 right-0 hidden text-[var(--maidlinx-green)]/50 sm:inline-flex lg:right-[-1.5rem]" aria-hidden>
                 <Sparkles className="size-5 lg:size-6" strokeWidth={1.5} />
               </span>
@@ -61,7 +60,8 @@ export function HomeHero({
             </h1>
 
             <p className="mt-4 max-w-[520px] text-lg leading-relaxed text-[var(--maidlinx-muted)] sm:text-[1.25rem]">
-              Book a clean in minutes — like a ride, for your home or workplace.
+              Book reliable home cleaning in your area, see your price upfront, and choose a time
+              that works.
             </p>
 
             <div className="mt-7 max-w-xl space-y-6">
@@ -106,7 +106,6 @@ export function HomeHero({
               </div>
 
               <MapPreview />
-              <BookingPreview />
             </div>
           </div>
         </div>
