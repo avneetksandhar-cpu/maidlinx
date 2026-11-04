@@ -42,6 +42,12 @@ export function useCustomerBookingLive({
   }, [onBooking, onError]);
 
   useEffect(() => {
+    // UI fixtures are local design previews — never poll or subscribe.
+    if (bookingId.includes("fixture")) {
+      if (initialBooking) onBookingRef.current(initialBooking);
+      return;
+    }
+
     let cancelled = false;
     const token = accessToken ?? getStoredBookingAccessToken(bookingId);
     let supabase: SupabaseClient | null = null;

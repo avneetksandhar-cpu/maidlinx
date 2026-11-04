@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { MotionReveal } from "@/components/motion/motion-reveal";
 import { BookingStatusTimeline } from "@/components/booking/booking-status-timeline";
-import { calculateDepositCents } from "@/lib/payments/deposit";
+import { getDueLaterCents, getDueNowCents, isPayAfterCleaningEnabled } from "@/lib/payments/pay-after";
 import { getBookingStatusLabel } from "@/lib/bookings/status";
 import { getCustomerTimelineState } from "@/lib/bookings/status-timeline";
 import { isBookingPaymentConfirmed } from "@/lib/bookings/client-api";
@@ -61,7 +61,9 @@ export function ConfirmationStep({ booking, accessToken }: ConfirmationStepProps
           : isPendingPayment
             ? "Your payment is being confirmed. You'll receive an email shortly."
             : isConfirmed
-              ? "We've received your deposit. A confirmation email is on its way."
+              ? isPayAfterCleaningEnabled()
+                ? "Card saved — we'll charge the agreed total after your clean. A confirmation email is on its way."
+                : "We've received your deposit. A confirmation email is on its way."
               : "Check your email for the latest status on this booking."}
       </Text>
 
@@ -111,9 +113,16 @@ export function ConfirmationStep({ booking, accessToken }: ConfirmationStepProps
         </div>
         {!isPendingPayment && !booking.quote_requested ? (
           <div className="flex justify-between gap-4">
-            <dt className="text-ink-muted">Deposit paid</dt>
+            <dt className="text-ink-muted">
+              {isPayAfterCleaningEnabled() ? "Charged after clean" : "Deposit paid"}
+            </dt>
             <dd className="font-medium">
-              {formatCurrency(calculateDepositCents(booking.total_cents), booking.currency)}
+              {formatCurrency(
+                isPayAfterCleaningEnabled()
+                  ? getDueLaterCents(booking.total_cents)
+                  : getDueNowCents(booking.total_cents),
+                booking.currency,
+              )}
             </dd>
           </div>
         ) : null}

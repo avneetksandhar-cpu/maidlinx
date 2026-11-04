@@ -1,8 +1,7 @@
 import Link from "next/link";
 import { BOOKING_EXTRAS, getBookingServiceLabel } from "@/lib/bookings/constants";
-import { isPaidBookingStatus } from "@/lib/bookings/status";
 import type { StoredBooking } from "@/lib/bookings/repository";
-import { calculateDepositCents } from "@/lib/payments/deposit";
+import { getDueLaterCents, getDueNowCents, isPayAfterCleaningEnabled } from "@/lib/payments/pay-after";
 import {
   formatBookingDate,
   formatBookingTimeRange,
@@ -22,10 +21,23 @@ function extraLabels(extras: string[]): string[] {
   });
 }
 
+function formatSavedCard(booking: StoredBooking): string | null {
+  if (!booking.card_last4) return null;
+  const brand = booking.card_brand
+    ? booking.card_brand.charAt(0).toUpperCase() + booking.card_brand.slice(1)
+    : "Card";
+  return `${brand} •••• ${booking.card_last4}`;
+}
+
 function paymentLabel(booking: StoredBooking): string {
-  if (booking.status === "pending_payment") return "Pending";
   if (booking.status === "cancelled") return "Cancelled";
-  if (isPaidBookingStatus(booking.status)) return "Deposit paid";
+  if (booking.payment_status === "paid") return "Paid";
+  if (booking.payment_status === "failed") return "Payment needs attention";
+  if (booking.payment_status === "deposit_paid") return "Deposit paid";
+  if (booking.stripe_payment_method_id || booking.card_last4) {
+    return isPayAfterCleaningEnabled() ? "Card saved · charge after clean" : "Pending";
+  }
+  if (booking.status === "pending_payment") return "Pending";
   return "Payment update";
 }
 
@@ -44,8 +56,10 @@ export function BookingDetailsCard({ booking, showHelp = true }: BookingDetailsC
   const postal = booking.address_postal_code?.trim() || null;
   const extras = extraLabels(booking.extras);
   const tasks = bookingTaskLabels(booking);
-  const deposit = calculateDepositCents(booking.total_cents);
-  const balance = Math.max(0, booking.total_cents - deposit);
+  const dueNow = getDueNowCents(booking.total_cents);
+  const dueLater = getDueLaterCents(booking.total_cents);
+  const savedCard = formatSavedCard(booking);
+  const payAfter = isPayAfterCleaningEnabled();
   const serviceBits = [
     getBookingServiceLabel(booking.service_type),
     booking.bedrooms > 0
@@ -103,7 +117,7 @@ export function BookingDetailsCard({ booking, showHelp = true }: BookingDetailsC
 
         {unit ? (
           <div className="flex justify-between gap-4">
-            <dt className="text-[var(--ml-dark-ink-muted)]">Unit</dt>
+            <dt className="text-[var(--ml-dark-ink-muted)]">Unit / entry</dt>
             <dd className="max-w-[60%] text-right font-medium text-white">{unit}</dd>
           </div>
         ) : null}
@@ -133,7 +147,7 @@ export function BookingDetailsCard({ booking, showHelp = true }: BookingDetailsC
         </div>
 
         <div className="flex justify-between gap-4 border-t border-[var(--ml-dark-border)] pt-3">
-          <dt className="text-[var(--ml-dark-ink-muted)]">Total</dt>
+          <dt className="text-[var(--ml-dark-ink-muted)]">Agreed total</dt>
           <dd className="font-semibold tabular-nums text-white">
             {formatCurrency(booking.total_cents, booking.currency)}
           </dd>
@@ -142,18 +156,38 @@ export function BookingDetailsCard({ booking, showHelp = true }: BookingDetailsC
         <div className="flex justify-between gap-4">
           <dt className="text-[var(--ml-dark-ink-muted)]">Due now</dt>
           <dd className="text-right font-medium text-white">
-            {isPaidBookingStatus(booking.status)
-              ? formatCurrency(deposit, booking.currency)
-              : formatCurrency(deposit, booking.currency)}
+            {booking.payment_status === "paid"
+              ? formatCurrency(0, booking.currency)
+              : formatCurrency(
+                  booking.payment_status === "deposit_paid" ? dueNow : dueNow,
+                  booking.currency,
+                )}
           </dd>
         </div>
 
         <div className="flex justify-between gap-4">
-          <dt className="text-[var(--ml-dark-ink-muted)]">Due after clean</dt>
+          <dt className="text-[var(--ml-dark-ink-muted)]">
+            {payAfter ? "Charged after clean" : "Due after clean"}
+          </dt>
           <dd className="text-right font-medium text-white">
-            {formatCurrency(balance, booking.currency)}
+            {booking.payment_status === "paid"
+              ? formatCurrency(0, booking.currency)
+              : formatCurrency(dueLater, booking.currency)}
           </dd>
         </div>
+
+        {savedCard ? (
+          <div className="flex justify-between gap-4">
+            <dt className="text-[var(--ml-dark-ink-muted)]">Saved card</dt>
+            <dd className="text-right font-medium text-white">{savedCard}</dd>
+          </div>
+        ) : null}
+
+        {payAfter && booking.payment_status !== "paid" ? (
+          <p className="rounded-xl bg-[var(--ml-dark-mint,#04CED2)]/10 px-3 py-2 text-xs text-[var(--ml-dark-mint,#04CED2)]">
+            Charged after your clean · Stripe TEST
+          </p>
+        ) : null}
 
         <div className="flex justify-between gap-4">
           <dt className="text-[var(--ml-dark-ink-muted)]">Payment</dt>

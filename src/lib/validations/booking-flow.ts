@@ -117,6 +117,11 @@ export const bookingQuoteSchema = step1AddressSchema
   .extend({
     /** Optional promo — validated server-side only. */
     promoCode: z.string().trim().max(64).optional(),
+    /**
+     * Cadence preference — server applies configured recurring discount when not one_time.
+     * Does not enable Stripe Subscriptions / auto-charge.
+     */
+    recurringFrequency: z.enum(["one_time", "weekly", "biweekly", "monthly"]).optional(),
   });
 
 export const createBookingRequestSchema = bookingQuoteSchema

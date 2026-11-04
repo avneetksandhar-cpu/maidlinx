@@ -34,6 +34,11 @@ export async function notifyBookingConfirmed(
     .filter(Boolean)
     .join(", ");
 
+  const payLine =
+    depositCents > 0
+      ? `<li><strong>Deposit paid:</strong> ${formatCurrency(depositCents, booking.currency)}</li>`
+      : `<li><strong>Payment:</strong> Card saved — charged after your clean (${formatCurrency(booking.total_cents, booking.currency)})</li>`;
+
   const html = `
       <p>Hi ${booking.customer_first_name ?? "there"},</p>
       <p>Your MaidLinx booking is confirmed.</p>
@@ -42,10 +47,10 @@ export async function notifyBookingConfirmed(
         <li><strong>Service:</strong> ${service}</li>
         <li><strong>When:</strong> ${scheduled}</li>
         <li><strong>Address:</strong> ${address}</li>
-        <li><strong>Deposit paid:</strong> ${formatCurrency(depositCents, booking.currency)}</li>
-        <li><strong>Total:</strong> ${formatCurrency(booking.total_cents, booking.currency)}</li>
+        ${payLine}
+        <li><strong>Agreed total:</strong> ${formatCurrency(booking.total_cents, booking.currency)}</li>
       </ul>
-      <p>We'll notify you when your cleaner is on the way.</p>
+      <p>We'll notify you when your cleaner accepts and is on the way.</p>
     `;
 
   await enqueueNotification({
@@ -60,10 +65,14 @@ export async function notifyBookingConfirmed(
   });
 
   if (booking.customer_phone) {
+    const smsPay =
+      depositCents > 0
+        ? `Deposit ${formatCurrency(depositCents, booking.currency)} received.`
+        : `Card saved; charged after clean (${formatCurrency(booking.total_cents, booking.currency)}).`;
     await enqueueNotification({
       channel: "sms",
       recipient: booking.customer_phone,
-      body: `MaidLinx: Booking ${reference} confirmed for ${scheduled}. Deposit ${formatCurrency(depositCents, booking.currency)} received.`,
+      body: `MaidLinx: Booking ${reference} confirmed for ${scheduled}. ${smsPay}`,
       templateKey: "booking_confirmed_sms",
       bookingId: booking.id,
       profileId: booking.customer_id,

@@ -1,8 +1,14 @@
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
-import { confirmBookingPayment, getBookingById } from "@/lib/bookings/repository";
+import {
+  confirmBookingPayment,
+  confirmBookingPaymentMethod,
+  getBookingById,
+} from "@/lib/bookings/repository";
 import { notifyBookingConfirmed } from "@/lib/notifications";
+import { applySucceededCompletionPayment } from "@/lib/payments/charge-on-complete";
+import { COMPLETION_PAYMENT_TYPE, SETUP_PAYMENT_TYPE } from "@/lib/payments/pay-after";
 import { claimStripeWebhookEvent } from "@/lib/payments/webhook-events";
 import { getStripeServer } from "@/lib/stripe/server";
 
@@ -40,9 +46,55 @@ export async function POST(request: Request) {
   }
 
   switch (event.type) {
+    case "setup_intent.succeeded": {
+      const setupIntent = event.data.object as Stripe.SetupIntent;
+      const bookingId = setupIntent.metadata?.bookingId;
+      if (!bookingId) break;
+
+      const paymentMethodId =
+        typeof setupIntent.payment_method === "string"
+          ? setupIntent.payment_method
+          : setupIntent.payment_method?.id ?? null;
+      const customerId =
+        typeof setupIntent.customer === "string"
+          ? setupIntent.customer
+          : setupIntent.customer?.id ?? null;
+
+      if (!paymentMethodId || !customerId) break;
+
+      const stripe = getStripeServer();
+      let cardBrand: string | null = null;
+      let cardLast4: string | null = null;
+      try {
+        const pm = await stripe.paymentMethods.retrieve(paymentMethodId);
+        cardBrand = pm.card?.brand ?? null;
+        cardLast4 = pm.card?.last4 ?? null;
+      } catch {
+        // best-effort display fields
+      }
+
+      const updatedBooking = await confirmBookingPaymentMethod({
+        bookingId,
+        setupIntentId: setupIntent.id,
+        stripeCustomerId: customerId,
+        paymentMethodId,
+        cardBrand,
+        cardLast4,
+      });
+
+      if (updatedBooking) {
+        try {
+          await notifyBookingConfirmed(updatedBooking, 0);
+        } catch (notifyError) {
+          console.error("[stripe webhook] booking confirmation notification failed:", notifyError);
+        }
+      }
+      break;
+    }
     case "payment_intent.succeeded": {
       const paymentIntent = event.data.object as Stripe.PaymentIntent;
       const bookingId = paymentIntent.metadata.bookingId;
+      const paymentType = paymentIntent.metadata.paymentType ?? "deposit";
 
       if (bookingId) {
         const stripe = getStripeServer();
@@ -58,8 +110,24 @@ export async function POST(request: Request) {
           receiptUrl = charge.receipt_url ?? null;
         }
 
-        const paymentType = paymentIntent.metadata.paymentType ?? "deposit";
         const amountCents = paymentIntent.amount_received || paymentIntent.amount;
+
+        if (paymentType === COMPLETION_PAYMENT_TYPE) {
+          // After-clean charge — never re-run request confirmation.
+          await applySucceededCompletionPayment({
+            bookingId,
+            paymentIntentId: paymentIntent.id,
+            amountCents,
+            chargeId,
+            receiptUrl,
+          });
+          break;
+        }
+
+        if (paymentType === SETUP_PAYMENT_TYPE) {
+          // Should not happen (setup uses SetupIntent), ignore.
+          break;
+        }
 
         const updatedBooking = await confirmBookingPayment(
           bookingId,
@@ -83,6 +151,7 @@ export async function POST(request: Request) {
     case "payment_intent.payment_failed": {
       const paymentIntent = event.data.object as Stripe.PaymentIntent;
       const bookingId = paymentIntent.metadata.bookingId;
+      const paymentType = paymentIntent.metadata.paymentType ?? "deposit";
 
       if (bookingId) {
         const booking = await getBookingById(bookingId);
@@ -93,17 +162,24 @@ export async function POST(request: Request) {
             bookingId,
             amountCents: paymentIntent.amount,
             currency: booking.currency,
-            paymentType: paymentIntent.metadata.paymentType ?? "deposit",
+            paymentType,
             stripePaymentIntentId: paymentIntent.id,
             status: "failed",
           });
+          if (paymentType === COMPLETION_PAYMENT_TYPE) {
+            const { createAdminClient } = await import("@/lib/supabase/admin");
+            await createAdminClient()
+              .from("bookings")
+              .update({ payment_status: "failed" } as never)
+              .eq("id", bookingId);
+          }
           await emitBookingEvent({
             bookingId,
             type: "payment_failed",
             actor: { role: "system" },
             metadata: {
               amountCents: paymentIntent.amount,
-              paymentType: paymentIntent.metadata.paymentType ?? "deposit",
+              paymentType,
             },
           });
         }

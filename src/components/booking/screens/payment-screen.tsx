@@ -266,7 +266,7 @@ function PaymentScreenInner() {
       <BookingFlowChrome
         screenId="payment"
         title="Confirm & pay"
-        subtitle="Deposit today · balance after the job · Stripe TEST."
+        subtitle="Stripe TEST · save card now · charged after your clean."
         hideCta
       >
         <CheckoutStep
@@ -292,7 +292,7 @@ function PaymentScreenInner() {
     <BookingFlowChrome
       screenId="payment"
       title="Confirm your clean"
-      subtitle="Stripe TEST · deposit today · balance after the job."
+      subtitle="Stripe TEST · due now $0 · charged after your clean."
       ctaLabel={bookLabel}
       ctaDisabled={busy || !pricing || !isServerVerified}
       ctaLoading={submitting}
@@ -311,9 +311,10 @@ function PaymentScreenInner() {
         <div className="rounded-2xl border border-[var(--ml-book-border,#e2e8f0)] bg-[var(--ml-book-selected,#E6FAFA)] px-4 py-3.5 text-[14px] leading-relaxed text-[var(--ml-book-ink,#01193D)]">
           <p className="font-semibold">When you&apos;re charged</p>
           <p className="mt-1 text-[var(--ml-book-ink-muted,#4a5568)]">
-            Stripe TEST checkout. We charge a deposit now to hold your booking; the remaining
-            balance is charged after the clean. Double-tap is safe — checkout is idempotent.
-            Your slot is rechecked before payment.
+            Stripe TEST · pay after cleaning. We save your card now ($0 due) and charge the
+            agreed total once when the clean is marked complete. Double-tap is safe —
+            setup and completion charges are idempotent. Your slot is rechecked before
+            checkout.
           </p>
         </div>
 

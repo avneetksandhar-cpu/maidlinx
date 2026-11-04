@@ -2,7 +2,7 @@
 
 import { MotionReveal } from "@/components/motion/motion-reveal";
 import { BookingPaymentForm } from "@/components/booking/booking-payment-form";
-import { calculateDepositCents, getDepositPercent } from "@/lib/payments/deposit";
+import { getPaymentTimingCopy, isPayAfterCleaningEnabled } from "@/lib/payments/pay-after";
 import type { StoredBooking } from "@/lib/bookings/repository";
 import { formatCurrency } from "@/lib/utils";
 import { trackBookingEvent } from "@/lib/analytics/booking";
@@ -15,25 +15,22 @@ interface CheckoutStepProps {
 }
 
 export function CheckoutStep({ booking, accessToken, onSuccess }: CheckoutStepProps) {
-  const deposit = calculateDepositCents(booking.total_cents);
+  const timing = getPaymentTimingCopy(booking.total_cents);
+  const payAfter = isPayAfterCleaningEnabled();
 
   useEffect(() => {
     trackBookingEvent("payment_started", {
       bookingId: booking.id,
-      depositCents: deposit,
+      depositCents: timing.dueNowCents,
+      timingModel: timing.model,
     });
-  }, [booking.id, deposit]);
+  }, [booking.id, timing.dueNowCents, timing.model]);
 
   return (
     <MotionReveal>
       <div className="space-y-1 rounded-2xl border border-accent/45 bg-accent-muted px-4 py-4 text-[14px] leading-relaxed">
-        <p className="font-semibold text-navy">
-          Pay {getDepositPercent()}% deposit today
-        </p>
-        <p className="text-ink-muted">
-          Stripe TEST checkout — MaidLinx never stores your card. Remaining balance is settled
-          with support after the job.
-        </p>
+        <p className="font-semibold text-navy">{timing.requestHeadline}</p>
+        <p className="text-ink-muted">{timing.requestDetail}</p>
       </div>
 
       <div className="mt-5 space-y-2 rounded-2xl border border-border bg-surface p-4 text-[15px] shadow-soft">
@@ -44,9 +41,17 @@ export function CheckoutStep({ booking, accessToken, onSuccess }: CheckoutStepPr
           </span>
         </div>
         <div className="flex justify-between gap-4">
-          <span className="text-ink-muted">Due today ({getDepositPercent()}%)</span>
+          <span className="text-ink-muted">Due now</span>
           <span className="font-semibold tabular-nums text-navy">
-            {formatCurrency(deposit, booking.currency)}
+            {formatCurrency(timing.dueNowCents, booking.currency)}
+          </span>
+        </div>
+        <div className="flex justify-between gap-4">
+          <span className="text-ink-muted">
+            {payAfter ? "Charged after your clean" : "Due after clean"}
+          </span>
+          <span className="font-semibold tabular-nums text-navy">
+            {formatCurrency(timing.dueLaterCents, booking.currency)}
           </span>
         </div>
         <p className="pt-1 text-xs text-ink-subtle">
@@ -55,7 +60,8 @@ export function CheckoutStep({ booking, accessToken, onSuccess }: CheckoutStepPr
       </div>
 
       <p className="mt-5 text-center text-xs text-ink-subtle">
-        Apple Pay, Google Pay, and Link available when your device supports them — card always works.
+        Apple Pay, Google Pay, and Link available when your device supports them — card always
+        works.
       </p>
 
       <div className="mt-4">

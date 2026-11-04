@@ -133,7 +133,15 @@ export function LiveStatusCard({ booking, accessToken, className }: LiveStatusCa
 
         <div className="text-center">
           <h2 className="mt-2 text-xl font-semibold tracking-tight text-white sm:text-[1.35rem]">
-            {finding ? "Finding your cleaner" : headline}
+            {finding
+              ? "Finding your cleaner"
+              : cleanerName &&
+                  (normalizeBookingStatus(booking.status) === "accepted" ||
+                    normalizeBookingStatus(booking.status) === "assigned")
+                ? `${cleanerName.split(" ")[0]} confirmed your clean`
+                : cleanerName && normalizeBookingStatus(booking.status) === "on_the_way"
+                  ? `${cleanerName.split(" ")[0]} is on the way`
+                  : headline}
           </h2>
           <p className="mt-2 text-[14px] leading-relaxed text-[var(--ml-dark-ink-muted)]">
             {nextStepCopy(booking, finding)}
@@ -191,16 +199,28 @@ export function LiveStatusCard({ booking, accessToken, className }: LiveStatusCa
             <div>
               <p className="text-sm font-semibold text-white">Finding your cleaner</p>
               <p className="text-sm text-[var(--ml-dark-ink-muted)]">
-                Booking requested · payment method saved. Nothing assigned yet.
+                Requested · card saved · charged after your clean.
               </p>
             </div>
           </div>
         </div>
       ) : (
         <div className="flex items-center gap-3 px-4 py-4 sm:px-5">
-          <span className="flex size-12 shrink-0 items-center justify-center rounded-full bg-[var(--ml-dark-mint,#04CED2)]/15 text-sm font-bold text-[var(--ml-dark-mint,#04CED2)]">
-            {(cleanerName ?? "P").charAt(0).toUpperCase()}
-          </span>
+          {booking.cleaner?.avatarUrl ? (
+            <span className="relative size-12 shrink-0 overflow-hidden rounded-full ring-2 ring-[var(--ml-dark-mint,#04CED2)]/40">
+              <Image
+                src={booking.cleaner.avatarUrl}
+                alt={cleanerName ?? "Your MaidLinx Pro"}
+                width={48}
+                height={48}
+                className="size-12 object-cover"
+              />
+            </span>
+          ) : (
+            <span className="flex size-12 shrink-0 items-center justify-center rounded-full bg-[var(--ml-dark-mint,#04CED2)]/15 text-sm font-bold text-[var(--ml-dark-mint,#04CED2)]">
+              {(cleanerName ?? "P").charAt(0).toUpperCase()}
+            </span>
+          )}
           <div className="min-w-0 flex-1">
             <p className="truncate font-semibold text-white">
               {cleanerName ?? "Your MaidLinx Pro"}

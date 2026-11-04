@@ -80,10 +80,15 @@ export async function startBookingCheckout(
     legalConsentPolicyVersion: string;
   },
 ): Promise<{
+  mode: "setup" | "payment";
+  timingModel: "pay_after_cleaning" | "deposit_upfront";
   clientSecret: string;
-  paymentIntentId: string;
+  paymentIntentId: string | null;
+  setupIntentId: string | null;
   amountCents: number;
   depositCents: number;
+  dueNowCents: number;
+  dueLaterCents: number;
   totalCents: number;
   depositPercent: number;
   paymentType: string;
@@ -102,10 +107,15 @@ export async function startBookingCheckout(
   });
 
   return parseJson<{
+    mode: "setup" | "payment";
+    timingModel: "pay_after_cleaning" | "deposit_upfront";
     clientSecret: string;
-    paymentIntentId: string;
+    paymentIntentId: string | null;
+    setupIntentId: string | null;
     amountCents: number;
     depositCents: number;
+    dueNowCents: number;
+    dueLaterCents: number;
     totalCents: number;
     depositPercent: number;
     paymentType: string;
@@ -118,12 +128,27 @@ export async function confirmBookingPaymentSync(
   bookingId: string,
   accessToken?: string | null,
   paymentIntentId?: string | null,
+  setupIntentId?: string | null,
 ): Promise<StoredBooking> {
   const token = accessToken ?? getStoredBookingAccessToken(bookingId);
   const response = await fetch(`/api/bookings/${bookingId}/confirm-payment`, {
     method: "POST",
     headers: bookingAccessHeaders(token),
-    body: JSON.stringify({ accessToken: token, paymentIntentId }),
+    body: JSON.stringify({ accessToken: token, paymentIntentId, setupIntentId }),
+  });
+  const data = await parseJson<{ booking: StoredBooking }>(response);
+  return data.booking;
+}
+
+export async function retryBookingCharge(
+  bookingId: string,
+  accessToken?: string | null,
+): Promise<StoredBooking> {
+  const token = accessToken ?? getStoredBookingAccessToken(bookingId);
+  const response = await fetch(`/api/bookings/${bookingId}/retry-charge`, {
+    method: "POST",
+    headers: bookingAccessHeaders(token),
+    body: JSON.stringify({ accessToken: token }),
   });
   const data = await parseJson<{ booking: StoredBooking }>(response);
   return data.booking;
