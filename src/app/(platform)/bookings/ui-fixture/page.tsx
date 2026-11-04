@@ -73,7 +73,10 @@ export default async function BookingUiFixturePage({
 }: {
   searchParams: Promise<{ state?: string }>;
 }) {
-  if (process.env.NODE_ENV === "production") notFound();
+  // Local + Vercel Preview only — never on production alias.
+  const allow =
+    process.env.NODE_ENV !== "production" || process.env.VERCEL_ENV === "preview";
+  if (!allow) notFound();
 
   const { state: raw } = await searchParams;
   const state = raw === "confirmed" ? "confirmed" : "pending";
