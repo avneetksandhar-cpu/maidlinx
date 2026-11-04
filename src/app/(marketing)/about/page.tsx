@@ -2,20 +2,14 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Container, Heading, Button } from "@/components/ui";
 import { routes, siteConfig } from "@/config/site";
-import { getActiveMarkets } from "@/config/markets";
-
 export const metadata: Metadata = {
   title: "About",
   description:
-    "MaidLinx is an on-demand cleaning marketplace for homes in Toronto / GTA and South Florida.",
+    "MaidLinx is an on-demand home cleaning marketplace launching in South Florida.",
   alternates: { canonical: "/about" },
 };
 
 export default function AboutPage() {
-  const markets = getActiveMarkets()
-    .map((m) => m.name)
-    .join(" and ");
-
   return (
     <main id="main-content" className="bg-background">
       <Container className="py-12 sm:py-16">
@@ -29,8 +23,8 @@ export default function AboutPage() {
             online — address, service, schedule, upfront price — and Pros complete the job.
           </p>
           <p>
-            We currently configure service for {markets}. We do not claim coverage outside those
-            markets. Booking availability depends on market flags and local supply.
+            Customer launch is South Florida (USD). We do not promise booking outside South Florida
+            on the customer Home. Booking availability depends on market flags and local supply.
           </p>
           <p>
             Pros join through onboarding with screening gates and insurance attestation; ops reviews

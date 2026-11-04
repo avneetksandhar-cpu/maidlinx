@@ -22,8 +22,9 @@ import type { BookingState } from "@/lib/bookings/booking-state";
 import { trackBookingEvent } from "@/lib/analytics/booking";
 import { usualCleanToBookingPatch, readUsualClean } from "@/lib/bookings/usual-clean";
 import {
+  isCustomerHomeBookableArea,
   isMarketBookingOpen,
-  resolveWaitlistReason,
+  resolveCustomerHomeWaitlistReason,
 } from "@/lib/markets/booking-availability";
 import { WaitlistSignup } from "@/components/waitlist/waitlist-signup";
 import { useAuthSession } from "@/hooks/use-auth-session";
@@ -54,13 +55,14 @@ export function AddressScreen() {
     const next = buildAddressStatePatch(state, value);
     updateState(next);
 
+    const marketId = next.marketId ?? state.marketId;
     if (
       autoAdvance &&
-      next.inServiceArea &&
-      isMarketBookingOpen(next.marketId ?? state.marketId)
+      isCustomerHomeBookableArea({ inServiceArea: next.inServiceArea, marketId }) &&
+      isMarketBookingOpen(marketId)
     ) {
       trackBookingEvent("address_selected", {
-        marketId: next.marketId ?? state.marketId,
+        marketId,
         placeId: value.googlePlaceId,
       });
       const merged = { ...state, ...next };
@@ -68,12 +70,19 @@ export function AddressScreen() {
     }
   };
 
-  const waitlistReason = resolveWaitlistReason({
+  const waitlistReason = resolveCustomerHomeWaitlistReason({
     line1: state.line1,
     postalCode: state.postalCode,
     inServiceArea: state.inServiceArea,
     marketId: state.marketId,
   });
+
+  const flAddressReady =
+    isAddressComplete(state) &&
+    isCustomerHomeBookableArea({
+      inServiceArea: state.inServiceArea,
+      marketId: state.marketId,
+    });
 
   if (!hydrated || blocked) {
     return (
@@ -94,12 +103,12 @@ export function AddressScreen() {
     <BookingFlowChrome
       screenId="address"
       title="Where’s the clean?"
-      subtitle="Search or pick a saved place."
-      hideCta={!isAddressComplete(state)}
+      subtitle="South Florida address — search or pick a saved place."
+      hideCta={!flAddressReady}
       ctaLabel="Continue"
-      ctaDisabled={!isAddressComplete(state)}
+      ctaDisabled={!flAddressReady}
       onContinue={() => {
-        if (!isAddressComplete(state)) return;
+        if (!flAddressReady) return;
         trackBookingEvent("address_selected", { marketId: state.marketId });
         continueAfterAddress(state);
       }}
@@ -113,7 +122,12 @@ export function AddressScreen() {
               state: patch.state,
               country: patch.country,
             });
-            if (!area.inServiceArea) {
+            if (
+              !isCustomerHomeBookableArea({
+                inServiceArea: area.inServiceArea,
+                marketId: area.marketId,
+              })
+            ) {
               updateState({
                 ...patch,
                 marketId: area.marketId,
@@ -159,7 +173,8 @@ export function AddressScreen() {
                 setSelectedKey("search");
                 applyAddress(value, true);
               }}
-              placeholder="Search or enter address"
+              locationBiasMarket="SOUTH_FLORIDA"
+              placeholder="South Florida address or ZIP"
               label="Address"
             />
           </div>
@@ -212,7 +227,17 @@ export function AddressScreen() {
               state: patch.state,
               country: patch.country,
             });
-            if (!area.inServiceArea || !patch.line1 || !patch.city || !patch.state || !patch.postalCode) {
+            if (
+              !isCustomerHomeBookableArea({
+                inServiceArea: area.inServiceArea,
+                marketId: area.marketId,
+              }) ||
+              !patch.line1 ||
+              !patch.city ||
+              !patch.state ||
+              !patch.postalCode
+            ) {
+              applyAddress(patch, false);
               return;
             }
             applyAddress(patch, true);
@@ -235,8 +260,11 @@ export function AddressScreen() {
             source="booking_address"
             page="/book/address"
           />
-        ) : state.marketName && state.inServiceArea ? (
-          <p className="text-sm text-[var(--ml-dark-mint)]">Available in {state.marketName}</p>
+        ) : isCustomerHomeBookableArea({
+            inServiceArea: state.inServiceArea,
+            marketId: state.marketId,
+          }) ? (
+          <p className="text-sm text-[var(--ml-dark-mint)]">Available in South Florida</p>
         ) : null}
       </div>
     </BookingFlowChrome>

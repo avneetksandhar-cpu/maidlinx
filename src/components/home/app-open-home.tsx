@@ -21,9 +21,11 @@ import {
   bookingSignInHref,
 } from "@/lib/bookings/booking-auth";
 import {
+  isCustomerHomeBookableArea,
   isMarketBookingOpen,
-  resolveWaitlistReason,
+  resolveCustomerHomeWaitlistReason,
 } from "@/lib/markets/booking-availability";
+import { isCustomerHomeMarket } from "@/config/markets";
 import { resolveServiceArea } from "@/lib/service-area";
 import { useAuthSession } from "@/hooks/use-auth-session";
 import { routes } from "@/config/site";
@@ -121,19 +123,44 @@ function AppOpenHomeInner() {
     };
   }, [authStatus]);
 
-  const waitlistReason = resolveWaitlistReason({
+  const waitlistReason = resolveCustomerHomeWaitlistReason({
     line1: state.line1,
     postalCode: state.postalCode,
     inServiceArea: state.inServiceArea,
     marketId: state.marketId,
   });
 
+  const outsideFloridaHint =
+    "We don’t serve this area yet. MaidLinx is launching in South Florida — join the waitlist for updates.";
+
   const applyAddress = (value: Partial<BookingState>) => {
-    updateState(buildAddressStatePatch(state, value));
+    const patched = buildAddressStatePatch(state, value);
+    updateState(patched);
+    if (
+      patched.marketId != null ||
+      patched.inServiceArea === false ||
+      (patched.postalCode ?? state.postalCode)
+    ) {
+      const marketId = patched.marketId ?? state.marketId;
+      const inServiceArea =
+        patched.inServiceArea !== undefined ? patched.inServiceArea : state.inServiceArea;
+      if (!isCustomerHomeBookableArea({ inServiceArea, marketId })) {
+        if (inServiceArea === false || (marketId && !isCustomerHomeMarket(marketId))) {
+          setHint(outsideFloridaHint);
+          return;
+        }
+      } else if (!isMarketBookingOpen(marketId)) {
+        setHint(
+          "We serve South Florida — booking isn’t open yet (no bookable cleaners online).",
+        );
+        return;
+      }
+    }
     setHint(null);
   };
 
-  const applyPostalCoverage = (raw: string) => {
+  /** Returns true when the postal resolves inside customer Home market (South Florida). */
+  const applyPostalCoverage = (raw: string): boolean => {
     const postal = normalizePostalDraft(raw);
     const area = resolveServiceArea({ postalCode: postal });
     updateState({
@@ -145,34 +172,31 @@ function AppOpenHomeInner() {
       country: area.currency === "CAD" ? "CA" : area.currency === "USD" ? "US" : state.country,
     });
 
-    if (!area.inServiceArea) {
-      setHint(
-        "MaidLinx does not serve that area yet. South Florida is our launch market — join the waitlist for updates.",
-      );
-      return;
+    if (!isCustomerHomeBookableArea({ inServiceArea: area.inServiceArea, marketId: area.marketId })) {
+      setHint(outsideFloridaHint);
+      return false;
     }
     if (!isMarketBookingOpen(area.marketId)) {
       setHint(
-        area.marketId === "SOUTH_FLORIDA"
-          ? "We serve South Florida — booking isn’t open yet (no bookable cleaners online)."
-          : `We recognize ${area.marketName ?? "your area"} — booking isn’t open there yet.`,
+        "We serve South Florida — booking isn’t open yet (no bookable cleaners online).",
       );
-      return;
+      return true;
     }
-    setHint(
-      area.marketId === "SOUTH_FLORIDA"
-        ? "Yes — MaidLinx serves South Florida."
-        : `Yes — MaidLinx serves ${area.marketName ?? "your area"}.`,
-    );
+    setHint("Yes — MaidLinx serves South Florida.");
+    return true;
   };
 
   const bookingHref = useMemo(() => {
-    if (isAddressComplete(state)) {
+    const flOk = isCustomerHomeBookableArea({
+      inServiceArea: state.inServiceArea,
+      marketId: state.marketId,
+    });
+    if (isAddressComplete(state) && flOk) {
       if (authStatus === "authenticated") return BOOKING_RESUME_AFTER_AUTH;
       if (authStatus === "guest") return bookingSignInHref(BOOKING_RESUME_AFTER_AUTH);
       return BOOKING_SCREEN_PATHS.address;
     }
-    if (state.postalCode && state.inServiceArea) {
+    if (state.postalCode && flOk) {
       return getBookingEntryPath({ prefillAddress: true });
     }
     return getBookingEntryPath();
@@ -187,29 +211,45 @@ function AppOpenHomeInner() {
     const draft = (state.line1 ?? "").trim();
 
     if (isAddressComplete(state)) {
+      if (
+        !isCustomerHomeBookableArea({
+          inServiceArea: state.inServiceArea,
+          marketId: state.marketId,
+        })
+      ) {
+        setHint(outsideFloridaHint);
+        return;
+      }
       continueIntoBooking();
       return;
     }
 
     if (looksLikePostalOrZip(draft) || looksLikePostalOrZip(state.postalCode ?? "")) {
       const raw = looksLikePostalOrZip(draft) ? draft : (state.postalCode ?? "");
-      applyPostalCoverage(raw);
+      const inFlorida = applyPostalCoverage(raw);
       trackBookingEvent("booking_started", { entry: "app_open_zip_check" });
+      if (!inFlorida) return;
       router.push(getBookingEntryPath({ prefillAddress: true }));
       return;
     }
 
-    if (state.postalCode?.trim() && state.inServiceArea) {
+    if (
+      state.postalCode?.trim() &&
+      isCustomerHomeBookableArea({
+        inServiceArea: state.inServiceArea,
+        marketId: state.marketId,
+      })
+    ) {
       continueIntoBooking();
       return;
     }
 
     if (!draft) {
-      setHint("Enter a street address or ZIP code to check if MaidLinx serves your home.");
+      setHint("Enter a South Florida street address or ZIP to check availability.");
       return;
     }
 
-    setHint("Pick an address from the suggestions, or enter a ZIP / postal code.");
+    setHint("Pick an address from the suggestions, or enter a South Florida ZIP.");
   };
 
   const accountHref =
@@ -262,7 +302,9 @@ function AppOpenHomeInner() {
           <h1 className="max-w-[14ch] text-[2rem] font-semibold leading-[1.12] tracking-tight text-white sm:text-[2.25rem]">
             Come home to clean.
           </h1>
-          <p className="mt-1.5 text-[13px] font-medium text-white/65">South Florida</p>
+          <p className="mt-1.5 text-[13px] font-medium text-white/65">
+            South Florida home cleaning
+          </p>
 
           {/* Booking panel — light surface; field + CTA above fold on 375×667 */}
           <section className="mt-4 rounded-2xl bg-white p-3.5 text-[#003474]">
@@ -280,9 +322,13 @@ function AppOpenHomeInner() {
                     entry: "app_open",
                   });
                   const patched = buildAddressStatePatch(state, value);
+                  const marketId = patched.marketId ?? state.marketId;
                   if (
-                    patched.inServiceArea &&
-                    isMarketBookingOpen(patched.marketId ?? state.marketId) &&
+                    isCustomerHomeBookableArea({
+                      inServiceArea: patched.inServiceArea,
+                      marketId,
+                    }) &&
+                    isMarketBookingOpen(marketId) &&
                     patched.line1 &&
                     patched.city &&
                     patched.postalCode
@@ -296,16 +342,22 @@ function AppOpenHomeInner() {
                 }}
                 variant="hero"
                 hideLocate
+                locationBiasMarket="SOUTH_FLORIDA"
                 label="Address or ZIP"
-                placeholder="Street address or ZIP"
+                placeholder="South Florida address or ZIP"
                 className="[&_label]:sr-only [&_input]:h-12 [&_input]:rounded-xl [&_input]:border-slate-200 [&_input]:bg-[#f7f9fc] [&_input]:pl-11 [&_input]:text-[15px] [&_input]:text-[#003474] [&_input]:placeholder:text-slate-400 [&_[data-hero-pin]]:text-[#003474]/55"
               />
             </div>
 
-            {hint || (hydrated && state.inServiceArea === false) ? (
+            {hint ||
+            (hydrated &&
+              Boolean(state.postalCode?.trim() || state.line1?.trim()) &&
+              !isCustomerHomeBookableArea({
+                inServiceArea: state.inServiceArea,
+                marketId: state.marketId,
+              })) ? (
               <p className="mt-2 text-[13px] leading-snug text-slate-600" role="status">
-                {hint ??
-                  "Outside our service area — South Florida is our launch market."}
+                {hint ?? outsideFloridaHint}
               </p>
             ) : null}
 

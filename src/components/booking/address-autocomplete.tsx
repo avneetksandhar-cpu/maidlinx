@@ -40,6 +40,11 @@ interface AddressAutocompleteProps {
   variant?: "default" | "hero";
   /** Hide “Use my current location” (compact home first viewport). */
   hideLocate?: boolean;
+  /**
+   * Bias Places suggestions toward a market center.
+   * Customer Home launch defaults to South Florida (not GTA).
+   */
+  locationBiasMarket?: "SOUTH_FLORIDA" | "TORONTO_GTA" | "auto";
   /** Called after a structured place is chosen (Places or saved/recent). */
   onAddressSelected?: (address: Partial<Step1Address>) => void;
 }
@@ -144,27 +149,37 @@ function mergeAddress(
 /** Places Autocomplete locationBias circle radius must be ≤ 50_000 meters. */
 const LOCATION_BIAS_RADIUS_M = 50_000;
 
+const FL_BIAS = { center: { lat: 26.1224, lng: -80.1373 }, radius: LOCATION_BIAS_RADIUS_M };
+const GTA_BIAS = { center: { lat: 43.6532, lng: -79.3832 }, radius: LOCATION_BIAS_RADIUS_M };
+
 function predictionLocationBias(
   input: string,
+  preferred: "SOUTH_FLORIDA" | "TORONTO_GTA" | "auto" = "SOUTH_FLORIDA",
 ): NonNullable<google.maps.places.AutocompleteRequest["locationBias"]> {
   const text = input.toLowerCase();
   const looksCanadian =
     /[a-z]\d[a-z]/.test(text) ||
     /\b(on|ontario|toronto|mississauga|brampton|vaughan|markham|oakville|gta)\b/.test(text);
-  if (looksCanadian) {
-    return { center: { lat: 43.6532, lng: -79.3832 }, radius: LOCATION_BIAS_RADIUS_M };
-  }
-
   const looksSouthFlorida =
     /\b(fl|florida|miami|fort lauderdale|ft lauderdale|boca|west palm|broward|miami-dade|palm beach)\b/.test(
       text,
     );
-  if (looksSouthFlorida) {
-    return { center: { lat: 26.1224, lng: -80.1373 }, radius: LOCATION_BIAS_RADIUS_M };
+
+  if (preferred === "SOUTH_FLORIDA") {
+    // Customer launch: keep FL bias unless the query clearly looks Canadian.
+    if (looksCanadian && !looksSouthFlorida) return GTA_BIAS;
+    return FL_BIAS;
   }
 
-  // Default: prefer GTA (primary market); FL still returned via region codes.
-  return { center: { lat: 43.6532, lng: -79.3832 }, radius: LOCATION_BIAS_RADIUS_M };
+  if (preferred === "TORONTO_GTA") {
+    if (looksSouthFlorida && !looksCanadian) return FL_BIAS;
+    return GTA_BIAS;
+  }
+
+  if (looksCanadian) return GTA_BIAS;
+  if (looksSouthFlorida) return FL_BIAS;
+  // Launch default: South Florida (USD), not GTA.
+  return FL_BIAS;
 }
 
 function isDev() {
@@ -180,6 +195,7 @@ export function AddressAutocomplete({
   placeholder = "Where do you need cleaning?",
   variant = "default",
   hideLocate = false,
+  locationBiasMarket = "SOUTH_FLORIDA",
   onAddressSelected,
 }: AddressAutocompleteProps) {
   const maps = useGoogleMaps();
@@ -348,7 +364,7 @@ export function AddressAutocomplete({
               includedRegionCodes: ["us", "ca"],
               includedPrimaryTypes: ["street_address", "route", "premise"],
               sessionToken: sessionToken ?? undefined,
-              locationBias: predictionLocationBias(trimmed),
+              locationBias: predictionLocationBias(trimmed, locationBiasMarket),
             });
 
           if (requestId !== predictionRequestRef.current) return;
@@ -401,7 +417,7 @@ export function AddressAutocomplete({
         }
       })();
     },
-    [ensureSessionToken, isReady, placesNewReady],
+    [ensureSessionToken, isReady, locationBiasMarket, placesNewReady],
   );
 
   const selectPrediction = useCallback((prediction: PlaceSuggestion) => {

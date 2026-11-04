@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
+  isCustomerHomeBookableArea,
   isMarketBookingOpen,
+  resolveCustomerHomeWaitlistReason,
   resolveWaitlistReason,
 } from "@/lib/markets/booking-availability";
 
@@ -52,5 +54,44 @@ describe("booking availability / waitlist reason", () => {
         marketId: "SOUTH_FLORIDA",
       }),
     ).toBe("booking_disabled");
+  });
+});
+
+describe("customer Home waitlist (South Florida only)", () => {
+  it("treats recognized GTA as out_of_area — no GTA booking promise on Home", () => {
+    expect(
+      resolveCustomerHomeWaitlistReason({
+        line1: "1 Queen St",
+        postalCode: "M5V 1A1",
+        inServiceArea: true,
+        marketId: "TORONTO_GTA",
+      }),
+    ).toBe("out_of_area");
+    expect(
+      isCustomerHomeBookableArea({ inServiceArea: true, marketId: "TORONTO_GTA" }),
+    ).toBe(false);
+  });
+
+  it("returns booking_disabled for covered South Florida when booking flag off", () => {
+    expect(
+      resolveCustomerHomeWaitlistReason({
+        postalCode: "33139",
+        inServiceArea: true,
+        marketId: "SOUTH_FLORIDA",
+      }),
+    ).toBe("booking_disabled");
+    expect(
+      isCustomerHomeBookableArea({ inServiceArea: true, marketId: "SOUTH_FLORIDA" }),
+    ).toBe(true);
+  });
+
+  it("returns out_of_area for unsupported ZIP", () => {
+    expect(
+      resolveCustomerHomeWaitlistReason({
+        postalCode: "90210",
+        inServiceArea: false,
+        marketId: null,
+      }),
+    ).toBe("out_of_area");
   });
 });
