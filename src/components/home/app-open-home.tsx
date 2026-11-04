@@ -1,13 +1,10 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Check, MapPin, ShieldCheck, CalendarClock, BadgeCheck } from "lucide-react";
+import { ChevronDown, ChevronRight, UserRound } from "lucide-react";
 import { SiteLogo } from "@/components/brand/site-logo";
-import { Button, Input } from "@/components/ui";
-import { AuthControls } from "@/components/layout/auth-controls";
 import { CustomerBottomNav } from "@/components/customer/customer-bottom-nav";
 import { AddressAutocomplete } from "@/components/booking/address-autocomplete";
 import { GoogleMapsProvider } from "@/components/booking/google-maps-provider";
@@ -28,16 +25,11 @@ import {
   resolveWaitlistReason,
 } from "@/lib/markets/booking-availability";
 import { resolveServiceArea } from "@/lib/service-area";
-import {
-  PRICE_DRIVER_COPY,
-  typicalHomeEstimateForAddress,
-  typicalHomeEstimateForMarket,
-} from "@/lib/pricing/starting-estimate";
 import { useAuthSession } from "@/hooks/use-auth-session";
-import { formatCurrency } from "@/lib/utils";
 import { routes } from "@/config/site";
 import { trackBookingEvent } from "@/lib/analytics/booking";
 import type { BookingState } from "@/lib/bookings/booking-state";
+import type { DashboardBooking } from "@/lib/dashboard/bookings";
 
 const STANDARD_CLEAN_CHECKLIST = [
   "Kitchen surfaces, sink, and appliance exteriors",
@@ -46,10 +38,45 @@ const STANDARD_CLEAN_CHECKLIST = [
   "Extras (fridge, oven, laundry, windows) priced separately at checkout",
 ] as const;
 
+/** US ZIP or Canadian postal — used when the single field is postal-only. */
+function looksLikePostalOrZip(raw: string): boolean {
+  const t = raw.trim().toUpperCase().replace(/[\s-]/g, "");
+  if (!t) return false;
+  if (/^\d{5}(\d{4})?$/.test(t)) return true;
+  return /^[A-Z]\d[A-Z]\d[A-Z]\d$/.test(t);
+}
+
+function normalizePostalDraft(raw: string): string {
+  const trimmed = raw.trim().toUpperCase();
+  const compact = trimmed.replace(/[\s-]/g, "");
+  if (/^\d{5}(\d{4})?$/.test(compact)) {
+    return compact.length === 9 ? `${compact.slice(0, 5)}-${compact.slice(5)}` : compact.slice(0, 5);
+  }
+  if (/^[A-Z]\d[A-Z]\d[A-Z]\d$/.test(compact)) {
+    return `${compact.slice(0, 3)} ${compact.slice(3)}`;
+  }
+  return trimmed;
+}
+
+function formatUpcomingWhen(booking: DashboardBooking): { dateLabel: string; windowLabel: string } {
+  const start = booking.arrivalWindowStart
+    ? new Date(booking.arrivalWindowStart)
+    : new Date(booking.scheduledAt);
+  const end = booking.arrivalWindowEnd ? new Date(booking.arrivalWindowEnd) : null;
+  const dateLabel = start.toLocaleDateString(undefined, {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+  });
+  const fmt = (d: Date) =>
+    d.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
+  const windowLabel = end ? `${fmt(start)} – ${fmt(end)}` : fmt(start);
+  return { dateLabel, windowLabel };
+}
+
 /**
- * App-open home — benefit-led first screen with real service-area + quote preview.
- * Persists address into the same booking draft the /book funnel reads.
- * Address-first + auth gate: complete place → easy sign-in → resume at /book/property.
+ * App-open home — premium navy South Florida launch screen.
+ * Booking draft persists into the same /book funnel (logic unchanged).
  */
 export function AppOpenHome() {
   return (
@@ -63,8 +90,36 @@ function AppOpenHomeInner() {
   const router = useRouter();
   const { state, updateState, hydrated } = useBookingState();
   const authStatus = useAuthSession();
-  const [postalDraft, setPostalDraft] = useState("");
-  const [postalHint, setPostalHint] = useState<string | null>(null);
+  const [hint, setHint] = useState<string | null>(null);
+  const [includedOpen, setIncludedOpen] = useState(false);
+  const [upcoming, setUpcoming] = useState<DashboardBooking | null>(null);
+
+  useEffect(() => {
+    if (authStatus !== "authenticated") {
+      setUpcoming(null);
+      return;
+    }
+    let cancelled = false;
+    void fetch("/api/dashboard")
+      .then(async (res) => {
+        if (!res.ok) return null;
+        const json = (await res.json()) as {
+          data?: { upcoming?: DashboardBooking[] };
+          upcoming?: DashboardBooking[];
+        };
+        return json.data?.upcoming ?? json.upcoming ?? null;
+      })
+      .then((list) => {
+        if (cancelled) return;
+        setUpcoming(Array.isArray(list) && list.length > 0 ? list[0]! : null);
+      })
+      .catch(() => {
+        if (!cancelled) setUpcoming(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [authStatus]);
 
   const waitlistReason = resolveWaitlistReason({
     line1: state.line1,
@@ -73,38 +128,13 @@ function AppOpenHomeInner() {
     marketId: state.marketId,
   });
 
-  const gtaFrom = useMemo(() => typicalHomeEstimateForMarket("TORONTO_GTA"), []);
-  const flFrom = useMemo(() => typicalHomeEstimateForMarket("SOUTH_FLORIDA"), []);
-
-  const addressEstimate = useMemo(() => {
-    if (!state.inServiceArea || !state.postalCode?.trim() || !state.city?.trim() || !state.state?.trim()) {
-      return null;
-    }
-    try {
-      return typicalHomeEstimateForAddress({
-        line1: state.line1,
-        city: state.city,
-        state: state.state,
-        postalCode: state.postalCode,
-        country: state.country || "US",
-      });
-    } catch {
-      return null;
-    }
-  }, [state.city, state.country, state.inServiceArea, state.line1, state.postalCode, state.state]);
-
   const applyAddress = (value: Partial<BookingState>) => {
-    const next = buildAddressStatePatch(state, value);
-    updateState(next);
-    setPostalHint(null);
+    updateState(buildAddressStatePatch(state, value));
+    setHint(null);
   };
 
-  const checkPostalOnly = () => {
-    const postal = postalDraft.trim();
-    if (!postal) {
-      setPostalHint("Enter a postal or ZIP code to check coverage.");
-      return;
-    }
+  const applyPostalCoverage = (raw: string) => {
+    const postal = normalizePostalDraft(raw);
     const area = resolveServiceArea({ postalCode: postal });
     updateState({
       postalCode: postal,
@@ -114,28 +144,32 @@ function AppOpenHomeInner() {
       marketName: area.marketName ?? null,
       country: area.currency === "CAD" ? "CA" : area.currency === "USD" ? "US" : state.country,
     });
+
     if (!area.inServiceArea) {
-      setPostalHint(
-        "MaidLinx does not serve that postal code yet. We currently cover Toronto / GTA and South Florida.",
+      setHint(
+        "MaidLinx does not serve that area yet. South Florida is our launch market — join the waitlist for updates.",
       );
-    } else if (!isMarketBookingOpen(area.marketId)) {
-      setPostalHint(
-        `You’re in ${area.marketName ?? "a MaidLinx market"} — on-demand booking isn’t open there yet. Join the waitlist below or continue to save your address.`,
-      );
-    } else {
-      setPostalHint(`Yes — MaidLinx serves ${area.marketName ?? "your area"}.`);
+      return;
     }
+    if (!isMarketBookingOpen(area.marketId)) {
+      setHint(
+        area.marketId === "SOUTH_FLORIDA"
+          ? "We serve South Florida — booking isn’t open yet (no bookable cleaners online)."
+          : `We recognize ${area.marketName ?? "your area"} — booking isn’t open there yet.`,
+      );
+      return;
+    }
+    setHint(
+      area.marketId === "SOUTH_FLORIDA"
+        ? "Yes — MaidLinx serves South Florida."
+        : `Yes — MaidLinx serves ${area.marketName ?? "your area"}.`,
+    );
   };
 
-  /**
-   * Address first → mandatory easy auth → resume at property.
-   * Draft lives in sessionStorage (useBookingState) across the auth redirect.
-   */
   const bookingHref = useMemo(() => {
     if (isAddressComplete(state)) {
       if (authStatus === "authenticated") return BOOKING_RESUME_AFTER_AUTH;
       if (authStatus === "guest") return bookingSignInHref(BOOKING_RESUME_AFTER_AUTH);
-      // Still resolving session — land on address slide (safe, draft intact).
       return BOOKING_SCREEN_PATHS.address;
     }
     if (state.postalCode && state.inServiceArea) {
@@ -144,340 +178,195 @@ function AppOpenHomeInner() {
     return getBookingEntryPath();
   }, [state, authStatus]);
 
-  const openBooking = (entry: string) => {
-    trackBookingEvent("booking_started", { entry });
+  const continueIntoBooking = () => {
+    trackBookingEvent("booking_started", { entry: "app_open_check_availability" });
     router.push(bookingHref);
   };
 
-  const areaStatus = (() => {
-    if (!hydrated) return null;
-    if (!state.postalCode?.trim() && !state.line1?.trim()) return null;
-    if (state.inServiceArea === false) {
-      return {
-        tone: "out" as const,
-        title: "Outside our service area",
-        body: "MaidLinx currently serves Toronto / GTA (CAD) and South Florida (USD). We don’t pretend coverage elsewhere.",
-      };
+  const onCheckAvailability = () => {
+    const draft = (state.line1 ?? "").trim();
+
+    if (isAddressComplete(state)) {
+      continueIntoBooking();
+      return;
     }
-    if (state.inServiceArea && state.marketId) {
-      const open = isMarketBookingOpen(state.marketId);
-      return {
-        tone: open ? ("ok" as const) : ("wait" as const),
-        title: open
-          ? `We serve ${state.marketName ?? "your area"}`
-          : `We serve ${state.marketName ?? "your area"} — booking not open yet`,
-        body: open
-          ? "On-demand home cleaning is available to book for this address when supply is online."
-          : "You’re in a MaidLinx market. Leave your email for launch notice, or continue to save this address for when booking opens.",
-      };
+
+    if (looksLikePostalOrZip(draft) || looksLikePostalOrZip(state.postalCode ?? "")) {
+      const raw = looksLikePostalOrZip(draft) ? draft : (state.postalCode ?? "");
+      applyPostalCoverage(raw);
+      trackBookingEvent("booking_started", { entry: "app_open_zip_check" });
+      router.push(getBookingEntryPath({ prefillAddress: true }));
+      return;
     }
-    return null;
-  })();
+
+    if (state.postalCode?.trim() && state.inServiceArea) {
+      continueIntoBooking();
+      return;
+    }
+
+    if (!draft) {
+      setHint("Enter a street address or ZIP code to check if MaidLinx serves your home.");
+      return;
+    }
+
+    setHint("Pick an address from the suggestions, or enter a ZIP / postal code.");
+  };
+
+  const accountHref =
+    authStatus === "authenticated" ? routes.dashboardProfile : routes.signIn;
+
+  const upcomingWhen = upcoming ? formatUpcomingWhen(upcoming) : null;
 
   return (
     <div
-      data-theme="ml-dark"
-      className="relative flex min-h-dvh flex-col overflow-x-hidden bg-[var(--ml-dark-bg)] text-[var(--ml-dark-ink)]"
+      className="relative flex min-h-dvh flex-col overflow-x-hidden bg-[#003474] text-white"
       style={{ fontFamily: "var(--ml-font-ios)" }}
     >
-      <div className="pointer-events-none absolute inset-0" aria-hidden>
-        <Image
-          src="/booking/welcome-living.jpg"
-          alt=""
-          fill
-          priority
-          sizes="100vw"
-          className="object-cover object-center opacity-35"
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-[var(--ml-dark-bg)]/75 via-[var(--ml-dark-bg)]/70 to-[var(--ml-dark-bg)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(70%_45%_at_50%_10%,rgb(8_224_212_/_0.14),transparent_55%)]" />
-      </div>
-
-      <header className="relative z-10 bg-[var(--ml-app-header)] text-[var(--ml-app-header-ink)]">
-        <div className="flex items-center justify-between px-3 pt-[max(0.5rem,env(safe-area-inset-top))] pb-2 sm:px-4">
-          <SiteLogo variant="mark" tone="onLight" href={routes.home} priority />
-          <div className="[&_a]:text-[var(--ml-app-header-ink)] [&_button]:text-[var(--ml-app-header-ink)]">
-            <AuthControls />
-          </div>
-        </div>
+      {/* Top bar */}
+      <header className="relative z-10 flex items-center justify-between px-4 pt-[max(0.65rem,env(safe-area-inset-top))] pb-1">
+        <SiteLogo variant="horizontal" tone="onDark" href={routes.home} priority />
+        <Link
+          href={accountHref}
+          aria-label={authStatus === "authenticated" ? "Account" : "Sign in"}
+          className="inline-flex size-10 items-center justify-center rounded-full border border-white/25 bg-white/10 text-white transition-colors hover:bg-white/15"
+        >
+          <UserRound className="size-5" strokeWidth={1.85} aria-hidden />
+        </Link>
       </header>
 
-      <main className="relative z-10 flex flex-1 flex-col px-5 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-5">
-        <div className="booking-shell-enter mx-auto w-full max-w-md space-y-8">
-          {/* 1. Benefit-led first viewport */}
-          <section className="text-center">
-            <p className="text-[11px] font-semibold tracking-[0.22em] text-[var(--ml-dark-mint)] uppercase">
-              MaidLinx
-            </p>
-            <h1 className="mt-3 text-[1.85rem] font-semibold leading-tight tracking-tight text-white sm:text-[2.15rem]">
-              Come home to clean.
-            </h1>
-            <p className="mx-auto mt-2 max-w-[22rem] text-[15px] leading-snug text-[var(--ml-dark-ink-muted)]">
-              Book reliable home cleaning in your area, see your price upfront, and choose a time
-              that works.
-            </p>
-          </section>
-
-          {/* 2. Service area before deep booking */}
-          <section className="space-y-3 rounded-2xl border border-[var(--ml-dark-border)] bg-[var(--ml-dark-surface)]/90 p-4 backdrop-blur-sm">
-            <div className="flex items-start gap-3">
-              <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-[var(--ml-dark-mint)]/15 text-[var(--ml-dark-mint)]">
-                <MapPin className="size-5" strokeWidth={2.25} aria-hidden />
-              </span>
-              <div className="min-w-0 text-left">
-                <p className="text-[15px] font-semibold text-white">
-                  What&apos;s your address or postal code?
+      <main className="relative z-10 flex flex-1 flex-col px-4 pb-[calc(5.25rem+env(safe-area-inset-bottom))] pt-3">
+        <div className="mx-auto flex w-full max-w-md flex-1 flex-col">
+          {/* Returning upcoming booking — above new-booking panel */}
+          {upcoming && upcomingWhen ? (
+            <Link
+              href={routes.bookingDetail(upcoming.id)}
+              className="mb-3 flex items-center justify-between gap-3 rounded-2xl border border-white/15 bg-white/10 px-3.5 py-3 text-left"
+            >
+              <div className="min-w-0">
+                <p className="text-[11px] font-semibold tracking-[0.14em] text-[#08e0d4] uppercase">
+                  Upcoming clean
                 </p>
-                <p className="mt-0.5 text-sm text-[var(--ml-dark-ink-muted)]">
-                  We&apos;ll tell you if MaidLinx serves that area (Toronto / GTA + South Florida).
+                <p className="mt-0.5 truncate text-[15px] font-semibold text-white">
+                  {upcomingWhen.dateLabel}
                 </p>
+                <p className="truncate text-sm text-white/70">{upcomingWhen.windowLabel}</p>
               </div>
-            </div>
+              <span className="inline-flex shrink-0 items-center gap-0.5 text-sm font-semibold text-[#08e0d4]">
+                View booking
+                <ChevronRight className="size-4" aria-hidden />
+              </span>
+            </Link>
+          ) : null}
 
-            <AddressAutocomplete
-              value={state}
-              onChange={(value) => applyAddress(value)}
-              onAddressSelected={(value) => {
-                applyAddress(value);
-                trackBookingEvent("address_selected", {
-                  marketId: value.marketId ?? state.marketId,
-                  placeId: value.googlePlaceId,
-                  entry: "app_open",
-                });
-                // Persist then slide to auth (or property if already signed in).
-                const patched = buildAddressStatePatch(state, value);
-                if (
-                  patched.inServiceArea &&
-                  isMarketBookingOpen(patched.marketId ?? state.marketId) &&
-                  patched.line1 &&
-                  patched.city &&
-                  patched.postalCode
-                ) {
-                  if (authStatus === "authenticated") {
-                    router.push(BOOKING_RESUME_AFTER_AUTH);
-                  } else if (authStatus === "guest") {
-                    router.push(bookingSignInHref(BOOKING_RESUME_AFTER_AUTH));
-                  }
-                }
-              }}
-              variant="hero"
-              label="Address"
-              placeholder="Street address or neighborhood"
-              className="[&_label]:text-[var(--ml-dark-ink-muted)] [&_input]:border-[var(--ml-dark-border)] [&_input]:bg-[var(--ml-dark-bg)] [&_input]:text-white"
-            />
+          {/* Main heading — left aligned */}
+          <h1 className="max-w-[14ch] text-[2rem] font-semibold leading-[1.12] tracking-tight text-white sm:text-[2.25rem]">
+            Come home to clean.
+          </h1>
+          <p className="mt-1.5 text-[13px] font-medium text-white/65">South Florida</p>
 
-            <div className="flex gap-2">
-              <Input
-                value={postalDraft}
-                onChange={(e) => setPostalDraft(e.target.value)}
-                placeholder="Or postal / ZIP"
-                aria-label="Postal or ZIP code"
-                className="h-11 border-[var(--ml-dark-border)] bg-[var(--ml-dark-bg)] text-white placeholder:text-[var(--ml-dark-ink-muted)]"
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    checkPostalOnly();
+          {/* Booking panel — light surface; field + CTA above fold on 375×667 */}
+          <section className="mt-4 rounded-2xl bg-white p-3.5 text-[#003474]">
+            <p className="text-[13px] font-semibold text-[#003474]">Where are we cleaning?</p>
+
+            <div className="mt-2.5">
+              <AddressAutocomplete
+                value={state}
+                onChange={(value) => applyAddress(value)}
+                onAddressSelected={(value) => {
+                  applyAddress(value);
+                  trackBookingEvent("address_selected", {
+                    marketId: value.marketId ?? state.marketId,
+                    placeId: value.googlePlaceId,
+                    entry: "app_open",
+                  });
+                  const patched = buildAddressStatePatch(state, value);
+                  if (
+                    patched.inServiceArea &&
+                    isMarketBookingOpen(patched.marketId ?? state.marketId) &&
+                    patched.line1 &&
+                    patched.city &&
+                    patched.postalCode
+                  ) {
+                    if (authStatus === "authenticated") {
+                      router.push(BOOKING_RESUME_AFTER_AUTH);
+                    } else if (authStatus === "guest") {
+                      router.push(bookingSignInHref(BOOKING_RESUME_AFTER_AUTH));
+                    }
                   }
                 }}
+                variant="hero"
+                hideLocate
+                label="Address or ZIP"
+                placeholder="Street address or ZIP"
+                className="[&_label]:sr-only [&_input]:h-12 [&_input]:rounded-xl [&_input]:border-slate-200 [&_input]:bg-[#f7f9fc] [&_input]:pl-11 [&_input]:text-[15px] [&_input]:text-[#003474] [&_input]:placeholder:text-slate-400 [&_[data-hero-pin]]:text-[#003474]/55"
               />
-              <Button
-                type="button"
-                variant="secondary"
-                className="h-11 shrink-0 rounded-xl border-[var(--ml-dark-border)] bg-transparent text-white hover:bg-white/5"
-                onClick={checkPostalOnly}
-              >
-                Check
-              </Button>
             </div>
 
-            {postalHint ? (
-              <p className="text-sm leading-snug text-[var(--ml-dark-ink-muted)]" role="status">
-                {postalHint}
+            {hint || (hydrated && state.inServiceArea === false) ? (
+              <p className="mt-2 text-[13px] leading-snug text-slate-600" role="status">
+                {hint ??
+                  "Outside our service area — South Florida is our launch market."}
               </p>
-            ) : null}
-
-            {areaStatus ? (
-              <div
-                className={
-                  areaStatus.tone === "ok"
-                    ? "rounded-xl border border-[var(--ml-dark-mint)]/35 bg-[var(--ml-dark-mint)]/10 px-3 py-2.5 text-left"
-                    : areaStatus.tone === "wait"
-                      ? "rounded-xl border border-amber-400/30 bg-amber-400/10 px-3 py-2.5 text-left"
-                      : "rounded-xl border border-white/15 bg-white/5 px-3 py-2.5 text-left"
-                }
-                role="status"
-              >
-                <p className="text-sm font-semibold text-white">{areaStatus.title}</p>
-                <p className="mt-1 text-xs leading-snug text-[var(--ml-dark-ink-muted)]">
-                  {areaStatus.body}
-                </p>
-              </div>
             ) : null}
 
             {waitlistReason ? (
-              <WaitlistSignup
-                reason={waitlistReason}
-                marketId={state.marketId}
-                marketName={state.marketName}
-                source="app_open_home"
-                page="/"
-                variant="compact"
-              />
+              <div className="mt-2">
+                <WaitlistSignup
+                  reason={waitlistReason}
+                  marketId={state.marketId}
+                  marketName={state.marketName}
+                  source="app_open_home"
+                  page="/"
+                  variant="compact"
+                />
+              </div>
             ) : null}
 
-            {/* Primary CTA — Link for reliable desktop + mobile navigation */}
-            <Link
-              href={bookingHref}
-              onClick={() => trackBookingEvent("booking_started", { entry: "app_open_check_availability" })}
-              className="booking-cta-btn inline-flex h-14 w-full items-center justify-center gap-2 rounded-2xl bg-[var(--ml-dark-mint)] text-base font-semibold text-[var(--ml-dark-bg)] shadow-[0_0_28px_rgb(8_224_212_/_0.28)] transition-opacity hover:opacity-95"
+            <button
+              type="button"
+              onClick={onCheckAvailability}
+              className="mt-3 inline-flex h-12 w-full items-center justify-center rounded-xl bg-[#08e0d4] text-[15px] font-semibold text-[#003474] transition-opacity hover:opacity-95 active:opacity-90"
             >
               Check availability
-              <span aria-hidden>→</span>
+            </button>
+          </section>
+
+          {/* Included checklist — single row, not a feature grid */}
+          <section className="mt-3">
+            <button
+              type="button"
+              className="flex w-full items-center justify-between gap-3 py-3 text-left"
+              aria-expanded={includedOpen}
+              onClick={() => setIncludedOpen((v) => !v)}
+            >
+              <span className="text-[14px] font-medium text-white/85">
+                What&apos;s included in a standard clean?
+              </span>
+              <ChevronDown
+                className={`size-4 shrink-0 text-white/55 transition-transform ${includedOpen ? "rotate-180" : ""}`}
+                aria-hidden
+              />
+            </button>
+            {includedOpen ? (
+              <ul className="space-y-2 pb-2">
+                {STANDARD_CLEAN_CHECKLIST.map((item) => (
+                  <li key={item} className="text-[13px] leading-snug text-white/70">
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+          </section>
+
+          {/* Secondary links — text only, below fold OK */}
+          <div className="mt-auto flex flex-wrap gap-x-4 gap-y-2 pt-6 text-[13px] text-white/55">
+            <Link href={routes.forBusiness} className="hover:text-white/80">
+              Business cleaning
             </Link>
-            <p className="text-center text-xs text-[var(--ml-dark-ink-muted)]">
-              Address first, then a quick sign-in (Google / Apple / email link). Your place stays
-              saved so you can track your cleaner.
-            </p>
-          </section>
-
-          {/* 3. Price preview — same engine as checkout */}
-          <section className="rounded-2xl border border-[var(--ml-dark-border)] bg-[var(--ml-dark-surface)]/80 p-4 text-left">
-            <p className="text-[11px] font-semibold tracking-[0.16em] text-[var(--ml-dark-mint)] uppercase">
-              Starting estimate
-            </p>
-            {addressEstimate ? (
-              <p className="mt-2 text-2xl font-semibold text-white">
-                From {formatCurrency(addressEstimate.totalCents, addressEstimate.currency)}
-              </p>
-            ) : (
-              <p className="mt-2 text-lg font-semibold leading-snug text-white">
-                From {formatCurrency(gtaFrom.totalCents, gtaFrom.currency)} in Toronto / GTA
-                <span className="text-[var(--ml-dark-ink-muted)]"> · </span>
-                From {formatCurrency(flFrom.totalCents, flFrom.currency)} in South Florida
-              </p>
-            )}
-            <p className="mt-1 text-sm text-[var(--ml-dark-ink-muted)]">
-              Typical standard clean: 2 bedrooms, 1 bathroom, up to 1,000 sq ft — including platform
-              fee. {PRICE_DRIVER_COPY}
-            </p>
-          </section>
-
-          {/* 4. Trust beside CTA — only real product promises */}
-          <section className="grid gap-3 sm:grid-cols-3">
-            {[
-              {
-                icon: BadgeCheck,
-                title: "Screened Pros",
-                body: "Cleaners complete MaidLinx onboarding and screening gates before jobs.",
-              },
-              {
-                icon: ShieldCheck,
-                title: "Insurance attestation",
-                body: "Pros attest to liability insurance; ops reviews docs. Not a blanket MaidLinx insurance guarantee.",
-              },
-              {
-                icon: CalendarClock,
-                title: "Policies you can open",
-                body: "Reschedule from your booking. Cancellation & refund rules are published under Legal.",
-              },
-            ].map(({ icon: Icon, title, body }) => (
-              <div
-                key={title}
-                className="rounded-2xl border border-[var(--ml-dark-border)] bg-[var(--ml-dark-surface)]/70 p-3.5 text-left"
-              >
-                <Icon className="size-5 text-[var(--ml-dark-mint)]" strokeWidth={1.75} aria-hidden />
-                <p className="mt-2 text-sm font-semibold text-white">{title}</p>
-                <p className="mt-1 text-xs leading-snug text-[var(--ml-dark-ink-muted)]">{body}</p>
-              </div>
-            ))}
-            <p className="sm:col-span-3 text-xs text-[var(--ml-dark-ink-muted)]">
-              <Link href={routes.legal.cancellation} className="underline-offset-2 hover:underline">
-                Cancellation
-              </Link>
-              {" · "}
-              <Link href={routes.legal.refund} className="underline-offset-2 hover:underline">
-                Refund
-              </Link>
-              {" · "}
-              <Link href={routes.legal.damage} className="underline-offset-2 hover:underline">
-                Damage claims
-              </Link>
-              {" — draft policies pending legal review."}
-            </p>
-          </section>
-
-          {/* 5. Real proof — no sample ratings; checklist + real photos */}
-          <section className="space-y-3 text-left">
-            <p className="text-[11px] font-semibold tracking-[0.16em] text-[var(--ml-dark-mint)] uppercase">
-              What a standard clean covers
-            </p>
-            <p className="text-sm text-[var(--ml-dark-ink-muted)]">
-              We don&apos;t show sample ratings. Customer reviews appear only when real bookings
-              leave them.
-            </p>
-            <ul className="space-y-2">
-              {STANDARD_CLEAN_CHECKLIST.map((item) => (
-                <li key={item} className="flex gap-2 text-sm text-white">
-                  <Check
-                    className="mt-0.5 size-4 shrink-0 text-[var(--ml-dark-mint)]"
-                    strokeWidth={2.25}
-                    aria-hidden
-                  />
-                  <span className="text-[var(--ml-dark-ink-muted)]">{item}</span>
-                </li>
-              ))}
-            </ul>
-            <div className="grid grid-cols-2 gap-2 pt-1">
-              <div className="relative aspect-[4/3] overflow-hidden rounded-xl">
-                <Image
-                  src="/booking/welcome-living.jpg"
-                  alt="Living room ready after a home clean"
-                  fill
-                  sizes="(max-width: 480px) 50vw, 220px"
-                  className="object-cover"
-                />
-              </div>
-              <div className="relative aspect-[4/3] overflow-hidden rounded-xl">
-                <Image
-                  src="/booking/cat-home.jpg"
-                  alt="Home cleaning category"
-                  fill
-                  sizes="(max-width: 480px) 50vw, 220px"
-                  className="object-cover"
-                />
-              </div>
-            </div>
-          </section>
-
-          {/* 6. Separate home vs business */}
-          <section className="rounded-2xl border border-[var(--ml-dark-border)] bg-[var(--ml-dark-surface)]/70 p-4 text-left">
-            <p className="text-sm font-semibold text-white">Home or business?</p>
-            <p className="mt-1 text-sm leading-snug text-[var(--ml-dark-ink-muted)]">
-              This path is for residential cleans. Workplaces, retail, restaurants, and property
-              managers use a separate estimate flow.
-            </p>
-            <div className="mt-3 flex flex-wrap gap-3 text-sm">
-              <button
-                type="button"
-                className="font-medium text-[var(--ml-dark-mint)] underline-offset-4 hover:underline"
-                onClick={() => openBooking("app_open_home_continue")}
-              >
-                Continue home booking
-              </button>
-              <Link
-                href={routes.forBusiness}
-                className="font-medium text-[var(--ml-dark-mint)] underline-offset-4 hover:underline"
-              >
-                For business
-              </Link>
-              <Link
-                href={routes.becomeCleaner}
-                className="font-medium text-[var(--ml-dark-mint)] underline-offset-4 hover:underline"
-              >
-                Earn with MaidLinx
-              </Link>
-            </div>
-          </section>
+            <Link href={routes.becomeCleaner} className="hover:text-white/80">
+              Become a cleaner
+            </Link>
+          </div>
         </div>
       </main>
 

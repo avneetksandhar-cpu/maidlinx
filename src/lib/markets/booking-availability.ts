@@ -19,8 +19,9 @@ export function resolveWaitlistReason(opts: {
   inServiceArea?: boolean;
   marketId?: string | null;
 }): WaitlistReason | null {
-  const hasAddress = Boolean(opts.line1?.trim() && opts.postalCode?.trim());
-  if (!hasAddress) return null;
+  // Street+postal or postal/ZIP-only (home single-field check) can trigger waitlist.
+  const hasLocation = Boolean(opts.postalCode?.trim() || opts.line1?.trim());
+  if (!hasLocation) return null;
   if (opts.inServiceArea === false) return "out_of_area";
   if (opts.inServiceArea === true && opts.marketId && !isMarketBookingOpen(opts.marketId)) {
     return "booking_disabled";

@@ -50,8 +50,8 @@ function isInAppShell(pathname: string): boolean {
 }
 
 /**
- * Persistent iOS-style bottom tabs — dark bar, mint active, safe-area inset.
- * Design-spec: Home · Bookings · Properties · Profile.
+ * Persistent iOS-style bottom tabs — navy bar, mint active, safe-area inset.
+ * Home · Bookings · My Home · Account
  */
 export function CustomerBottomNav({
   className,
@@ -73,9 +73,7 @@ export function CustomerBottomNav({
       label: "Home",
       icon: Home,
       match: (path: string) =>
-        path === routes.home ||
-        path === routes.account ||
-        path === routes.dashboard,
+        path === routes.home || path === routes.dashboard,
     },
     {
       href: routes.dashboardBookings,
@@ -88,13 +86,13 @@ export function CustomerBottomNav({
     },
     {
       href: routes.dashboardSavedPlaces,
-      label: "Properties",
+      label: "My Home",
       icon: Building2,
       match: (path: string) => path.startsWith(routes.dashboardSavedPlaces),
     },
     {
       href: routes.dashboardProfile,
-      label: "Profile",
+      label: "Account",
       icon: UserRound,
       match: (path: string) =>
         path.startsWith(routes.dashboardProfile) ||
@@ -103,6 +101,7 @@ export function CustomerBottomNav({
         path.startsWith(routes.dashboardInvoices) ||
         path.startsWith(routes.dashboardReceipts) ||
         path.startsWith(routes.dashboardSupport) ||
+        path.startsWith(routes.account) ||
         path.startsWith("/profile"),
     },
   ] as const;
@@ -111,7 +110,7 @@ export function CustomerBottomNav({
     <nav
       aria-label="Customer"
       className={cn(
-        "fixed inset-x-0 bottom-0 z-40 border-t border-[var(--ml-dark-border)] bg-[var(--ml-dark-bg)]/95 backdrop-blur-md lg:hidden",
+        "fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-[#003474]/97 backdrop-blur-md lg:hidden",
         className,
       )}
       style={{ fontFamily: "var(--ml-font-ios)" }}
@@ -128,13 +127,13 @@ export function CustomerBottomNav({
               className={cn(
                 "flex min-h-12 flex-col items-center justify-center gap-0.5 rounded-xl px-1 text-[10px] font-medium tracking-wide transition-colors",
                 active
-                  ? "text-[var(--ml-dark-mint)]"
-                  : "text-[var(--ml-dark-ink-muted)] active:text-[var(--ml-dark-ink)]",
+                  ? "text-[#08e0d4]"
+                  : "text-white/55 active:text-white/80",
               )}
             >
               <Icon
                 className="size-6"
-                strokeWidth={active ? 2.35 : 1.85}
+                strokeWidth={active ? 2.35 : 1.75}
                 aria-hidden
               />
               <span className="truncate">{item.label}</span>

@@ -98,7 +98,7 @@ describe("booking route guards (address-first)", () => {
     expect(getGuardRedirect("payment", state)).toBe(BOOKING_SCREEN_PATHS.date);
   });
 
-  it("splits date → time → access → review", () => {
+  it("splits date → time → review (access optional / skipped)", () => {
     const withDate = baseAddress({
       propertyType: "house",
       bedrooms: 2,
@@ -112,15 +112,15 @@ describe("booking route guards (address-first)", () => {
     });
     expect(getNextScreen("date", withDate)).toBe("time");
     expect(getGuardRedirect("time", withDate)).toBeNull();
-    expect(getGuardRedirect("access", withDate)).toBe(BOOKING_SCREEN_PATHS.time);
 
     const withTime = { ...withDate, arrivalWindow: "morning" as const };
-    expect(getNextScreen("time", withTime)).toBe("access");
-    expect(getGuardRedirect("access", withTime)).toBeNull();
+    expect(getNextScreen("time", withTime)).toBe("review");
+    expect(getPreviousScreen("review", withTime)).toBe("time");
+    // Access route still exists for deep links / edits.
     expect(getNextScreen("access", withTime)).toBe("review");
   });
 
-  it("skips time for ASAP", () => {
+  it("skips time for ASAP straight to review", () => {
     const state = baseAddress({
       propertyType: "house",
       bedrooms: 2,
@@ -133,9 +133,9 @@ describe("booking route guards (address-first)", () => {
       date: "2026-08-11",
       arrivalWindow: "afternoon",
     });
-    expect(getNextScreen("date", state)).toBe("access");
-    expect(getGuardRedirect("time", state)).toBe(BOOKING_SCREEN_PATHS.access);
-    expect(getPreviousScreen("access", state)).toBe("date");
+    expect(getNextScreen("date", state)).toBe("review");
+    expect(getGuardRedirect("time", state)).toBe(BOOKING_SCREEN_PATHS.review);
+    expect(getPreviousScreen("review", state)).toBe("date");
   });
 
   it("allows review when full draft is ready", () => {

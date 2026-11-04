@@ -32,14 +32,25 @@ describe("booking availability / waitlist reason", () => {
     ).toBe("booking_disabled");
   });
 
-  it("returns null when address incomplete", () => {
+  it("returns null when no location signal yet", () => {
     expect(
       resolveWaitlistReason({
-        line1: "1 Queen St",
+        line1: "",
         postalCode: "",
         inServiceArea: true,
         marketId: "TORONTO_GTA",
       }),
     ).toBeNull();
+  });
+
+  it("returns booking_disabled for ZIP-only South Florida when booking flag off", () => {
+    expect(
+      resolveWaitlistReason({
+        line1: null,
+        postalCode: "33139",
+        inServiceArea: true,
+        marketId: "SOUTH_FLORIDA",
+      }),
+    ).toBe("booking_disabled");
   });
 });

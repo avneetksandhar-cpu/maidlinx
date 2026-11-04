@@ -38,6 +38,8 @@ interface AddressAutocompleteProps {
   placeholder?: string;
   /** Compact hero search styling */
   variant?: "default" | "hero";
+  /** Hide “Use my current location” (compact home first viewport). */
+  hideLocate?: boolean;
   /** Called after a structured place is chosen (Places or saved/recent). */
   onAddressSelected?: (address: Partial<Step1Address>) => void;
 }
@@ -177,6 +179,7 @@ export function AddressAutocomplete({
   label = "Cleaning address",
   placeholder = "Where do you need cleaning?",
   variant = "default",
+  hideLocate = false,
   onAddressSelected,
 }: AddressAutocompleteProps) {
   const maps = useGoogleMaps();
@@ -779,35 +782,39 @@ export function AddressAutocomplete({
           <p className="mt-2 text-xs text-ink-subtle">Confirming address…</p>
         ) : null}
 
-        <div className={cn("mt-2 flex flex-wrap items-center gap-x-3 gap-y-1", isHero && "mt-2.5")}>
-          <button
-            type="button"
-            onClick={() => void locateCurrent()}
-            disabled={locating}
-            aria-busy={locating || undefined}
-            className={cn(
-              "inline-flex min-h-11 items-center gap-2 rounded-lg px-1 py-2 text-sm font-medium transition-colors duration-150 touch-manipulation",
-              locating
-                ? "cursor-wait text-ink-muted"
-                : "text-accent underline-offset-2 hover:underline",
-            )}
-          >
-            {locating ? (
-              <Loader2 className="size-4 shrink-0 animate-spin" aria-hidden />
-            ) : (
-              <LocateFixed className="size-4 shrink-0" aria-hidden />
-            )}
-            {locating ? LOCATION_FINDING_MESSAGE : "Use my current location"}
-          </button>
-        </div>
-        {locationError ? (
-          <p className="mt-2 text-sm text-ink-muted" role="status" aria-live="polite">
-            {locationError}
-          </p>
-        ) : locating ? (
-          <p className="sr-only" role="status" aria-live="polite">
-            {LOCATION_FINDING_MESSAGE}
-          </p>
+        {!hideLocate ? (
+          <>
+            <div className={cn("mt-2 flex flex-wrap items-center gap-x-3 gap-y-1", isHero && "mt-2.5")}>
+              <button
+                type="button"
+                onClick={() => void locateCurrent()}
+                disabled={locating}
+                aria-busy={locating || undefined}
+                className={cn(
+                  "inline-flex min-h-11 items-center gap-2 rounded-lg px-1 py-2 text-sm font-medium transition-colors duration-150 touch-manipulation",
+                  locating
+                    ? "cursor-wait text-ink-muted"
+                    : "text-accent underline-offset-2 hover:underline",
+                )}
+              >
+                {locating ? (
+                  <Loader2 className="size-4 shrink-0 animate-spin" aria-hidden />
+                ) : (
+                  <LocateFixed className="size-4 shrink-0" aria-hidden />
+                )}
+                {locating ? LOCATION_FINDING_MESSAGE : "Use my current location"}
+              </button>
+            </div>
+            {locationError ? (
+              <p className="mt-2 text-sm text-ink-muted" role="status" aria-live="polite">
+                {locationError}
+              </p>
+            ) : locating ? (
+              <p className="sr-only" role="status" aria-live="polite">
+                {LOCATION_FINDING_MESSAGE}
+              </p>
+            ) : null}
+          </>
         ) : null}
 
         {showSuggestions ? (
