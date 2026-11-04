@@ -118,26 +118,29 @@ export function PostBookingDashboard({
   const completedTasks = bookingTaskLabels(booking);
 
   function bookUsualClean() {
+    // Nested fn: re-narrow — TS does not keep the outer `!booking` guard here.
+    if (!booking) return;
+    const active = booking;
     // Restore real scope from this booking (or saved usual). Price/availability rechecked on When/Review.
     let profile = readUsualClean();
-    if (!profile?.line1 && booking.address_line1 && booking.service_type) {
+    if (!profile?.line1 && active.address_line1 && active.service_type) {
       const seeded = {
         ...state,
-        line1: booking.address_line1,
-        line2: booking.address_line2 ?? undefined,
-        city: booking.address_city ?? undefined,
-        state: booking.address_state ?? undefined,
-        postalCode: booking.address_postal_code ?? undefined,
-        country: booking.address_country ?? "US",
-        latitude: booking.address_latitude ?? undefined,
-        longitude: booking.address_longitude ?? undefined,
-        googlePlaceId: booking.google_place_id ?? undefined,
-        serviceType: booking.service_type as BookingServiceId,
-        bedrooms: booking.bedrooms,
-        bathrooms: booking.bathrooms,
-        squareFootage: booking.square_footage ?? undefined,
-        extras: booking.extras as BookingExtraId[],
-        preferredCleanerId: booking.professional_profile_id ?? undefined,
+        line1: active.address_line1,
+        line2: active.address_line2 ?? undefined,
+        city: active.address_city ?? undefined,
+        state: active.address_state ?? undefined,
+        postalCode: active.address_postal_code ?? undefined,
+        country: active.address_country ?? "US",
+        latitude: active.address_latitude ?? undefined,
+        longitude: active.address_longitude ?? undefined,
+        googlePlaceId: active.google_place_id ?? undefined,
+        serviceType: active.service_type as BookingServiceId,
+        bedrooms: active.bedrooms,
+        bathrooms: active.bathrooms,
+        squareFootage: active.square_footage ?? undefined,
+        extras: active.extras as BookingExtraId[],
+        preferredCleanerId: active.professional_profile_id ?? undefined,
       };
       saveUsualClean(seeded);
       profile = readUsualClean();
@@ -146,10 +149,10 @@ export function PostBookingDashboard({
     if (!profile?.line1) {
       const params = new URLSearchParams({
         rebook: "1",
-        sourceBookingId: booking.id,
+        sourceBookingId: active.id,
       });
-      if (booking.professional_profile_id) {
-        params.set("preferredCleanerId", booking.professional_profile_id);
+      if (active.professional_profile_id) {
+        params.set("preferredCleanerId", active.professional_profile_id);
       }
       router.push(`${BOOKING_SCREEN_PATHS.date}?${params.toString()}`);
       return;
@@ -157,7 +160,7 @@ export function PostBookingDashboard({
 
     const patch = {
       ...usualCleanToBookingPatch(profile),
-      preferredCleanerId: booking.professional_profile_id ?? undefined,
+      preferredCleanerId: active.professional_profile_id ?? undefined,
     };
     const next = buildAddressStatePatch(state, patch);
     updateState({ ...next, ...patch });
