@@ -29,7 +29,8 @@ export type EligibilityReasonCode =
   | "schedule_conflict"
   | "cannot_reach"
   | "requirements_not_met"
-  | "outside_service_area";
+  | "outside_service_area"
+  | "gates_incomplete";
 
 export interface EligibilityResult {
   eligible: boolean;
@@ -175,6 +176,12 @@ export function checkEligibility(
       : cleaner.onboardingStatus === "APPROVED";
   if (requireVerified && (!cleaner.isVerified || !onboardingApproved)) {
     reasons.push("not_approved");
+  }
+
+  // Platform V1 gates (identity/screening/training/etc.) when snapshot is provided.
+  // Matching ranks on operational factors only — never protected characteristics.
+  if (requireVerified && cleaner.platformGatesAllowed === false) {
+    reasons.push("gates_incomplete");
   }
 
   const requireOnline = context.requireOnline !== false;

@@ -17,7 +17,7 @@ function matchesPrefix(pathname: string, prefixes: string[]): boolean {
 
 function homeForRole(role: UserRole): string {
   if (role === "admin") return "/admin";
-  if (role === "cleaner") return "/pro/home";
+  if (role === "cleaner") return "/cleaner";
   return "/account";
 }
 
@@ -130,7 +130,7 @@ export async function updateSession(request: NextRequest) {
 
     if (matchesPrefix(pathname, CUSTOMER_PREFIXES) && role === "cleaner") {
       const redirectUrl = request.nextUrl.clone();
-      redirectUrl.pathname = "/pro/home";
+      redirectUrl.pathname = "/cleaner";
       return NextResponse.redirect(redirectUrl);
     }
   }

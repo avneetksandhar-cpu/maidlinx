@@ -73,6 +73,24 @@ export function ProNav() {
             Onboarding
           </Link>
           <Link
+            href={routes.cleanerApplication}
+            className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-ink-muted hover:bg-surface-muted hover:text-ink"
+          >
+            Application
+          </Link>
+          <Link
+            href={routes.cleanerVerification}
+            className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-ink-muted hover:bg-surface-muted hover:text-ink"
+          >
+            Verification
+          </Link>
+          <Link
+            href={routes.cleanerTraining}
+            className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-ink-muted hover:bg-surface-muted hover:text-ink"
+          >
+            Academy
+          </Link>
+          <Link
             href={routes.cleanerDocuments}
             className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-ink-muted hover:bg-surface-muted hover:text-ink"
           >

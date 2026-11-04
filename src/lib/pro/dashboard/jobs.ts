@@ -591,6 +591,10 @@ export async function transitionJobStatus(
       throw new Error("Cleaner profile not found.");
     }
 
+    // Cleaner Platform V1: server-side approval gates before real jobs.
+    const { requireCleanerCanTakeJobs } = await import("@/lib/cleaners/gates-store");
+    await requireCleanerCanTakeJobs(acceptedCleanerId);
+
     updatePayload.professional_profile_id = profileId;
     updatePayload.professional_id = profileId;
     updatePayload.cleaner_id = acceptedCleanerId;
@@ -630,6 +634,25 @@ export async function transitionJobStatus(
     actor: { id: profileId, role: "cleaner" },
     metadata: { fromStatus, toStatus: normalizedTo },
   });
+
+  // Privacy: drop live GPS when leaving en-route / arrived.
+  try {
+    const { clearLiveLocationIfNeeded } = await import("@/lib/location/live-location");
+    await clearLiveLocationIfNeeded(jobId, normalizedTo);
+  } catch {
+    // Non-fatal — status transition already succeeded.
+  }
+
+  if (normalizedTo === "completed") {
+    try {
+      const { recordPendingPayoutForCompletedBooking } = await import(
+        "@/lib/payments/payouts"
+      );
+      await recordPendingPayoutForCompletedBooking(jobId);
+    } catch (payoutError) {
+      console.error("[jobs] pending payout record failed:", payoutError);
+    }
+  }
 
   if (isClaim) {
     if (acceptedCleanerId) {
