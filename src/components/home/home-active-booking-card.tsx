@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { CalendarDays } from "lucide-react";
 import { useActiveCustomerBooking } from "@/hooks/use-active-customer-booking";
+import { getCustomerFriendlyStatusLabel } from "@/lib/bookings/status-timeline";
 import { routes } from "@/config/site";
 import { formatCurrency } from "@/lib/utils";
 
@@ -52,13 +53,16 @@ export function HomeActiveBookingCard() {
               ? ` · ${formatCurrency(booking.totalCents, booking.currency || "USD")}`
               : ""}
           </p>
+          <p className="mt-1 text-xs font-semibold text-[#04CED2]">
+            {getCustomerFriendlyStatusLabel(booking.status)}
+          </p>
         </div>
       </div>
       <Link
         href={routes.bookingStatus(booking.id)}
-        className="booking-cta-btn mt-3 inline-flex h-12 w-full items-center justify-center rounded-2xl bg-[#08e0d4] text-base font-semibold text-[#003474] transition-opacity hover:opacity-95"
+        className="booking-cta-btn mt-3 inline-flex h-12 w-full items-center justify-center rounded-2xl bg-[#04CED2] text-base font-semibold text-[#01193D] transition-opacity hover:opacity-95"
       >
-        View my booking
+        View booking
       </Link>
     </section>
   );

@@ -23,8 +23,22 @@ export const LIVE_JOB_TIMELINE_STEPS = [
   { key: "completed", label: "Completed" },
 ] as const;
 
+/**
+ * Day-of service timeline (founder matrix):
+ * Confirmed → On the way → Arrived → Cleaning → Complete
+ * Only advances from real cleaner actions — never invents progress.
+ */
+export const DAY_OF_TIMELINE_STEPS = [
+  { key: "confirmed", label: "Confirmed" },
+  { key: "on_the_way", label: "On the way" },
+  { key: "arrived", label: "Arrived" },
+  { key: "cleaning", label: "Cleaning" },
+  { key: "complete", label: "Complete" },
+] as const;
+
 export type CustomerTimelineKey = (typeof CUSTOMER_TIMELINE_STEPS)[number]["key"];
 export type LiveJobTimelineKey = (typeof LIVE_JOB_TIMELINE_STEPS)[number]["key"];
+export type DayOfTimelineKey = (typeof DAY_OF_TIMELINE_STEPS)[number]["key"];
 
 function timelineIndexForStatus(status: string): number {
   const normalized = normalizeBookingStatus(status);
@@ -171,4 +185,56 @@ export function getLiveJobTimelineState(status: string): {
   }));
 
   return { steps, currentIndex };
+}
+
+function dayOfIndexForStatus(status: string): number {
+  const normalized = normalizeBookingStatus(status);
+
+  switch (normalized as BookingStatus) {
+    case "assigned":
+    case "accepted":
+      return 0;
+    case "on_the_way":
+      return 1;
+    case "arrived":
+      return 2;
+    case "in_progress":
+      return 3;
+    case "completed":
+      return 4;
+    default:
+      // Pre-confirm (still finding) — not on day-of bar yet.
+      return -1;
+  }
+}
+
+/** Day-of stepper: Confirmed → On the way → Arrived → Cleaning → Complete. */
+export function getDayOfTimelineState(status: string): {
+  steps: Array<{
+    key: DayOfTimelineKey;
+    label: string;
+    state: "complete" | "current" | "upcoming";
+  }>;
+  currentIndex: number;
+} {
+  const currentIndex = dayOfIndexForStatus(status);
+  const steps = DAY_OF_TIMELINE_STEPS.map((step, index) => ({
+    key: step.key,
+    label: step.label,
+    state:
+      currentIndex < 0
+        ? ("upcoming" as const)
+        : index < currentIndex
+          ? ("complete" as const)
+          : index === currentIndex
+            ? ("current" as const)
+            : ("upcoming" as const),
+  }));
+
+  return { steps, currentIndex };
+}
+
+/** Human home/upcoming status — never invents assignment. */
+export function getCustomerFriendlyStatusLabel(status: string): string {
+  return getCustomerStatusHeadline(status);
 }

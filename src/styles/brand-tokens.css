@@ -53,8 +53,15 @@
 }
 
 /*
-  Customer booking funnel — light 4-step design tokens (exact).
-  Navy text #01193D · turquoise CTA #04CED2 · selected #E6FAFA
+  Founder customer booking + post-booking design system (canonical).
+  Scope: 4-step /book/* funnel AND /bookings/[id] live status (data-theme="ml-book").
+
+  Brand: circular MaidLinx mark, compact header
+  Colors: white bg · navy text #01193D · turquoise CTA #04CED2 (navy labels)
+           · pale aqua selected #E6FAFA
+  Type: --ml-font-ios (system), left-aligned headings, readable body
+  Controls: one primary CTA; running total above CTA when quote available
+  Nav: app tabs Home · Bookings · My Home · Account; booking Step 1–4 of 4
 */
 [data-theme="ml-book"] {
   --ml-book-bg: #ffffff;

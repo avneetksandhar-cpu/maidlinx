@@ -28,6 +28,8 @@ import { routes } from "@/config/site";
 import { trackBookingEvent } from "@/lib/analytics/booking";
 import type { BookingState } from "@/lib/bookings/booking-state";
 import type { DashboardBooking } from "@/lib/dashboard/bookings";
+import { HomeUsualCleanCard } from "@/components/home/home-usual-clean-card";
+import { getCustomerFriendlyStatusLabel } from "@/lib/bookings/status-timeline";
 
 const STANDARD_CLEAN_CHECKLIST = [
   "Kitchen surfaces, sink, and appliance exteriors",
@@ -285,13 +287,18 @@ function AppOpenHomeInner() {
                   {upcomingWhen.dateLabel}
                 </p>
                 <p className="truncate text-sm text-white/70">{upcomingWhen.windowLabel}</p>
+                <p className="mt-1 text-xs font-medium text-[#08e0d4]">
+                  {getCustomerFriendlyStatusLabel(upcoming.status)}
+                </p>
               </div>
               <span className="inline-flex shrink-0 items-center gap-0.5 text-sm font-semibold text-[#08e0d4]">
                 View booking
                 <ChevronRight className="size-4" aria-hidden />
               </span>
             </Link>
-          ) : null}
+          ) : (
+            <HomeUsualCleanCard className="mb-3" />
+          )}
 
           {/* Main heading — left aligned */}
           <h1 className="max-w-[14ch] text-[2rem] font-semibold leading-[1.12] tracking-tight text-white sm:text-[2.25rem]">
