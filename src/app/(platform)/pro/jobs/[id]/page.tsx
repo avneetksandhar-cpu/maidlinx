@@ -39,12 +39,12 @@ async function JobDetailContent({ id }: { id: string }) {
         <AppHeader
           homeHref={routes.cleanerDashboard}
           backHref={backHref}
-          logoVariant="mark"
+          size="compact"
           trailing={
             <Link
               href={routes.cleanerProfile}
               aria-label="More"
-              className="inline-flex size-11 items-center justify-center rounded-xl text-[var(--ml-app-header-ink)] transition-colors hover:bg-black/10"
+              className="inline-flex size-11 items-center justify-center rounded-xl text-white transition-colors hover:bg-white/10"
             >
               <MoreHorizontal className="size-6" strokeWidth={2.25} aria-hidden />
             </Link>

@@ -1,22 +1,9 @@
 import type { Metadata, Viewport } from "next";
-import { DM_Sans, Fraunces } from "next/font/google";
 import { AppProviders } from "@/components/providers/app-providers";
 import { ServiceWorkerRegister } from "@/components/pwa/service-worker-register";
 import { getMetadataSiteUrl } from "@/config/env";
 import { siteConfig } from "@/config/site";
 import "@/styles/globals.css";
-
-const dmSans = DM_Sans({
-  subsets: ["latin"],
-  variable: "--font-dm-sans",
-  display: "swap",
-});
-
-const fraunces = Fraunces({
-  subsets: ["latin"],
-  variable: "--font-fraunces",
-  display: "swap",
-});
 
 const siteUrl = getMetadataSiteUrl();
 const ogImageUrl = siteConfig.ogImage;
@@ -80,8 +67,8 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#003474" },
-    { media: "(prefers-color-scheme: dark)", color: "#003474" },
+    { media: "(prefers-color-scheme: light)", color: "#01193D" },
+    { media: "(prefers-color-scheme: dark)", color: "#01193D" },
   ],
   colorScheme: "dark",
   width: "device-width",
@@ -95,7 +82,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${dmSans.variable} ${fraunces.variable}`}>
+    <html lang="en">
       <body className="min-h-screen bg-[var(--ml-dark-bg)] font-sans text-ink antialiased">
         <AppProviders>{children}</AppProviders>
         <ServiceWorkerRegister />

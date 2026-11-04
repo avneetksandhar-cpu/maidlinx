@@ -1,10 +1,10 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ChevronRight, UserRound } from "lucide-react";
+import { BrandLockup } from "@/components/brand/brand-lockup";
 import { CustomerBottomNav } from "@/components/customer/customer-bottom-nav";
 import { AddressAutocomplete } from "@/components/booking/address-autocomplete";
 import { GoogleMapsProvider } from "@/components/booking/google-maps-provider";
@@ -247,25 +247,12 @@ function AppOpenHomeInner() {
       className="relative flex min-h-dvh flex-col overflow-x-hidden bg-[#01193D] text-white"
       style={{ fontFamily: "var(--ml-font-ios)" }}
     >
-      <header className="relative z-10 flex items-center justify-between px-5 pt-[max(0.65rem,env(safe-area-inset-top))] pb-1">
-        <div className="flex items-center gap-3">
-          <Link href={routes.home} aria-label="MaidLinx home" className="inline-flex">
-            <Image
-              src="/brand/maidlinx-mark.png"
-              alt="MaidLinx"
-              width={48}
-              height={48}
-              className="size-12 rounded-full object-cover"
-              priority
-            />
-          </Link>
-          <span className="h-6 w-px bg-white/30" aria-hidden />
-          <span className="text-[15px] font-medium text-white">South Florida</span>
-        </div>
+      <header className="relative z-10 flex items-center justify-between gap-2 px-5 pt-[max(0.65rem,env(safe-area-inset-top))] pb-1">
+        <BrandLockup href={routes.home} size="default" tone="onDark" priority />
         <Link
           href={accountHref}
           aria-label={authStatus === "authenticated" ? "Account" : "Sign in"}
-          className="inline-flex size-10 items-center justify-center rounded-full border border-white/25 bg-white/10 text-white"
+          className="inline-flex size-10 shrink-0 items-center justify-center rounded-full border border-white/25 bg-white/10 text-white"
         >
           <UserRound className="size-5" strokeWidth={1.85} aria-hidden />
         </Link>

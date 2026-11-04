@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { AppHeader } from "@/components/mobile/app-header";
+import { BrandHeader } from "@/components/brand/brand-header";
 import { CustomerBottomNav } from "@/components/customer/customer-bottom-nav";
 import { PlatformUserMenu } from "@/components/layout/platform-user-menu";
 import { Button } from "@/components/ui";
@@ -16,8 +16,8 @@ interface CustomerShellProps {
 }
 
 /**
- * Post-booking / account chrome: mint-teal app header + iOS bottom tabs.
- * Not used during /book/* question funnel.
+ * Home / Bookings / My Home / Account chrome — founder brand header + iOS tabs.
+ * Not used during /book/* question funnel (compact BrandHeader there).
  */
 export function CustomerShell({ children, contentClassName }: CustomerShellProps) {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -28,14 +28,14 @@ export function CustomerShell({ children, contentClassName }: CustomerShellProps
       className="min-h-dvh bg-[var(--ml-dark-bg)] text-[var(--ml-dark-ink)]"
       style={{ fontFamily: "var(--ml-font-ios)" }}
     >
-      <AppHeader
+      <BrandHeader
         homeHref={routes.dashboard}
-        logoVariant="mark"
+        size="default"
         trailing={
           <>
             <Link
               href={routes.dashboardNotifications}
-              className="inline-flex size-11 items-center justify-center rounded-xl text-[var(--ml-app-header-ink)] transition-colors hover:bg-black/10"
+              className="inline-flex size-11 items-center justify-center rounded-xl text-white transition-colors hover:bg-white/10"
               aria-label="Notifications"
             >
               <BellIcon />
@@ -43,7 +43,7 @@ export function CustomerShell({ children, contentClassName }: CustomerShellProps
             <Button
               variant="ghost"
               size="sm"
-              className="h-11 w-11 px-0 text-[var(--ml-app-header-ink)] hover:bg-black/10 lg:hidden"
+              className="h-11 w-11 px-0 text-white hover:bg-white/10 lg:hidden"
               aria-label="Open menu"
               onClick={() => setMenuOpen(true)}
             >
@@ -52,7 +52,7 @@ export function CustomerShell({ children, contentClassName }: CustomerShellProps
             <div className="hidden lg:block">
               <PlatformUserMenu
                 tone="dark"
-                className="!text-[var(--ml-app-header-ink)] hover:!bg-black/10 hover:!text-[var(--ml-app-header-ink)]"
+                className="!text-white hover:!bg-white/10 hover:!text-white"
               />
             </div>
           </>

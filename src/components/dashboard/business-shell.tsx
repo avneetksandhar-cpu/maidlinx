@@ -3,8 +3,8 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { SiteLogo } from "@/components/brand/site-logo";
-import { AppHeader } from "@/components/mobile/app-header";
+import { BrandHeader } from "@/components/brand/brand-header";
+import { BrandLockup } from "@/components/brand/brand-lockup";
 import { CustomerBottomNav } from "@/components/customer/customer-bottom-nav";
 import { PlatformUserMenu } from "@/components/layout/platform-user-menu";
 import { Button } from "@/components/ui";
@@ -47,7 +47,7 @@ export function BusinessShell({ children, firstName }: BusinessShellProps) {
       {/* Desktop logo-navy sidebar */}
       <aside className="hidden w-60 shrink-0 flex-col border-r border-[var(--ml-dark-border)] bg-[var(--ml-dark-bg)] text-white lg:flex">
         <div className="flex h-16 items-center px-5">
-          <SiteLogo variant="horizontal" tone="onDark" href={routes.dashboard} />
+          <BrandLockup href={routes.dashboard} size="default" tone="onDark" />
         </div>
         <nav className="flex flex-1 flex-col gap-0.5 px-3 py-2">
           {NAV_ITEMS.map((item) => {
@@ -81,14 +81,14 @@ export function BusinessShell({ children, firstName }: BusinessShellProps) {
 
       <div className="flex min-w-0 flex-1 flex-col bg-[var(--ml-dark-bg)]">
         <div className="lg:hidden">
-          <AppHeader
+          <BrandHeader
             homeHref={routes.dashboard}
-            logoVariant="mark"
+            size="default"
             trailing={
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-11 w-11 px-0 text-[var(--ml-app-header-ink)] hover:bg-black/10"
+                className="h-11 w-11 px-0 text-white hover:bg-white/10"
                 aria-label="Open menu"
                 onClick={() => setMobileOpen(true)}
               >
@@ -108,7 +108,7 @@ export function BusinessShell({ children, firstName }: BusinessShellProps) {
             />
             <aside className="absolute inset-y-0 left-0 flex w-72 flex-col border-r border-[var(--ml-dark-border)] bg-[var(--ml-dark-bg)] text-white shadow-[var(--shadow-elevated)]">
               <div className="flex h-14 items-center justify-between px-4">
-                <SiteLogo variant="horizontal" tone="onDark" href={routes.dashboard} />
+                <BrandLockup href={routes.dashboard} size="default" tone="onDark" />
                 <Button
                   variant="ghost"
                   size="sm"

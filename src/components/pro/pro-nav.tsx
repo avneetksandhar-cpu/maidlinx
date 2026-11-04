@@ -67,12 +67,11 @@ export function ProNav() {
         <div className="lg:hidden">
           <AppHeader
             homeHref={routes.cleanerDashboard}
-            logoVariant="mark"
             trailing={
               <Link
                 href={routes.cleanerProfile}
                 aria-label="Profile"
-                className="inline-flex size-11 items-center justify-center rounded-xl text-[var(--ml-app-header-ink)] transition-colors hover:bg-black/10"
+                className="inline-flex size-11 items-center justify-center rounded-xl text-white transition-colors hover:bg-white/10"
               >
                 <CircleUserRound className="size-6" strokeWidth={2} aria-hidden />
               </Link>

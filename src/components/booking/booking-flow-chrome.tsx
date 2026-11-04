@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
+import { BrandLockup } from "@/components/brand/brand-lockup";
 import { Button } from "@/components/ui";
 import {
   BOOKING_SCREEN_PATHS,
@@ -101,25 +101,6 @@ export function BookingProgressDots({
   return <BookingProgressBar currentId={currentId} className={className} />;
 }
 
-function CompactMark({ href }: { href: string }) {
-  return (
-    <a
-      href={href}
-      className="inline-flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-full"
-      aria-label="MaidLinx home"
-    >
-      <Image
-        src="/brand/maidlinx-mark.png"
-        alt="MaidLinx"
-        width={48}
-        height={48}
-        className="size-12 object-cover"
-        priority
-      />
-    </a>
-  );
-}
-
 /** Lift sticky footer above the soft keyboard (iOS Safari / Android Chrome). */
 function useKeyboardInset(): number {
   const [inset, setInset] = useState(0);
@@ -210,26 +191,26 @@ export function BookingShell({
       }
     >
       <header className="z-50 shrink-0 border-b border-[var(--ml-book-border)] bg-[var(--ml-book-bg,#01193D)]">
-        <div className="relative mx-auto flex h-14 max-w-[680px] items-center px-5 pt-[env(safe-area-inset-top)]">
-          <div className="z-10 flex min-w-[3rem] items-center justify-start gap-1">
+        <div className="relative mx-auto flex h-12 max-w-[680px] items-center px-5 pt-[env(safe-area-inset-top)]">
+          <div className="z-10 flex min-w-0 max-w-[58%] items-center justify-start gap-0.5">
             {showBack ? (
               <button
                 type="button"
                 onClick={handleBack}
-                className="inline-flex size-10 items-center justify-center rounded-xl text-white transition-colors hover:bg-white/10"
+                className="inline-flex size-9 shrink-0 items-center justify-center rounded-xl text-white transition-colors hover:bg-white/10"
                 aria-label="Go back"
               >
-                <ChevronLeft className="size-6" strokeWidth={2.25} aria-hidden />
+                <ChevronLeft className="size-5" strokeWidth={2.25} aria-hidden />
               </button>
             ) : null}
-            <CompactMark href={routes.home} />
+            <BrandLockup href={routes.home} size="compact" tone="onDark" priority />
           </div>
 
-          <div className="pointer-events-none absolute inset-x-20 flex justify-center sm:inset-x-24">
-            <BookingProgressBar currentId={screenId} />
+          <div className="pointer-events-none absolute inset-x-[42%] flex justify-end sm:inset-x-36 sm:justify-center">
+            <BookingProgressBar currentId={screenId} className="w-[7.5rem] sm:w-auto" />
           </div>
 
-          <div className="z-10 ml-auto flex min-w-[3rem] items-center justify-end" />
+          <div className="z-10 ml-auto flex min-w-[1.5rem] items-center justify-end" />
         </div>
       </header>
 
@@ -267,7 +248,7 @@ export function BookingShell({
               type="button"
               variant="accent"
               size="lg"
-              className="booking-cta-btn h-14 w-full rounded-2xl text-base font-bold shadow-none"
+              className="booking-cta-btn h-14 w-full rounded-2xl text-base font-semibold shadow-none"
               disabled={ctaDisabled || ctaLoading}
               onClick={onContinue}
             >

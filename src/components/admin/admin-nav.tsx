@@ -56,12 +56,11 @@ export function AdminNav() {
       <div className="lg:hidden">
         <AppHeader
           homeHref={routes.admin}
-          logoVariant="mark"
           leading={
             <Button
               variant="ghost"
               size="sm"
-              className="h-11 w-11 px-0 text-[var(--ml-app-header-ink)] hover:bg-black/10"
+              className="h-11 w-11 px-0 text-white hover:bg-white/10"
               aria-label="Open menu"
               onClick={() => setMobileOpen(true)}
             >
@@ -73,11 +72,11 @@ export function AdminNav() {
               <PlatformUserMenu
                 tone="dark"
                 showLabel={false}
-                className="!text-[var(--ml-app-header-ink)] hover:!bg-black/10 hover:!text-[var(--ml-app-header-ink)]"
+                className="!text-white hover:!bg-white/10 hover:!text-white"
               />
               <ThemeToggle
                 compact
-                className="text-[var(--ml-app-header-ink)] hover:bg-black/10 hover:text-[var(--ml-app-header-ink)]"
+                className="text-white hover:bg-white/10 hover:text-white"
               />
             </>
           }
