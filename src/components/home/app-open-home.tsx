@@ -270,9 +270,19 @@ function AppOpenHomeInner() {
             <FloorPlanArt className="h-auto w-full max-h-[22vh] min-[701px]:max-h-none" />
           </div>
 
+          <Link
+            href={routes.dashboardSites}
+            className="mb-3 inline-flex h-11 w-full items-center justify-center rounded-xl border border-[#04CED2]/70 text-[15px] font-semibold text-[#04CED2]"
+          >
+            Business sites · commercial cleaning
+          </Link>
+
           <h1 className="mt-1 text-[1.375rem] font-semibold tracking-tight text-white">
-            Where are we cleaning?
+            Home cleaning
           </h1>
+          <p className="mt-1 text-[13px] text-white/55">
+            Residential path (secondary). Businesses use Sites for offices and storefronts.
+          </p>
 
           <div className="mt-3 rounded-xl border border-white/70 bg-transparent px-1 py-1">
             <AddressAutocomplete

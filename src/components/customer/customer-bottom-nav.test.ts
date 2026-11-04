@@ -2,12 +2,13 @@ import { describe, expect, it } from "vitest";
 import { shouldShowCustomerTabBar } from "@/components/customer/customer-bottom-nav";
 
 describe("shouldShowCustomerTabBar", () => {
-  it("shows on customer home and dashboard surfaces", () => {
+  it("shows on commercial overview / sites / jobs / billing", () => {
     expect(shouldShowCustomerTabBar("/")).toBe(true);
     expect(shouldShowCustomerTabBar("/dashboard")).toBe(true);
+    expect(shouldShowCustomerTabBar("/dashboard/sites")).toBe(true);
+    expect(shouldShowCustomerTabBar("/dashboard/jobs")).toBe(true);
+    expect(shouldShowCustomerTabBar("/dashboard/billing")).toBe(true);
     expect(shouldShowCustomerTabBar("/dashboard/bookings")).toBe(true);
-    expect(shouldShowCustomerTabBar("/dashboard/saved-places")).toBe(true);
-    expect(shouldShowCustomerTabBar("/dashboard/profile")).toBe(true);
     expect(shouldShowCustomerTabBar("/bookings/abc")).toBe(true);
   });
 

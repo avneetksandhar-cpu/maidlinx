@@ -16,13 +16,12 @@ export default function ForBusinessPage() {
         <p className="text-xs font-semibold tracking-[0.18em] text-accent uppercase">
           For business
         </p>
-        <Heading as="h1" className="mt-3 max-w-xl font-display text-4xl sm:text-5xl">
-          Workplace cleaning — not the home booking path.
+        <Heading as="h1" className="mt-3 max-w-xl text-4xl font-bold sm:text-5xl">
+          Commercial cleaning for South Florida sites.
         </Heading>
-        <p className="mt-4 max-w-lg text-base text-ink-muted sm:text-lg">
-          Residential cleans start on the home flow with address and upfront pricing. Businesses use
-          this page for a sales follow-up estimate, or book an office clean online when your market
-          is open.
+        <p className="mt-4 max-w-lg text-base font-normal text-ink-muted sm:text-lg">
+          Primary path: select a site → define scope → book when priced, or request quotes. Home
+          cleaning remains available as a secondary residential flow.
         </p>
 
         <div className="mt-8 grid gap-6 rounded-xl border border-border bg-surface p-5 sm:grid-cols-2">
@@ -49,9 +48,9 @@ export default function ForBusinessPage() {
         </div>
 
         <div className="mt-6 flex flex-wrap gap-3">
-          <Link href={`${routes.book}?service=office`}>
+          <Link href={routes.dashboardSites}>
             <Button variant="primary" size="lg" className="h-12 rounded-lg px-6 font-semibold">
-              Book office clean online
+              Open Sites
             </Button>
           </Link>
           <Link href={routes.home}>

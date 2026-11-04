@@ -15,7 +15,7 @@ export interface PriceBreakdown {
     type: "promo" | "referral" | "recurring" | "experiment" | "other";
     label: string;
     amountCents: number;
-    code?: string;
+    code?: string | null;
   }>;
   totalCents: number;
   currency: "USD" | "CAD";

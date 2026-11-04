@@ -58,6 +58,14 @@ export const routes = {
   earn: "/earn",
   becomeCleaner: "/earn",
   dashboard: "/dashboard",
+  /** B2B primary tabs — Overview · Sites · Jobs · Billing */
+  dashboardSites: "/dashboard/sites",
+  dashboardSiteScope: (id: string) => `/dashboard/sites/${id}/scope`,
+  dashboardSiteQuotes: (id: string) => `/dashboard/sites/${id}/quotes`,
+  dashboardJobs: "/dashboard/jobs",
+  dashboardJob: (id: string) => `/dashboard/jobs/${id}`,
+  dashboardBilling: "/dashboard/billing",
+  /** Legacy aliases — residential secondary; prefer Sites / Jobs / Billing */
   dashboardBookings: "/dashboard/bookings",
   dashboardInvoices: "/dashboard/invoices",
   dashboardReceipts: "/dashboard/receipts",

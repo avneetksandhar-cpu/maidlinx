@@ -12,16 +12,34 @@ import { routes } from "@/config/site";
 import { cn } from "@/lib/utils";
 
 const NAV_ITEMS = [
-  { href: routes.dashboard, label: "Dashboard", exact: true },
-  { href: routes.dashboardBookings, label: "Bookings" },
-  { href: routes.dashboardSavedPlaces, label: "Properties" },
-  { href: routes.dashboardInvoices, label: "Invoices" },
-  { href: routes.dashboardProfile, label: "Team" },
-  { href: routes.dashboardNotifications, label: "Settings" },
+  { href: routes.dashboard, label: "Overview", exact: true },
+  { href: routes.dashboardSites, label: "Sites" },
+  { href: routes.dashboardJobs, label: "Jobs" },
+  { href: routes.dashboardBilling, label: "Billing" },
 ] as const;
 
 function isActive(pathname: string, href: string, exact?: boolean): boolean {
   if (exact) return pathname === href;
+  if (href === routes.dashboardSites) {
+    return (
+      pathname.startsWith(routes.dashboardSites) ||
+      pathname.startsWith(routes.dashboardSavedPlaces)
+    );
+  }
+  if (href === routes.dashboardJobs) {
+    return (
+      pathname.startsWith(routes.dashboardJobs) ||
+      pathname.startsWith(routes.dashboardBookings) ||
+      pathname.startsWith("/bookings/")
+    );
+  }
+  if (href === routes.dashboardBilling) {
+    return (
+      pathname.startsWith(routes.dashboardBilling) ||
+      pathname.startsWith(routes.dashboardInvoices) ||
+      pathname.startsWith(routes.dashboardReceipts)
+    );
+  }
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
@@ -31,8 +49,8 @@ interface BusinessShellProps {
 }
 
 /**
- * B2B / multi-property customer chrome — logo-navy sidebar + mint active (design-spec).
- * Residential customers keep CustomerShell instead.
+ * Commercial customer chrome — Overview · Sites · Jobs · Billing.
+ * Midnight navy + BrandLockup; residential booking stays secondary at `/`.
  */
 export function BusinessShell({ children, firstName }: BusinessShellProps) {
   const pathname = usePathname() ?? "";
@@ -42,9 +60,10 @@ export function BusinessShell({ children, firstName }: BusinessShellProps) {
     <div
       data-theme="ml-dark"
       className="flex min-h-dvh bg-[var(--ml-dark-bg)] text-[var(--ml-dark-ink)]"
-      style={{ fontFamily: "var(--ml-font-ios)" }}
+      style={{
+        fontFamily: "-apple-system, BlinkMacSystemFont, system-ui, sans-serif",
+      }}
     >
-      {/* Desktop logo-navy sidebar */}
       <aside className="hidden w-60 shrink-0 flex-col border-r border-[var(--ml-dark-border)] bg-[var(--ml-dark-bg)] text-white lg:flex">
         <div className="flex h-16 items-center px-5">
           <BrandLockup href={routes.dashboard} size="default" tone="onDark" />
@@ -57,10 +76,10 @@ export function BusinessShell({ children, firstName }: BusinessShellProps) {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
+                  "rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors",
                   active
-                    ? "bg-[var(--ml-dark-mint)] text-[var(--color-accent-foreground)] shadow-[0_0_20px_rgb(8_224_212_/_0.25)]"
-                    : "text-white/75 hover:bg-white/10 hover:text-white",
+                    ? "bg-[var(--ml-dark-mint)] text-[var(--color-accent-foreground,#01193D)]"
+                    : "font-medium text-white/75 hover:bg-white/10 hover:text-white",
                 )}
               >
                 {item.label}
@@ -69,10 +88,16 @@ export function BusinessShell({ children, firstName }: BusinessShellProps) {
           })}
         </nav>
         <div className="mt-auto border-t border-[var(--ml-dark-border)] p-4">
-          <p className="truncate text-sm font-medium text-white">
+          <p className="truncate text-sm font-semibold text-white">
             {firstName?.trim() || "Account"}
           </p>
           <p className="mt-0.5 text-xs text-[var(--ml-dark-ink-muted)]">Business</p>
+          <Link
+            href={routes.home}
+            className="mt-2 block text-xs font-medium text-[var(--ml-dark-mint)] underline-offset-4 hover:underline"
+          >
+            Home cleaning (residential)
+          </Link>
           <div className="mt-3">
             <PlatformUserMenu />
           </div>
@@ -132,16 +157,23 @@ export function BusinessShell({ children, firstName }: BusinessShellProps) {
                       href={item.href}
                       onClick={() => setMobileOpen(false)}
                       className={cn(
-                        "rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
+                        "rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors",
                         active
-                          ? "bg-[var(--ml-dark-mint)] text-[var(--color-accent-foreground)]"
-                          : "text-white/75 hover:bg-white/10",
+                          ? "bg-[var(--ml-dark-mint)] text-[var(--color-accent-foreground,#01193D)]"
+                          : "font-medium text-white/75 hover:bg-white/10",
                       )}
                     >
                       {item.label}
                     </Link>
                   );
                 })}
+                <Link
+                  href={routes.home}
+                  onClick={() => setMobileOpen(false)}
+                  className="mt-3 rounded-xl px-3 py-2.5 text-sm font-medium text-white/55 hover:bg-white/10"
+                >
+                  Home cleaning
+                </Link>
               </nav>
               <div className="border-t border-[var(--ml-dark-border)] p-4">
                 <PlatformUserMenu />
