@@ -7,9 +7,9 @@ import {
 } from "@/lib/markets/booking-availability";
 
 describe("booking availability / waitlist reason", () => {
-  it("treats launch markets as booking-closed by default config", () => {
+  it("opens South Florida booking while keeping GTA closed", () => {
     expect(isMarketBookingOpen("TORONTO_GTA")).toBe(false);
-    expect(isMarketBookingOpen("SOUTH_FLORIDA")).toBe(false);
+    expect(isMarketBookingOpen("SOUTH_FLORIDA")).toBe(true);
   });
 
   it("returns out_of_area when address is outside service area", () => {
@@ -45,7 +45,7 @@ describe("booking availability / waitlist reason", () => {
     ).toBeNull();
   });
 
-  it("returns booking_disabled for ZIP-only South Florida when booking flag off", () => {
+  it("returns null for ZIP-only South Florida when booking flag on", () => {
     expect(
       resolveWaitlistReason({
         line1: null,
@@ -53,7 +53,7 @@ describe("booking availability / waitlist reason", () => {
         inServiceArea: true,
         marketId: "SOUTH_FLORIDA",
       }),
-    ).toBe("booking_disabled");
+    ).toBeNull();
   });
 });
 
@@ -72,14 +72,14 @@ describe("customer Home waitlist (South Florida only)", () => {
     ).toBe(false);
   });
 
-  it("returns booking_disabled for covered South Florida when booking flag off", () => {
+  it("allows covered South Florida through when booking flag on", () => {
     expect(
       resolveCustomerHomeWaitlistReason({
         postalCode: "33139",
         inServiceArea: true,
         marketId: "SOUTH_FLORIDA",
       }),
-    ).toBe("booking_disabled");
+    ).toBeNull();
     expect(
       isCustomerHomeBookableArea({ inServiceArea: true, marketId: "SOUTH_FLORIDA" }),
     ).toBe(true);

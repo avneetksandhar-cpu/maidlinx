@@ -8,8 +8,10 @@
 
 - Operating system: [`GROWTH_OPERATING_SYSTEM.md`](GROWTH_OPERATING_SYSTEM.md)  
 - Prioritized backlog: [`GROWTH_BACKLOG.md`](GROWTH_BACKLOG.md)  
-- **CURRENT_CONSTRAINT:** SUPPLY — `BOOKABLE_CLEANERS=0` · markets CLOSED · Stripe LIVE OFF  
+- **CURRENT_CONSTRAINT:** SUPPLY — `BOOKABLE_CLEANERS=0` · Stripe LIVE OFF  
 - **Geo:** **SOUTH_FLORIDA = ACTIVE** · **TORONTO_GTA = ACTIVE** (separate experiments; do not blend metrics)  
+- **Booking flags (2026-11-04 founder):** `SOUTH_FLORIDA.booking_enabled=true` (pending match OK) · `launch_enabled=false` · GTA booking still OFF · non-FL waitlist  
+
 - Agents optimize measurable outcomes (five questions), not activity. **NO_PAID_ADS_ASSUMED.** Free channels only until organic proves.
 
 ## Gates
@@ -17,7 +19,7 @@
 | Gate | Status | Note |
 |------|--------|------|
 | Launch Gate P0 (code/payment) | **0 remaining** | Re-audit 2026-08-14 — see `LAUNCH_GATE.md` |
-| Ops before open booking | **BOOKABLE=0** | Do not enable markets until coverage ready |
+| Ops before open booking | **BOOKABLE=0** | FL `booking_enabled` ON (founder); assignments still pending match until ≥2 bookable |
 | READY FOR CONTROLLED TEST LAUNCH | **YES** | Fresh Stripe TEST lifecycle on booking `6f487969-…` |
 | READY FOR REAL-MONEY LAUNCH | **NO** | Stripe LIVE disabled — hard rule |
 | Production SHA | `ca3c88f` | Live `sentry=true` (apex + www) |

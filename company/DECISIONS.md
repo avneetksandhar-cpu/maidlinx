@@ -2,6 +2,13 @@
 
 Format: date · decision · owner · rationale · status
 
+## 2026-11-04 — SOUTH_FLORIDA booking_enabled ON (pending match OK)
+
+- **Decision:** Founder: covered **South Florida** addresses must be bookable. Flip `SOUTH_FLORIDA.bookingEnabled` / DB `booking_enabled=true`. Keep `launch_enabled=false` (no ads). Non-FL (incl. GTA on customer Home) stays waitlist / `out_of_area`. Do **not** invent cleaners — paid jobs enter `awaiting_assignment` (“Finding your cleaner”) when BOOKABLE=0. Stripe LIVE stays OFF; deposit-upfront model unchanged.
+- **Owner:** Founder / Lead Engineer
+- **Rationale:** Address check + create were fail-closed on `booking_enabled=false`, blocking the whole funnel even for served FL ZIPs. Liquidity still constrained by supply; booking request must not be rejected as unbookable solely for zero bookable cleaners.
+- **Status:** Accepted
+
 ## 2026-11-04 — STRIPE_MODEL_FLAG: keep deposit-upfront until founder RED approve after-clean
 
 - **Decision:** Current checkout **charges a deposit upfront** (default 50% PaymentIntent, automatic capture) at request. Founder intended model is **charge agreed total after clean completes**. **Do not change production payment capture timing** without explicit founder RED approval. Document gap; keep Stripe LIVE OFF; customer UI must show due now vs due after clean honestly for the current deposit model.

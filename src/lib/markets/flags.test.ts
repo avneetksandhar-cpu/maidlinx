@@ -10,15 +10,20 @@ import { resolveMarket } from "@/lib/markets";
 import { marketPricingReady } from "@/lib/pricing/market-prices";
 
 describe("multi-market flags + routing", () => {
-  it("keeps booking and launch OFF by default for both launch markets", () => {
-    for (const id of ["TORONTO_GTA", "SOUTH_FLORIDA"] as const) {
-      const flags = getMarketFlagsFromConfig(id);
-      expect(flags?.active).toBe(true);
-      expect(flags?.bookingEnabled).toBe(false);
-      expect(flags?.launchEnabled).toBe(false);
-      expect(isBookingEnabledForMarket(id)).toBe(false);
-      expect(isLaunchEnabledForMarket(id)).toBe(false);
-    }
+  it("enables South Florida booking while keeping GTA + launch ads closed", () => {
+    const gta = getMarketFlagsFromConfig("TORONTO_GTA");
+    expect(gta?.active).toBe(true);
+    expect(gta?.bookingEnabled).toBe(false);
+    expect(gta?.launchEnabled).toBe(false);
+    expect(isBookingEnabledForMarket("TORONTO_GTA")).toBe(false);
+    expect(isLaunchEnabledForMarket("TORONTO_GTA")).toBe(false);
+
+    const fl = getMarketFlagsFromConfig("SOUTH_FLORIDA");
+    expect(fl?.active).toBe(true);
+    expect(fl?.bookingEnabled).toBe(true);
+    expect(fl?.launchEnabled).toBe(false);
+    expect(isBookingEnabledForMarket("SOUTH_FLORIDA")).toBe(true);
+    expect(isLaunchEnabledForMarket("SOUTH_FLORIDA")).toBe(false);
   });
 
   it("resolves GTA → CAD and Florida → USD from address", () => {
@@ -73,8 +78,8 @@ describe("multi-market flags + routing", () => {
     expect(marketPricingReady("TORONTO_GTA").ready).toBe(false);
   });
 
-  it("assertMarketBookingEnabled fails closed", () => {
+  it("assertMarketBookingEnabled fails closed for GTA and allows South Florida", () => {
     expect(() => assertMarketBookingEnabled("TORONTO_GTA")).toThrow(/not enabled/i);
-    expect(() => assertMarketBookingEnabled("SOUTH_FLORIDA")).toThrow(/not enabled/i);
+    expect(() => assertMarketBookingEnabled("SOUTH_FLORIDA")).not.toThrow();
   });
 });
