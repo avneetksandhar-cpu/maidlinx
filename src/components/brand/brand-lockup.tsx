@@ -20,6 +20,8 @@ type BrandLockupProps = {
   priority?: boolean;
   /** Hide the text wordmark (mark only). */
   markOnly?: boolean;
+  /** Optional market line under the wordmark (e.g. South Florida). */
+  subtitle?: string;
 };
 
 const SIZE = {
@@ -38,17 +40,18 @@ export function BrandLockup({
   href,
   priority = false,
   markOnly = false,
+  subtitle,
 }: BrandLockupProps) {
   const dims = SIZE[size];
   const maidClass = tone === "onDark" ? "text-white" : "text-[#01193D]";
   const linxClass = "text-[#04CED2]";
+  const subtitleClass = tone === "onDark" ? "text-white/55" : "text-[#01193D]/60";
 
-  const content = (
+  const row = (
     <span
       className={cn(
         "inline-flex max-w-full shrink-0 items-center whitespace-nowrap",
         dims.gap,
-        className,
       )}
     >
       <Image
@@ -76,6 +79,23 @@ export function BrandLockup({
         </span>
       )}
     </span>
+  );
+
+  const content = subtitle && !markOnly ? (
+    <span className={cn("inline-flex max-w-full flex-col items-start", className)}>
+      {row}
+      <span
+        className={cn(
+          "mt-0.5 pl-[calc(var(--ml-mark)+0.5rem)] text-[10px] font-semibold tracking-[0.14em] uppercase",
+          subtitleClass,
+        )}
+        style={{ ["--ml-mark" as string]: `${dims.mark}px` }}
+      >
+        {subtitle}
+      </span>
+    </span>
+  ) : (
+    <span className={cn(className)}>{row}</span>
   );
 
   if (!href) return content;

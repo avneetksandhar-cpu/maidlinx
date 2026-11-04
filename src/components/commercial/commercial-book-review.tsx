@@ -35,6 +35,7 @@ export function CommercialBookReview({
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [priceChanged, setPriceChanged] = useState<string | null>(null);
 
   const items =
     areas.length > 0
@@ -53,7 +54,33 @@ export function CommercialBookReview({
     if (!proposal) return;
     setLoading(true);
     setError(null);
+    setPriceChanged(null);
     try {
+      // Recheck live proposal price/frequency before approve (Stripe LIVE stays OFF).
+      const check = await fetch(
+        `/api/commercial/proposals?siteAddressId=${encodeURIComponent(proposal.siteAddressId)}`,
+      );
+      if (check.ok) {
+        const checkJson = (await check.json().catch(() => ({}))) as {
+          data?: { proposals?: CommercialProposal[] };
+        };
+        const fresh =
+          checkJson.data?.proposals?.find((p) => p.id === proposal.id) ?? null;
+        if (
+          fresh &&
+          (fresh.clientPriceCents !== proposal.clientPriceCents ||
+            fresh.frequency !== proposal.frequency ||
+            fresh.billingCadence !== proposal.billingCadence)
+        ) {
+          setPriceChanged(
+            `Price or billing changed (${formatFresh(fresh)}). Review the new terms before confirming.`,
+          );
+          setLoading(false);
+          router.refresh();
+          return;
+        }
+      }
+
       const res = await fetch("/api/commercial/proposals", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -83,6 +110,10 @@ export function CommercialBookReview({
     } finally {
       setLoading(false);
     }
+  }
+
+  function formatFresh(p: CommercialProposal): string {
+    return `${(p.clientPriceCents / 100).toFixed(0)} / visit · ${frequencyShortLabel(p.frequency)}`;
   }
 
   if (!proposal) {
@@ -180,12 +211,23 @@ export function CommercialBookReview({
             Monthly estimate unavailable until visit price is set on the proposal.
           </p>
         )}
+        <p className="mt-2 text-sm text-white/70">
+          Billing: {proposal.billingCadence.replaceAll("_", " ")}
+          {proposal.paymentExpected
+            ? ` · ${proposal.paymentExpected.replaceAll("_", " ")}`
+            : ""}
+        </p>
         <p className="mt-3 text-xs text-[var(--ml-dark-ink-muted)]">
-          Stripe LIVE is OFF. Commercial confirmation creates a service order / first
-          visit from this proposal — payment follows proposal terms (
-          {proposal.paymentExpected.replaceAll("_", " ")}).
+          Stripe LIVE is OFF. Confirmation creates a service order / first visit from
+          this proposal — payment follows the terms above (TEST only).
         </p>
       </section>
+
+      {priceChanged ? (
+        <p className="rounded-xl border border-amber-400/40 bg-amber-400/10 px-3 py-2 text-sm text-amber-100" role="status">
+          {priceChanged}
+        </p>
+      ) : null}
 
       {error ? (
         <p className="text-sm text-red-300" role="alert">

@@ -1,9 +1,22 @@
 /**
- * Client-persisted commercial book draft for sequential Property → Service → Frequency.
+ * Client-persisted commercial book draft for sequential
+ * Property → Service → Frequency → Preferred time → Teams.
  * Never invents providers — teams load from real commercial_proposals / bookings.
  */
 
-import type { CommercialFrequency } from "@/lib/commercial/types";
+import type { CommercialFrequency, PropertyType } from "@/lib/commercial/types";
+
+export const COMMERCIAL_PROPERTY_TYPE_OPTIONS: Array<{
+  id: PropertyType;
+  label: string;
+  subtitle: string;
+}> = [
+  { id: "office", label: "Office", subtitle: "Office or coworking space" },
+  { id: "retail", label: "Storefront / retail", subtitle: "Shop, boutique, or showroom" },
+  { id: "medical", label: "Medical / clinic", subtitle: "Healthcare or dental suite" },
+  { id: "industrial", label: "Industrial / warehouse", subtitle: "Light industrial space" },
+  { id: "other", label: "Other commercial", subtitle: "Managed property or other site" },
+];
 
 export const COMMERCIAL_SERVICE_OPTIONS = [
   {
@@ -45,13 +58,53 @@ export const COMMERCIAL_FREQUENCY_OPTIONS: Array<{
   { id: "monthly", label: "Monthly", subtitle: "Once per month" },
 ];
 
+export const COMMERCIAL_TIME_OPTIONS = [
+  {
+    id: "evening_6_8",
+    label: "Evening (6:00–8:00 PM)",
+    subtitle: "After typical office hours",
+  },
+  {
+    id: "evening_6_30_8_30",
+    label: "Evening (6:30–8:30 PM)",
+    subtitle: "Later evening window",
+  },
+  {
+    id: "morning_7_9",
+    label: "Morning (7:00–9:00 AM)",
+    subtitle: "Before the workday",
+  },
+  {
+    id: "midday_11_1",
+    label: "Midday (11:00 AM–1:00 PM)",
+    subtitle: "During business hours",
+  },
+  {
+    id: "flexible",
+    label: "Flexible / crew proposes",
+    subtitle: "Open to provider availability",
+  },
+] as const;
+
+export type CommercialTimeId = (typeof COMMERCIAL_TIME_OPTIONS)[number]["id"];
+
 export interface CommercialBookDraft {
   siteId: string | null;
   siteLabel: string | null;
+  propertyType: PropertyType | null;
   serviceId: CommercialServiceId | null;
   serviceLabel: string | null;
   frequency: CommercialFrequency | null;
+  preferredTimeId: CommercialTimeId | null;
+  preferredTimeLabel: string | null;
   proposalId: string | null;
+  line1: string | null;
+  city: string | null;
+  region: string | null;
+  postalCode: string | null;
+  country: string | null;
+  marketId: string | null;
+  googlePlaceId: string | null;
   updatedAt: string;
 }
 
@@ -61,10 +114,20 @@ export function emptyCommercialBookDraft(): CommercialBookDraft {
   return {
     siteId: null,
     siteLabel: null,
+    propertyType: null,
     serviceId: null,
     serviceLabel: null,
     frequency: null,
+    preferredTimeId: null,
+    preferredTimeLabel: null,
     proposalId: null,
+    line1: null,
+    city: null,
+    region: null,
+    postalCode: null,
+    country: null,
+    marketId: null,
+    googlePlaceId: null,
     updatedAt: new Date().toISOString(),
   };
 }
@@ -95,8 +158,19 @@ export function writeCommercialBookDraft(
   return next;
 }
 
+/** Address or saved site + property type + service + frequency + preferred time. */
 export function isCommercialBookReady(draft: CommercialBookDraft): boolean {
-  return Boolean(draft.siteId && draft.serviceId && draft.frequency);
+  const hasPlace = Boolean(
+    draft.siteId ||
+      (draft.propertyType && (draft.line1?.trim() || draft.postalCode?.trim())),
+  );
+  return Boolean(
+    hasPlace &&
+      draft.propertyType &&
+      draft.serviceId &&
+      draft.frequency &&
+      draft.preferredTimeId,
+  );
 }
 
 export function serviceLabelForId(id: string | null): string | null {
@@ -119,4 +193,22 @@ export function frequencyShortLabel(freq: CommercialFrequency | null): string {
     default:
       return "Select";
   }
+}
+
+/** Notes blob for quote form when no crew is available. */
+export function commercialDraftQuoteNotes(draft: CommercialBookDraft): string {
+  return [
+    draft.siteLabel ? `Property: ${draft.siteLabel}` : null,
+    draft.line1
+      ? `Address: ${[draft.line1, draft.city, draft.region, draft.postalCode].filter(Boolean).join(", ")}`
+      : draft.postalCode
+        ? `ZIP: ${draft.postalCode}`
+        : null,
+    draft.propertyType ? `Property type: ${draft.propertyType}` : null,
+    draft.serviceLabel ? `Cleaning: ${draft.serviceLabel}` : null,
+    draft.frequency ? `Frequency: ${frequencyShortLabel(draft.frequency)}` : null,
+    draft.preferredTimeLabel ? `Preferred time: ${draft.preferredTimeLabel}` : null,
+  ]
+    .filter(Boolean)
+    .join("\n");
 }

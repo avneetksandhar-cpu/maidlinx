@@ -48,7 +48,7 @@ async function DashboardOverview() {
           Book a commercial clean
         </Link>
         <Link
-          href={routes.home}
+          href={routes.bookWelcome}
           className="inline-flex h-12 items-center justify-center rounded-2xl border border-white/40 px-5 text-sm font-semibold text-white"
         >
           Home cleaning

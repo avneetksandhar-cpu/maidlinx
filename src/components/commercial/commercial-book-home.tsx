@@ -7,6 +7,7 @@ import {
   Building2,
   CalendarDays,
   ChevronRight,
+  Clock,
   Sparkles,
 } from "lucide-react";
 import { CommercialCtaButton } from "@/components/commercial/commercial-book-chrome";
@@ -19,9 +20,8 @@ import {
 import { routes } from "@/config/site";
 
 /**
- * Screen A — Book a commercial clean.
- * Property / Service / Frequency open one step at a time, then Find cleaning teams.
- * Brand lockup lives in BusinessShell (founder circular mark) — no duplicate header.
+ * Screen A — Book a commercial clean hub (authenticated).
+ * Property / Service / Frequency / Time open one step at a time, then Find cleaning teams.
  */
 export function CommercialBookHome() {
   const [draft, setDraft] = useState<CommercialBookDraft | null>(null);
@@ -66,8 +66,13 @@ export function CommercialBookHome() {
           href={routes.dashboardBookProperty}
           icon={<Building2 className="size-5" aria-hidden />}
           label="Property"
-          value={draft?.siteLabel ?? "Select property"}
-          filled={Boolean(draft?.siteId)}
+          value={
+            draft?.siteLabel ||
+            (draft?.propertyType
+              ? draft.propertyType.replaceAll("_", " ")
+              : "Select property")
+          }
+          filled={Boolean(draft?.siteId || draft?.propertyType)}
         />
         <SelectRow
           href={routes.dashboardBookService}
@@ -75,7 +80,7 @@ export function CommercialBookHome() {
           label="Service"
           value={draft?.serviceLabel ?? "Select service"}
           filled={Boolean(draft?.serviceId)}
-          disabled={!draft?.siteId}
+          disabled={!draft?.propertyType && !draft?.siteId}
         />
         <SelectRow
           href={routes.dashboardBookFrequency}
@@ -88,13 +93,22 @@ export function CommercialBookHome() {
           }
           filled={Boolean(draft?.frequency)}
           disabled={!draft?.serviceId}
+        />
+        <SelectRow
+          href={routes.dashboardBookTime}
+          icon={<Clock className="size-5" aria-hidden />}
+          label="Preferred time"
+          value={draft?.preferredTimeLabel ?? "Select time"}
+          filled={Boolean(draft?.preferredTimeId)}
+          disabled={!draft?.frequency}
           last
         />
       </div>
 
       {!ready ? (
         <p className="text-center text-sm text-[var(--ml-dark-ink-muted)]">
-          Choose property, then service, then frequency — one step at a time.
+          Choose property, service, frequency, then preferred time — one step at a
+          time.
         </p>
       ) : null}
 

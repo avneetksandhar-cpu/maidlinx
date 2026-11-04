@@ -2,17 +2,18 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Building2, CalendarDays, CreditCard, LayoutGrid } from "lucide-react";
+import { Building2, CalendarDays, Home, UserRound } from "lucide-react";
 import { routes } from "@/config/site";
 import { cn } from "@/lib/utils";
 
 /**
  * Where the customer iOS tab bar should appear.
- * Hide on mid-funnel `/book/*` slides so one-decision screens stay clean;
- * show on overview / sites / jobs / billing and live booking status.
+ * Hide on mid-funnel residential `/book/*` slides (except commercial intake + confirmation);
+ * show on home / bookings / properties / account and live booking status.
  */
 export function shouldShowCustomerTabBar(pathname: string): boolean {
   if (pathname.startsWith("/book/confirmation")) return true;
+  if (pathname.startsWith("/book/commercial")) return true;
   if (pathname === "/book" || pathname.startsWith("/book/")) return false;
   if (
     pathname.startsWith("/admin") ||
@@ -41,8 +42,7 @@ export function shouldShowCustomerTabBar(pathname: string): boolean {
 
 /**
  * Persistent iOS-style bottom tabs — midnight navy, turquoise active.
- * Overview · Sites · Jobs · Billing (commercial primary).
- * Residential Home booking remains at `/` as a secondary path.
+ * Home · Bookings · Properties · Account (commercial customer shell).
  */
 export function CustomerBottomNav({
   className,
@@ -58,39 +58,41 @@ export function CustomerBottomNav({
 
   const navItems = [
     {
-      href: routes.dashboard,
-      label: "Overview",
-      icon: LayoutGrid,
+      href: routes.home,
+      label: "Home",
+      icon: Home,
       match: (path: string) =>
-        path === routes.dashboard || path.startsWith(routes.dashboardBook),
+        path === routes.home ||
+        path.startsWith("/book/commercial") ||
+        path.startsWith(routes.dashboardBook),
+    },
+    {
+      href: routes.dashboardBookings,
+      label: "Bookings",
+      icon: CalendarDays,
+      match: (path: string) =>
+        path.startsWith(routes.dashboardBookings) ||
+        path.startsWith(routes.dashboardJobs) ||
+        path.startsWith("/bookings/") ||
+        path.startsWith("/book/confirmation"),
     },
     {
       href: routes.dashboardSites,
-      label: "Sites",
+      label: "Properties",
       icon: Building2,
       match: (path: string) =>
         path.startsWith(routes.dashboardSites) ||
         path.startsWith(routes.dashboardSavedPlaces),
     },
     {
-      href: routes.dashboardJobs,
-      label: "Jobs",
-      icon: CalendarDays,
+      href: routes.dashboardProfile,
+      label: "Account",
+      icon: UserRound,
       match: (path: string) =>
-        path.startsWith(routes.dashboardJobs) ||
-        path.startsWith(routes.dashboardBookings) ||
-        path.startsWith("/bookings/") ||
-        path.startsWith("/book/confirmation"),
-    },
-    {
-      href: routes.dashboardBilling,
-      label: "Billing",
-      icon: CreditCard,
-      match: (path: string) =>
+        path.startsWith(routes.dashboardProfile) ||
         path.startsWith(routes.dashboardBilling) ||
         path.startsWith(routes.dashboardInvoices) ||
         path.startsWith(routes.dashboardReceipts) ||
-        path.startsWith(routes.dashboardProfile) ||
         path.startsWith(routes.dashboardNotifications) ||
         path.startsWith(routes.account) ||
         path.startsWith("/profile"),

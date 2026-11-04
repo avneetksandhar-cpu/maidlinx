@@ -12,52 +12,63 @@ import {
 import type { CommercialFrequency } from "@/lib/commercial/types";
 import { routes } from "@/config/site";
 
-/** One-step frequency picker — returns to book hub with selection filled. */
-export function CommercialBookFrequencyStep() {
+interface CommercialBookFrequencyStepProps {
+  publicPath?: boolean;
+}
+
+/** How often — advances to preferred time; Back preserves. */
+export function CommercialBookFrequencyStep({
+  publicPath = false,
+}: CommercialBookFrequencyStepProps) {
   const router = useRouter();
   const [blocked, setBlocked] = useState(false);
 
+  const backHref = publicPath
+    ? routes.bookCommercialService
+    : routes.dashboardBookService;
+  const nextHref = publicPath
+    ? routes.bookCommercialTime
+    : routes.dashboardBookTime;
+
   useEffect(() => {
     const draft = readCommercialBookDraft();
-    if (!draft.siteId) {
-      setBlocked(true);
-      router.replace(routes.dashboardBookProperty);
-      return;
-    }
     if (!draft.serviceId) {
       setBlocked(true);
-      router.replace(routes.dashboardBookService);
+      router.replace(
+        publicPath ? routes.bookCommercialService : routes.dashboardBookService,
+      );
     }
-  }, [router]);
+  }, [router, publicPath]);
 
   function select(id: CommercialFrequency) {
     writeCommercialBookDraft({
       frequency: id,
+      preferredTimeId: null,
+      preferredTimeLabel: null,
       proposalId: null,
     });
-    router.push(routes.dashboardBook);
+    router.push(nextHref);
   }
 
   if (blocked) {
     return (
-      <p className="text-sm text-[var(--ml-dark-ink-muted)]">Complete earlier steps…</p>
+      <p className="text-sm text-[var(--ml-dark-ink-muted)]">
+        Complete earlier steps…
+      </p>
     );
   }
 
   return (
     <div className="mx-auto w-full max-w-[390px] space-y-5 lg:max-w-[430px]">
       <header className="space-y-2">
-        <Link
-          href={routes.dashboardBook}
-          className="inline-flex text-sm font-semibold text-[#04CED2]"
-        >
+        <Link href={backHref} className="inline-flex text-sm font-semibold text-[#04CED2]">
           ← Back
         </Link>
         <h1 className="text-[1.75rem] font-bold tracking-tight text-white">
-          Choose frequency
+          How often?
         </h1>
         <p className="text-sm text-[var(--ml-dark-ink-muted)]">
-          How often should this commercial clean recur?
+          One-time or recurring commercial cleans.
         </p>
       </header>
 

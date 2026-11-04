@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   CommercialChooseTeam,
@@ -20,6 +20,7 @@ interface CommercialChooseTeamLoaderProps {
   initialJobTeams: TeamCardModel[];
   initialSiteLabel: string | null;
   initialSiteId: string | null;
+  publicPath?: boolean;
 }
 
 /**
@@ -30,77 +31,87 @@ export function CommercialChooseTeamLoader({
   initialJobTeams,
   initialSiteLabel,
   initialSiteId,
+  publicPath = false,
 }: CommercialChooseTeamLoaderProps) {
   const router = useRouter();
   const [teams, setTeams] = useState(initialTeams);
   const [jobTeams] = useState(initialJobTeams);
   const [siteLabel, setSiteLabel] = useState(initialSiteLabel);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [retryKey, setRetryKey] = useState(0);
 
-  useEffect(() => {
+  const load = useCallback(async () => {
     const draft = readCommercialBookDraft();
     if (!isCommercialBookReady(draft)) {
-      router.replace(routes.dashboardBook);
+      router.replace(
+        publicPath ? routes.bookCommercialProperty : routes.dashboardBook,
+      );
       return;
     }
 
-    const siteId = draft.siteId;
     setSiteLabel(draft.siteLabel);
+    const siteId = draft.siteId;
+
     if (!siteId) {
+      // Address-only draft (no saved site yet) — cannot query proposals; honest zero.
+      setTeams([]);
+      setLoadError(null);
       setLoading(false);
       return;
     }
 
-    if (siteId === initialSiteId) {
+    if (siteId === initialSiteId && retryKey === 0) {
       setTeams(initialTeams);
+      setLoadError(null);
       setLoading(false);
       return;
     }
 
-    let cancelled = false;
-    void (async () => {
-      try {
-        const res = await fetch(
-          `/api/commercial/proposals?siteAddressId=${encodeURIComponent(siteId)}`,
-        );
-        const json = (await res.json().catch(() => ({}))) as {
-          data?: { proposals?: CommercialProposal[] };
-        };
-        if (cancelled) return;
-        const proposals = json.data?.proposals ?? [];
-        setTeams(
-          proposals
-            .filter((p) =>
-              ["sent", "awaiting_approval", "approved"].includes(p.status),
-            )
-            .map(proposalToTeamCard),
-        );
-      } catch {
-        if (!cancelled) setTeams([]);
-      } finally {
-        if (!cancelled) setLoading(false);
+    setLoading(true);
+    setLoadError(null);
+    try {
+      const res = await fetch(
+        `/api/commercial/proposals?siteAddressId=${encodeURIComponent(siteId)}`,
+      );
+      if (!res.ok) {
+        throw new Error("Unable to load cleaning teams. Please retry.");
       }
-    })();
+      const json = (await res.json().catch(() => ({}))) as {
+        data?: { proposals?: CommercialProposal[] };
+        error?: string;
+      };
+      const proposals = json.data?.proposals ?? [];
+      setTeams(
+        proposals
+          .filter((p) =>
+            ["sent", "awaiting_approval", "approved"].includes(p.status),
+          )
+          .map(proposalToTeamCard),
+      );
+    } catch (err) {
+      setTeams([]);
+      setLoadError(
+        err instanceof Error ? err.message : "Unable to load cleaning teams.",
+      );
+    } finally {
+      setLoading(false);
+    }
+  }, [router, publicPath, initialSiteId, initialTeams, retryKey]);
 
-    return () => {
-      cancelled = true;
-    };
-  }, [router, initialSiteId, initialTeams]);
-
-  if (loading) {
-    return (
-      <div className="mx-auto max-w-[390px] animate-pulse space-y-4">
-        <div className="h-8 w-56 rounded-lg bg-[var(--ml-dark-surface)]" />
-        <div className="h-28 rounded-2xl bg-[var(--ml-dark-surface)]" />
-      </div>
-    );
-  }
+  useEffect(() => {
+    void load();
+  }, [load]);
 
   return (
     <CommercialChooseTeam
       teams={teams}
       jobTeams={jobTeams}
       siteLabel={siteLabel}
+      loading={loading}
+      loadError={loadError}
+      onRetry={() => setRetryKey((k) => k + 1)}
+      publicPath={publicPath}
     />
   );
 }

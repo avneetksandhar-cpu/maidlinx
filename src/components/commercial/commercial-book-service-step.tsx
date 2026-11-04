@@ -12,46 +12,67 @@ import {
 } from "@/lib/commercial/book-draft";
 import { routes } from "@/config/site";
 
-/** One-step service picker — returns to book hub with selection filled. */
-export function CommercialBookServiceStep() {
+interface CommercialBookServiceStepProps {
+  publicPath?: boolean;
+}
+
+/** What needs cleaning — advances to frequency; Back preserves. */
+export function CommercialBookServiceStep({
+  publicPath = false,
+}: CommercialBookServiceStepProps) {
   const router = useRouter();
   const [blocked, setBlocked] = useState(false);
 
+  const backHref = publicPath
+    ? routes.bookCommercialProperty
+    : routes.dashboardBookProperty;
+  const nextHref = publicPath
+    ? routes.bookCommercialFrequency
+    : routes.dashboardBookFrequency;
+
   useEffect(() => {
     const draft = readCommercialBookDraft();
-    if (!draft.siteId) {
+    if (
+      !draft.propertyType &&
+      !draft.siteId &&
+      !draft.line1?.trim() &&
+      !draft.postalCode?.trim()
+    ) {
       setBlocked(true);
-      router.replace(routes.dashboardBookProperty);
+      router.replace(
+        publicPath ? routes.bookCommercialProperty : routes.dashboardBookProperty,
+      );
     }
-  }, [router]);
+  }, [router, publicPath]);
 
   function select(id: CommercialServiceId, label: string) {
     writeCommercialBookDraft({
       serviceId: id,
       serviceLabel: label,
       frequency: null,
+      preferredTimeId: null,
+      preferredTimeLabel: null,
       proposalId: null,
     });
-    router.push(routes.dashboardBook);
+    router.push(nextHref);
   }
 
   if (blocked) {
     return (
-      <p className="text-sm text-[var(--ml-dark-ink-muted)]">Choose a property first…</p>
+      <p className="text-sm text-[var(--ml-dark-ink-muted)]">
+        Choose a property type first…
+      </p>
     );
   }
 
   return (
     <div className="mx-auto w-full max-w-[390px] space-y-5 lg:max-w-[430px]">
       <header className="space-y-2">
-        <Link
-          href={routes.dashboardBook}
-          className="inline-flex text-sm font-semibold text-[#04CED2]"
-        >
+        <Link href={backHref} className="inline-flex text-sm font-semibold text-[#04CED2]">
           ← Back
         </Link>
         <h1 className="text-[1.75rem] font-bold tracking-tight text-white">
-          Choose service
+          What needs cleaning?
         </h1>
         <p className="text-sm text-[var(--ml-dark-ink-muted)]">
           One commercial clean type for this visit cadence.

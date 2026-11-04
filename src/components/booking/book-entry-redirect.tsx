@@ -32,6 +32,13 @@ function BookEntryInner() {
   useEffect(() => {
     if (!hydrated || authStatus === "loading") return;
 
+    // Commercial / office entry → commercial intake (not residential funnel).
+    const service = (searchParams?.get("service") ?? "").toLowerCase();
+    if (service === "office" || service === "commercial") {
+      router.replace("/book/commercial/property");
+      return;
+    }
+
     const resume = searchParams?.get("resume");
     const token = searchParams?.get("token");
     if (resume) {

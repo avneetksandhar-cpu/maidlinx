@@ -30,6 +30,8 @@ export const routes = {
   services: "/services",
   howItWorks: "/how-it-works",
   forBusiness: "/for-business",
+  /** Quote form anchor on business page (fallback when no crew). */
+  forBusinessQuote: "/for-business#quote",
   reviews: "/reviews",
   about: "/about",
   signIn: "/sign-in",
@@ -39,6 +41,13 @@ export const routes = {
   account: "/account",
   book: "/book",
   bookWelcome: "/book/welcome",
+  /** Public commercial intake (pre-auth) — Property → … → Teams */
+  bookCommercialProperty: "/book/commercial/property",
+  bookCommercialService: "/book/commercial/service",
+  bookCommercialFrequency: "/book/commercial/frequency",
+  bookCommercialTime: "/book/commercial/time",
+  bookCommercialTeams: "/book/commercial/teams",
+  bookCommercialQuote: "/book/commercial/quote",
   bookAddress: "/book/address",
   bookProperty: "/book/property",
   bookDetails: "/book/details",
@@ -64,11 +73,12 @@ export const routes = {
   dashboardSiteQuotes: (id: string) => `/dashboard/sites/${id}/quotes`,
   dashboardSiteProposal: (siteId: string, proposalId: string) =>
     `/dashboard/sites/${siteId}/proposals/${proposalId}`,
-  /** Commercial book mockup path — Property → Service → Frequency → Teams → Review */
+  /** Commercial book path — Property → Service → Frequency → Time → Teams → Review */
   dashboardBook: "/dashboard/book",
   dashboardBookProperty: "/dashboard/book/property",
   dashboardBookService: "/dashboard/book/service",
   dashboardBookFrequency: "/dashboard/book/frequency",
+  dashboardBookTime: "/dashboard/book/time",
   dashboardBookTeams: "/dashboard/book/teams",
   dashboardBookChecklist: "/dashboard/book/checklist",
   dashboardBookReview: "/dashboard/book/review",

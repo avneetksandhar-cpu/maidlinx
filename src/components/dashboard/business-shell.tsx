@@ -12,17 +12,18 @@ import { routes } from "@/config/site";
 import { cn } from "@/lib/utils";
 
 const NAV_ITEMS = [
-  { href: routes.dashboard, label: "Overview", exact: true },
-  { href: routes.dashboardSites, label: "Sites" },
-  { href: routes.dashboardJobs, label: "Jobs" },
-  { href: routes.dashboardBilling, label: "Billing" },
+  { href: routes.home, label: "Home", exact: true },
+  { href: routes.dashboardBookings, label: "Bookings" },
+  { href: routes.dashboardSites, label: "Properties" },
+  { href: routes.dashboardProfile, label: "Account" },
 ] as const;
 
 function isActive(pathname: string, href: string, exact?: boolean): boolean {
   if (exact) {
     return (
       pathname === href ||
-      (href === routes.dashboard && pathname.startsWith(routes.dashboardBook))
+      pathname.startsWith("/book/commercial") ||
+      pathname.startsWith(routes.dashboardBook)
     );
   }
   if (href === routes.dashboardSites) {
@@ -31,18 +32,20 @@ function isActive(pathname: string, href: string, exact?: boolean): boolean {
       pathname.startsWith(routes.dashboardSavedPlaces)
     );
   }
-  if (href === routes.dashboardJobs) {
+  if (href === routes.dashboardBookings) {
     return (
-      pathname.startsWith(routes.dashboardJobs) ||
       pathname.startsWith(routes.dashboardBookings) ||
+      pathname.startsWith(routes.dashboardJobs) ||
       pathname.startsWith("/bookings/")
     );
   }
-  if (href === routes.dashboardBilling) {
+  if (href === routes.dashboardProfile) {
     return (
+      pathname.startsWith(routes.dashboardProfile) ||
       pathname.startsWith(routes.dashboardBilling) ||
       pathname.startsWith(routes.dashboardInvoices) ||
-      pathname.startsWith(routes.dashboardReceipts)
+      pathname.startsWith(routes.dashboardReceipts) ||
+      pathname.startsWith(routes.account)
     );
   }
   return pathname === href || pathname.startsWith(`${href}/`);
@@ -54,8 +57,8 @@ interface BusinessShellProps {
 }
 
 /**
- * Commercial customer chrome — Overview · Sites · Jobs · Billing.
- * Midnight navy + BrandLockup; residential booking stays secondary at `/`.
+ * Commercial customer chrome — Home · Bookings · Properties · Account.
+ * Midnight navy + BrandLockup; residential booking stays secondary via home link.
  */
 export function BusinessShell({ children, firstName }: BusinessShellProps) {
   const pathname = usePathname() ?? "";

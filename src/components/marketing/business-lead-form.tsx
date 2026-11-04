@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button, Input, Textarea } from "@/components/ui";
 
 export function BusinessLeadForm() {
@@ -13,6 +13,17 @@ export function BusinessLeadForm() {
   const [website, setWebsite] = useState("");
   const [status, setStatus] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    try {
+      const carried = sessionStorage.getItem("maidlinx.commercialQuote.notes");
+      const seg = sessionStorage.getItem("maidlinx.commercialQuote.segment");
+      if (carried?.trim()) setNotes(carried);
+      if (seg?.trim()) setSegment(seg);
+    } catch {
+      /* ignore */
+    }
+  }, []);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
