@@ -15,7 +15,7 @@ import {
 import { buildQuoteInput } from "@/lib/bookings/booking-helpers";
 import { useBookingPricing } from "@/hooks/use-booking-pricing";
 import { getBookingServiceLabel, BOOKING_EXTRAS } from "@/lib/bookings/constants";
-import { calculateDepositCents, getDepositPercent } from "@/lib/payments/deposit";
+import { getPaymentTimingCopy } from "@/lib/payments/pay-after";
 import { formatCurrency } from "@/lib/utils";
 import { useBooking } from "@/components/booking/booking-provider";
 import { trackFunnelStep } from "@/lib/analytics/booking-funnel";
@@ -138,24 +138,15 @@ export function ReviewScreen() {
         ? "…"
         : null;
 
-  const depositLabel =
-    pricing && !pricing.quoteOnly
-      ? formatCurrency(calculateDepositCents(pricing.totalCents), pricing.currency)
-      : null;
-  const depositPct = getDepositPercent();
+  const timing =
+    pricing && !pricing.quoteOnly ? getPaymentTimingCopy(pricing.totalCents) : null;
 
   return (
     <BookingFlowChrome
       screenId="review"
       title="Review your clean"
       subtitle="Edit anything — we refresh your quote before checkout."
-      ctaLabel={
-        loading
-          ? "Verifying price…"
-          : depositLabel
-            ? `Confirm booking`
-            : "Confirm booking"
-      }
+      ctaLabel={loading ? "Verifying price…" : "Confirm booking"}
       ctaDisabled={loading || Boolean(pricingError)}
       ctaLoading={loading}
       backHref={BOOKING_SCREEN_PATHS.date}
@@ -168,9 +159,11 @@ export function ReviewScreen() {
                 {totalLabel}
               </span>
             </div>
-            {depositLabel ? (
+            {timing ? (
               <p className="text-xs text-[var(--ml-book-ink-muted)]">
-                {depositPct}% deposit {depositLabel} today · balance after the job
+                {timing.model === "pay_after_cleaning"
+                  ? `Due now $0 · charged after clean ${formatCurrency(timing.dueLaterCents, pricing?.currency)}`
+                  : `${timing.depositPercent}% deposit ${formatCurrency(timing.dueNowCents, pricing?.currency)} today · balance after the job`}
               </p>
             ) : null}
           </div>

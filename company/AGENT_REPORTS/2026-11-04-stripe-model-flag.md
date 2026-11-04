@@ -1,7 +1,7 @@
 # STRIPE_MODEL_FLAG — deposit upfront vs charge-after-clean
 
 **Date:** 2026-11-04  
-**Status:** **FLAGGED — production behavior NOT changed**
+**Status:** **SUPERSEDED 2026-11-04** — founder approved pay-after in Stripe TEST. See `2026-11-04-pay-after-cleaning.md`.
 
 ## Intended (founder brief)
 
