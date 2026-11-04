@@ -23,5 +23,24 @@ export interface SavedAddress extends StructuredAddress {
   updatedAt: string;
 }
 
-export const ADDRESS_LABEL_PRESETS = ["Home", "Office", "Rental", "Other"] as const;
+export const ADDRESS_LABEL_PRESETS = [
+  "Office",
+  "Storefront",
+  "Property",
+  "Home",
+  "Rental",
+  "Other",
+] as const;
 export type AddressLabelPreset = (typeof ADDRESS_LABEL_PRESETS)[number];
+
+/** Infer commercial site kind from a saved-place label (honest heuristics only). */
+export function inferSiteKind(
+  label: string,
+): "office" | "retail" | "property" | "home" | "other" {
+  const t = label.trim().toLowerCase();
+  if (/\b(office|workspace|cowork)/.test(t)) return "office";
+  if (/\b(store|storefront|retail|shop)/.test(t)) return "retail";
+  if (/\b(property|building|facility|venue|restaurant)/.test(t)) return "property";
+  if (/\b(home|house|apartment|condo|airbnb|rental)/.test(t)) return "home";
+  return "other";
+}

@@ -2,14 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Building2, CalendarDays, Home, UserRound } from "lucide-react";
+import { Building2, CalendarDays, CreditCard, LayoutGrid } from "lucide-react";
 import { routes } from "@/config/site";
 import { cn } from "@/lib/utils";
 
 /**
  * Where the customer iOS tab bar should appear.
  * Hide on mid-funnel `/book/*` slides so one-decision screens stay clean;
- * show on home, dashboard/account, live booking status, and confirmation.
+ * show on overview / sites / jobs / billing and live booking status.
  */
 export function shouldShowCustomerTabBar(pathname: string): boolean {
   if (pathname.startsWith("/book/confirmation")) return true;
@@ -39,19 +39,10 @@ export function shouldShowCustomerTabBar(pathname: string): boolean {
   );
 }
 
-function isInAppShell(pathname: string): boolean {
-  return (
-    pathname.startsWith("/dashboard") ||
-    pathname.startsWith("/account") ||
-    pathname.startsWith("/bookings") ||
-    pathname.startsWith("/profile") ||
-    pathname.startsWith("/book/confirmation")
-  );
-}
-
 /**
- * Persistent iOS-style bottom tabs — navy bar, mint active, safe-area inset.
- * Home · Bookings · My Home · Account
+ * Persistent iOS-style bottom tabs — midnight navy, turquoise active.
+ * Overview · Sites · Jobs · Billing (commercial primary).
+ * Residential Home booking remains at `/` as a secondary path.
  */
 export function CustomerBottomNav({
   className,
@@ -65,42 +56,41 @@ export function CustomerBottomNav({
 
   if (hidden || !shouldShowCustomerTabBar(pathname)) return null;
 
-  const homeHref = isInAppShell(pathname) ? routes.dashboard : routes.home;
-
   const navItems = [
     {
-      href: homeHref,
-      label: "Home",
-      icon: Home,
-      match: (path: string) =>
-        path === routes.home || path === routes.dashboard,
+      href: routes.dashboard,
+      label: "Overview",
+      icon: LayoutGrid,
+      match: (path: string) => path === routes.dashboard,
     },
     {
-      href: routes.dashboardBookings,
-      label: "Bookings",
+      href: routes.dashboardSites,
+      label: "Sites",
+      icon: Building2,
+      match: (path: string) =>
+        path.startsWith(routes.dashboardSites) ||
+        path.startsWith(routes.dashboardSavedPlaces),
+    },
+    {
+      href: routes.dashboardJobs,
+      label: "Jobs",
       icon: CalendarDays,
       match: (path: string) =>
+        path.startsWith(routes.dashboardJobs) ||
         path.startsWith(routes.dashboardBookings) ||
         path.startsWith("/bookings/") ||
         path.startsWith("/book/confirmation"),
     },
     {
-      href: routes.dashboardSavedPlaces,
-      label: "My Home",
-      icon: Building2,
-      match: (path: string) => path.startsWith(routes.dashboardSavedPlaces),
-    },
-    {
-      href: routes.dashboardProfile,
-      label: "Account",
-      icon: UserRound,
+      href: routes.dashboardBilling,
+      label: "Billing",
+      icon: CreditCard,
       match: (path: string) =>
-        path.startsWith(routes.dashboardProfile) ||
-        path.startsWith(routes.dashboardNotifications) ||
-        path.startsWith(routes.dashboardFavorites) ||
+        path.startsWith(routes.dashboardBilling) ||
         path.startsWith(routes.dashboardInvoices) ||
         path.startsWith(routes.dashboardReceipts) ||
-        path.startsWith(routes.dashboardSupport) ||
+        path.startsWith(routes.dashboardProfile) ||
+        path.startsWith(routes.dashboardNotifications) ||
         path.startsWith(routes.account) ||
         path.startsWith("/profile"),
     },
@@ -110,10 +100,13 @@ export function CustomerBottomNav({
     <nav
       aria-label="Customer"
       className={cn(
-        "fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-[#003474]/97 backdrop-blur-md lg:hidden",
+        "fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-[#01193D]/97 backdrop-blur-md lg:hidden",
         className,
       )}
-      style={{ fontFamily: "var(--ml-font-ios)" }}
+      style={{
+        fontFamily:
+          "-apple-system, BlinkMacSystemFont, system-ui, sans-serif",
+      }}
     >
       <div className="mx-auto grid h-[3.75rem] max-w-lg grid-cols-4 px-1 pb-[max(0.35rem,env(safe-area-inset-bottom))] pt-1">
         {navItems.map((item) => {
@@ -127,7 +120,7 @@ export function CustomerBottomNav({
               className={cn(
                 "flex min-h-12 flex-col items-center justify-center gap-0.5 rounded-xl px-1 text-[10px] font-medium tracking-wide transition-colors",
                 active
-                  ? "text-[#08e0d4]"
+                  ? "text-[#04CED2]"
                   : "text-white/55 active:text-white/80",
               )}
             >

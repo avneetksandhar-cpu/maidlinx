@@ -1,29 +1,60 @@
 import Link from "next/link";
 import { Suspense } from "react";
-import { CustomerPropertiesHome } from "@/components/customer/customer-properties-home";
+import { BusinessHome } from "@/components/dashboard/business-home";
 import { getCustomerBookings } from "@/lib/dashboard/bookings";
 import { listSavedAddresses } from "@/lib/dashboard/addresses";
 import { requireCustomerSession } from "@/lib/dashboard/session";
 import { routes } from "@/config/site";
 
 export const metadata = {
-  title: "Home",
+  title: "Overview",
 };
 
 async function DashboardOverview() {
   const { profile, email } = await requireCustomerSession();
 
-  const [upcoming, properties] = await Promise.all([
+  const [upcoming, past, properties] = await Promise.all([
     getCustomerBookings(profile.id, email, "upcoming"),
+    getCustomerBookings(profile.id, email, "past"),
     listSavedAddresses(profile.id).catch(() => []),
   ]);
 
+  const completedCount = past.filter((b) => b.status === "completed").length;
+  const now = new Date();
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
+  const monthlySpendCents = past
+    .filter((b) => {
+      const t = new Date(b.scheduledAt).getTime();
+      return !Number.isNaN(t) && t >= monthStart && b.totalCents > 0;
+    })
+    .reduce((sum, b) => sum + b.totalCents, 0);
+  const currency = upcoming[0]?.currency ?? past[0]?.currency ?? "USD";
+
   return (
-    <CustomerPropertiesHome
-      firstName={profile.firstName ?? "there"}
-      properties={properties}
-      upcoming={upcoming}
-    />
+    <div className="space-y-6">
+      <BusinessHome
+        firstName={profile.firstName ?? "there"}
+        properties={properties}
+        upcoming={upcoming}
+        completedCount={completedCount}
+        monthlySpendCents={monthlySpendCents}
+        currency={currency}
+      />
+      <div className="flex flex-wrap gap-3">
+        <Link
+          href={routes.dashboardSites}
+          className="inline-flex h-12 items-center justify-center rounded-2xl bg-[#04CED2] px-5 text-sm font-semibold text-[#01193D]"
+        >
+          Clean a site
+        </Link>
+        <Link
+          href={routes.home}
+          className="inline-flex h-12 items-center justify-center rounded-2xl border border-white/40 px-5 text-sm font-semibold text-white"
+        >
+          Home cleaning
+        </Link>
+      </div>
+    </div>
   );
 }
 
@@ -42,9 +73,6 @@ export default function DashboardPage() {
   return (
     <Suspense fallback={<DashboardSkeleton />}>
       <DashboardOverview />
-      <p className="sr-only">
-        <Link href={routes.book}>Schedule a clean</Link>
-      </p>
     </Suspense>
   );
 }

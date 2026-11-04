@@ -35,37 +35,37 @@ export function BusinessHome({
     <div className="space-y-8">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <header className="space-y-1">
-          <h1 className="text-2xl font-semibold tracking-tight text-white sm:text-3xl">
+          <h1 className="text-2xl font-bold tracking-tight text-white sm:text-3xl">
             {greeting}, {name}.
           </h1>
-          <p className="text-sm text-[var(--ml-dark-ink-muted)]">
-            Manage cleans across your properties — book, track, and invoice in one place.
+          <p className="text-sm font-normal text-[var(--ml-dark-ink-muted)]">
+            Commercial cleaning for South Florida sites — scope, quotes, jobs, and billing.
           </p>
         </header>
-        <Link href={routes.book}>
+        <Link href={routes.dashboardSites}>
           <Button
             variant="primary"
             size="lg"
-            className="booking-cta-btn rounded-2xl shadow-[0_0_24px_rgb(8_224_212_/_0.28)]"
+            className="booking-cta-btn rounded-2xl bg-[#04CED2] font-semibold text-[#01193D] shadow-[0_0_24px_rgb(4_206_210_/_0.28)]"
           >
-            + Book a Cleaning
+            + Clean a site
           </Button>
         </Link>
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        <StatCard label="Properties" value={String(properties.length)} />
-        <StatCard label="Upcoming Cleans" value={String(upcoming.length)} />
-        <StatCard label="Completed Jobs" value={String(completedCount)} />
-        <StatCard label="Monthly Spend" value={formatCurrency(monthlySpendCents, currency)} />
+        <StatCard label="Sites" value={String(properties.length)} />
+        <StatCard label="Upcoming jobs" value={String(upcoming.length)} />
+        <StatCard label="Completed jobs" value={String(completedCount)} />
+        <StatCard label="Monthly spend" value={formatCurrency(monthlySpendCents, currency)} />
       </div>
 
       <section className="grid gap-8 lg:grid-cols-2">
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-white">Upcoming Bookings</h2>
+            <h2 className="text-lg font-semibold text-white">Upcoming jobs</h2>
             <Link
-              href={routes.dashboardBookings}
+              href={routes.dashboardJobs}
               className="text-sm font-medium text-[var(--ml-dark-mint)] underline-offset-4 hover:underline"
             >
               View all
@@ -75,10 +75,10 @@ export function BusinessHome({
             <p className="rounded-2xl border border-dashed border-[var(--ml-dark-border)] bg-[var(--ml-dark-surface)] px-4 py-8 text-center text-sm text-[var(--ml-dark-ink-muted)]">
               No upcoming cleans yet.{" "}
               <Link
-                href={routes.book}
+                href={routes.dashboardSites}
                 className="font-medium text-[var(--ml-dark-mint)] underline-offset-4 hover:underline"
               >
-                Book one
+                Clean a site
               </Link>
             </p>
           ) : (
@@ -108,9 +108,9 @@ export function BusinessHome({
 
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-white">Your Properties</h2>
+            <h2 className="text-lg font-semibold text-white">Your sites</h2>
             <Link
-              href={routes.dashboardSavedPlaces}
+              href={routes.dashboardSites}
               className="text-sm font-medium text-[var(--ml-dark-mint)] underline-offset-4 hover:underline"
             >
               Manage
@@ -118,7 +118,7 @@ export function BusinessHome({
           </div>
           {properties.length === 0 ? (
             <p className="rounded-2xl border border-dashed border-[var(--ml-dark-border)] bg-[var(--ml-dark-surface)] px-4 py-8 text-center text-sm text-[var(--ml-dark-ink-muted)]">
-              Save addresses as you book to build your property list.
+              Add an office or storefront under Sites to get started.
             </p>
           ) : (
             <ul className="space-y-2">

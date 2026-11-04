@@ -183,10 +183,10 @@ describe("recurring cleaning discount", () => {
       quote: miami,
       schedule: { recurring: "monthly" },
     });
-    expect(biweekly.public.discountCents).toBeGreaterThan(0);
-    expect(monthly.public.discountCents).toBeGreaterThan(0);
-    expect(weekly.public.discountCents).toBeGreaterThan(biweekly.public.discountCents);
-    expect(biweekly.public.discountCents).toBeGreaterThan(monthly.public.discountCents);
+    expect(biweekly.public.discountCents ?? 0).toBeGreaterThan(0);
+    expect(monthly.public.discountCents ?? 0).toBeGreaterThan(0);
+    expect(weekly.public.discountCents ?? 0).toBeGreaterThan(biweekly.public.discountCents ?? 0);
+    expect(biweekly.public.discountCents ?? 0).toBeGreaterThan(monthly.public.discountCents ?? 0);
   });
 
   it("calculateBookingPrice preview matches engine weekly total when dynamic OFF", () => {

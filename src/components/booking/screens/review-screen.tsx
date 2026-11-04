@@ -170,14 +170,14 @@ export function ReviewScreen() {
       screenId="review"
       title={title}
       subtitle="Edit anything — we refresh your quote before checkout."
-      ctaLabel="Request clean"
+      ctaLabel={loading ? "Verifying price…" : "Request clean"}
       ctaDisabled={loading || Boolean(pricingError) || !totalLabel}
       ctaLoading={loading}
       backHref={BOOKING_SCREEN_PATHS.date}
       hideDefaultTotal
       footerHint={
         <div className="space-y-1.5 text-[15px]">
-          {timing ? (
+          {timing && totalLabel ? (
             <p className="text-[14px] leading-snug text-[var(--ml-book-ink-muted)]">
               {timing.model === "pay_after_cleaning"
                 ? `Due now $0 · charged after clean ${formatCurrency(timing.dueLaterCents, pricing?.currency)}`
