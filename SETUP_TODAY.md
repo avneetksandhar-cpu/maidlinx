@@ -59,7 +59,7 @@ Paste values into `.env.local` for:
 | `STRIPE_SECRET_KEY` | Stripe test sk |
 | `STRIPE_WEBHOOK_SECRET` | `stripe listen` whsec |
 | `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` | Google Places key (optional) |
-| `ADMIN_BOOTSTRAP_EMAIL` | Your admin login email |
+| `ADMIN_BOOTSTRAP_EMAIL` | Admin login email (e.g. `info@maidlinx.com`) |
 
 Leave `EMAIL_PROVIDER=log` and `SMS_PROVIDER=log` for local testing.
 
