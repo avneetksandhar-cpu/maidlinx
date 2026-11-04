@@ -2,8 +2,10 @@
 
 **Date:** 2026-11-04  
 **Branch:** `feature/founder-booking-polish`  
+**PR:** https://github.com/avneetksandhar-cpu/maidlinx/pull/28  
 **Stripe LIVE:** OFF  
-**Coord:** Pay-after agent WIP stashed on `feature/pay-after-cleaning` — not included in this PR.
+**Coord:** Pay-after kept on `feature/pay-after-cleaning` — not in this PR.  
+**Preview:** http://127.0.0.1:3013 · shots in `docs/screenshots/founder-polish-2026-11-04/`
 
 ## SCREEN_STATUS
 
