@@ -61,7 +61,8 @@ export function CustomerBottomNav({
       href: routes.dashboard,
       label: "Overview",
       icon: LayoutGrid,
-      match: (path: string) => path === routes.dashboard,
+      match: (path: string) =>
+        path === routes.dashboard || path.startsWith(routes.dashboardBook),
     },
     {
       href: routes.dashboardSites,

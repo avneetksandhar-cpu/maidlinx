@@ -42,13 +42,13 @@ export function BusinessHome({
             Commercial cleaning for South Florida sites — scope, quotes, jobs, and billing.
           </p>
         </header>
-        <Link href={routes.dashboardSites}>
+        <Link href={routes.dashboardBook}>
           <Button
             variant="primary"
             size="lg"
             className="booking-cta-btn rounded-2xl bg-[#04CED2] font-semibold text-[#01193D] shadow-[0_0_24px_rgb(4_206_210_/_0.28)]"
           >
-            + Clean a site
+            Book a commercial clean
           </Button>
         </Link>
       </div>
@@ -75,10 +75,10 @@ export function BusinessHome({
             <p className="rounded-2xl border border-dashed border-[var(--ml-dark-border)] bg-[var(--ml-dark-surface)] px-4 py-8 text-center text-sm text-[var(--ml-dark-ink-muted)]">
               No upcoming cleans yet.{" "}
               <Link
-                href={routes.dashboardSites}
+                href={routes.dashboardBook}
                 className="font-medium text-[var(--ml-dark-mint)] underline-offset-4 hover:underline"
               >
-                Clean a site
+                Book a commercial clean
               </Link>
             </p>
           ) : (

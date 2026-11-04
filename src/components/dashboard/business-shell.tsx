@@ -19,7 +19,12 @@ const NAV_ITEMS = [
 ] as const;
 
 function isActive(pathname: string, href: string, exact?: boolean): boolean {
-  if (exact) return pathname === href;
+  if (exact) {
+    return (
+      pathname === href ||
+      (href === routes.dashboard && pathname.startsWith(routes.dashboardBook))
+    );
+  }
   if (href === routes.dashboardSites) {
     return (
       pathname.startsWith(routes.dashboardSites) ||
