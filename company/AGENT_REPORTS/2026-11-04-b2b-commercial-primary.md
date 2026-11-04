@@ -6,8 +6,9 @@
 
 ## PREVIEW
 
-Local: `npm run dev` → sign in → `/dashboard` (commercial shell).  
-Vercel preview: after PR push.
+- Branch pushed: `feature/b2b-commercial-primary`  
+- Open PR: https://github.com/avneetksandhar-cpu/maidlinx/pull/new/feature/b2b-commercial-primary (`gh` API Forbidden — needs `gh auth refresh`)  
+- Local `next dev` hit EMFILE / empty app-paths (404s). `next build` discovers ~175 routes (compile OK); static generation then fails on pre-existing `/book/address` Suspense bailout (not B2B pages).
 
 ## ROUTES
 
@@ -29,16 +30,16 @@ Yes — `BrandLockup` / `BrandHeader`: circular mark + **Maid** white / **Linx**
 
 ## FLOWS_VERIFIED
 
-- Office manager path: Sites → existing site → scope → Book this visit (`/book?service=office`) when ready; Jobs → service order from real booking.
-- Property manager path: Sites → scope → Request quotes (honest empty proposals; no Bayline/Coastal invent) → CRM lead.
-- Mobile tab bar: Overview · Sites · Jobs · Billing.
+- Code paths wired: Sites → scope → Book this visit (`/book?service=office`) **or** Request quotes → CRM; Jobs → service order from real bookings; Billing = real invoices/receipts only.
+- Mobile tab bar: Overview · Sites · Jobs · Billing; residential demoted on `/`.
 - Typecheck clean; bottom-nav unit tests pass.
+- Interactive mobile preview blocked locally (EMFILE); use Vercel preview after PR open.
 
 ## BLOCKED
 
-- `gh` GitHub auth token invalid in this environment — push/PR may need founder `gh auth refresh`.
-- Stripe LIVE remains OFF; BOOKABLE=0; markets still gated.
-- No invented providers; live proposals only when real jobs/CRM exist.
+- `gh` token invalid → cannot auto-open PR (branch is on origin; use new-PR URL above).
+- Local preview EMFILE / turbopack empty route graph.
+- Stripe LIVE OFF; BOOKABLE=0; no invented providers.
 
 ## STRIPE_LIVE
 
