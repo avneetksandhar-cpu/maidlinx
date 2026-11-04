@@ -111,7 +111,7 @@ export function AddressScreen() {
     return (
       <div
         data-theme="ml-book"
-        className="flex min-h-[40dvh] items-center justify-center bg-white text-sm text-[var(--ml-book-ink-muted)]"
+        className="flex min-h-[40dvh] items-center justify-center bg-[var(--ml-book-bg,#01193D)] text-sm text-[var(--ml-book-ink-muted)]"
       >
         Loading…
       </div>

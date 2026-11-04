@@ -1,11 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { BookingFlowChrome } from "@/components/booking/booking-flow-chrome";
 import { PromoCodeField } from "@/components/booking/promo-code-field";
-import { PriceSummary } from "@/components/booking/price-summary";
 import { useBookingGuard } from "@/components/booking/use-booking-guard";
 import { bookingEditPath, BOOKING_SCREEN_PATHS } from "@/lib/bookings/booking-routes";
 import {
@@ -14,11 +13,17 @@ import {
 } from "@/lib/bookings/arrival-labels";
 import { buildQuoteInput } from "@/lib/bookings/booking-helpers";
 import { useBookingPricing } from "@/hooks/use-booking-pricing";
-import { getBookingServiceLabel, BOOKING_EXTRAS } from "@/lib/bookings/constants";
+import { getBookingServiceLabel } from "@/lib/bookings/constants";
 import { calculateDepositCents, getDepositPercent } from "@/lib/payments/deposit";
 import { formatCurrency } from "@/lib/utils";
 import { useBooking } from "@/components/booking/booking-provider";
 import { trackFunnelStep } from "@/lib/analytics/booking-funnel";
+import {
+  captureReviewSnapshot,
+  describeReviewChanges,
+  readReviewSnapshot,
+  writeReviewSnapshot,
+} from "@/lib/bookings/review-snapshot";
 
 function Row({
   label,
@@ -30,18 +35,16 @@ function Row({
   href: string;
 }) {
   return (
-    <div className="flex items-start justify-between gap-3 border-b border-[var(--ml-book-border,#e2e8f0)] py-4 last:border-0">
+    <div className="flex items-start justify-between gap-3 border-b border-[var(--ml-book-border)] py-4 last:border-0">
       <div className="min-w-0">
         <p className="text-[12px] font-semibold tracking-wide text-[var(--ml-book-ink-muted)] uppercase">
           {label}
         </p>
-        <p className="mt-1 text-[15px] font-medium leading-snug text-[var(--ml-book-ink,#01193D)]">
-          {value}
-        </p>
+        <p className="mt-1 text-[16px] font-medium leading-snug text-white">{value}</p>
       </div>
       <Link
         href={href}
-        className="shrink-0 px-1 py-1 text-sm font-semibold text-[var(--ml-book-primary,#04CED2)]"
+        className="shrink-0 px-1 py-1 text-[15px] font-semibold text-[var(--ml-book-primary,#04CED2)]"
       >
         Edit
       </Link>
@@ -53,6 +56,7 @@ export function ReviewScreen() {
   const router = useRouter();
   const { updateState } = useBooking();
   const { state, hydrated, blocked } = useBookingGuard("review");
+  const [changeLines, setChangeLines] = useState<string[]>([]);
 
   const quoteInput = useMemo(
     () => buildQuoteInput(state, { requireAddress: true }),
@@ -72,11 +76,32 @@ export function ReviewScreen() {
     });
   }, [pricing, isServerVerified]);
 
+  // Surface exact changes after Edit (unit / extras / time / price).
+  useEffect(() => {
+    if (!hydrated || blocked) return;
+    const prev = readReviewSnapshot();
+    const total = pricing && !pricing.quoteOnly ? pricing.totalCents : undefined;
+    const currency = pricing && !pricing.quoteOnly ? pricing.currency : undefined;
+    setChangeLines(describeReviewChanges(prev, state, total, currency));
+    writeReviewSnapshot(captureReviewSnapshot(state, total, currency));
+  }, [
+    hydrated,
+    blocked,
+    state.line1,
+    state.line2,
+    state.serviceType,
+    state.extras,
+    state.date,
+    state.arrivalWindow,
+    pricing?.totalCents,
+    pricing?.currency,
+  ]);
+
   if (!hydrated || blocked) {
     return (
       <div
         data-theme="ml-book"
-        className="flex min-h-[40dvh] items-center justify-center bg-white text-sm text-[var(--ml-book-ink-muted)]"
+        className="flex min-h-[40dvh] items-center justify-center bg-[var(--ml-book-bg,#01193D)] text-sm text-[var(--ml-book-ink-muted)]"
       >
         Loading…
       </div>
@@ -89,9 +114,9 @@ export function ReviewScreen() {
 
   const serviceName =
     state.serviceTierId === "standard" || state.serviceType === "standard"
-      ? "Standard"
+      ? "Standard clean"
       : state.serviceTierId === "deep" || state.serviceType === "deep"
-        ? "Deep"
+        ? "Deep clean"
         : state.serviceType
           ? getBookingServiceLabel(state.serviceType)
           : null;
@@ -109,28 +134,6 @@ export function ReviewScreen() {
     .filter((x) => x && x !== "—")
     .join(" · ");
 
-  const frequencyLabel =
-    state.recurringFrequency && state.recurringFrequency !== "one_time"
-      ? state.recurringFrequency === "weekly"
-        ? "Weekly"
-        : state.recurringFrequency === "biweekly"
-          ? "Every 2 weeks"
-          : state.recurringFrequency === "monthly"
-            ? "Monthly"
-            : "One-time"
-      : "One-time";
-
-  const extrasLines =
-    (state.extras?.length ?? 0) === 0
-      ? []
-      : (state.extras ?? []).map((id) => {
-          const extra = BOOKING_EXTRAS.find((e) => e.id === id);
-          return {
-            label: extra?.label ?? id,
-            cents: extra?.priceCents ?? 0,
-          };
-        });
-
   const totalLabel =
     pricing && !pricing.quoteOnly
       ? formatCurrency(pricing.totalCents, pricing.currency)
@@ -144,37 +147,33 @@ export function ReviewScreen() {
       : null;
   const depositPct = getDepositPercent();
 
+  const edit = (screen: "address" | "date" | "service") =>
+    bookingEditPath(screen, { fromReview: true });
+
   return (
     <BookingFlowChrome
       screenId="review"
       title="Review your clean"
       subtitle="Edit anything — we refresh your quote before checkout."
-      ctaLabel={
-        loading
-          ? "Verifying price…"
-          : depositLabel
-            ? `Confirm booking`
-            : "Confirm booking"
-      }
-      ctaDisabled={loading || Boolean(pricingError)}
+      ctaLabel="Request clean"
+      ctaDisabled={loading || Boolean(pricingError) || !totalLabel}
       ctaLoading={loading}
       backHref={BOOKING_SCREEN_PATHS.date}
+      hideDefaultTotal
       footerHint={
-        totalLabel ? (
-          <div className="space-y-1 text-[15px]">
-            <div className="flex items-center justify-between gap-3">
-              <span className="text-[var(--ml-book-ink-muted)]">Total USD</span>
-              <span className="text-lg font-bold tabular-nums text-[var(--ml-book-ink,#01193D)]">
-                {totalLabel}
-              </span>
-            </div>
-            {depositLabel ? (
-              <p className="text-xs text-[var(--ml-book-ink-muted)]">
-                {depositPct}% deposit {depositLabel} today · balance after the job
-              </p>
-            ) : null}
+        <div className="space-y-1.5 text-[15px]">
+          {depositLabel && totalLabel ? (
+            <p className="text-[14px] leading-snug text-[var(--ml-book-ink-muted)]">
+              {depositPct}% deposit {depositLabel} today · balance after the job
+            </p>
+          ) : null}
+          <div className="flex items-center justify-between gap-3">
+            <span className="text-[var(--ml-book-ink-muted)]">Total</span>
+            <span className="text-lg font-bold tabular-nums text-white">
+              {totalLabel ?? "—"}
+            </span>
           </div>
-        ) : null
+        </div>
       }
       onContinue={() => {
         if (loading || pricingError) return;
@@ -183,97 +182,42 @@ export function ReviewScreen() {
       }}
     >
       <div className="space-y-5">
-        <div className="rounded-2xl border border-[var(--ml-book-border,#e2e8f0)] bg-white px-4">
-          <Row
-            label="Home"
-            value={homeValue}
-            href={bookingEditPath("address", { fromReview: true })}
-          />
-          <Row
-            label="Arrival"
-            value={arrivalValue || "—"}
-            href={bookingEditPath("date", { fromReview: true })}
-          />
-          <Row
-            label="Service"
-            value={serviceValue}
-            href={bookingEditPath("service", { fromReview: true })}
-          />
-          <Row
-            label="Frequency"
-            value={frequencyLabel}
-            href={bookingEditPath("service", { fromReview: true })}
-          />
-          {state.accessNotes?.trim() ? (
+        {changeLines.length > 0 ? (
+          <div
+            className="rounded-2xl border border-[var(--ml-book-primary,#04CED2)]/40 bg-[var(--ml-book-selected,#163556)] px-4 py-3 text-[15px] text-white"
+            role="status"
+          >
+            <p className="font-semibold text-[var(--ml-book-primary,#04CED2)]">Updated</p>
+            <ul className="mt-1.5 space-y-1 text-white/85">
+              {changeLines.map((line) => (
+                <li key={line}>{line}</li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
+
+        <div className="rounded-2xl border border-[var(--ml-book-border)] bg-[var(--ml-book-surface,#102B49)] px-4">
+          <Row label="Address" value={homeValue} href={edit("address")} />
+          <Row label="Arrival" value={arrivalValue || "—"} href={edit("date")} />
+          <Row label="Service" value={serviceValue} href={edit("service")} />
+          <Row label="Total" value={totalLabel ?? "—"} href={edit("service")} />
+        </div>
+
+        {state.accessNotes?.trim() ? (
+          <div className="rounded-2xl border border-[var(--ml-book-border)] bg-[var(--ml-book-surface,#102B49)] px-4">
             <Row
               label="Instructions"
               value={state.accessNotes.trim()}
-              href={bookingEditPath("date", { fromReview: true })}
+              href={edit("date")}
             />
-          ) : null}
-        </div>
-
-        <div className="rounded-2xl border border-[var(--ml-book-border,#e2e8f0)] bg-white px-4 py-3">
-          <p className="text-[12px] font-semibold tracking-wide text-[var(--ml-book-ink-muted)] uppercase">
-            Cost breakdown
-          </p>
-          {pricing && !pricing.quoteOnly ? (
-            <ul className="mt-3 space-y-2 text-[15px] text-[var(--ml-book-ink,#01193D)]">
-              <li className="flex justify-between gap-3">
-                <span>
-                  {pricing.serviceLabel ??
-                    (state.serviceType ? getBookingServiceLabel(state.serviceType) : "Clean")}
-                </span>
-                <span className="tabular-nums">
-                  {formatCurrency(
-                    pricing.baseCents +
-                      pricing.bedroomCents +
-                      pricing.bathroomCents +
-                      pricing.squareFootageCents,
-                    pricing.currency,
-                  )}
-                </span>
-              </li>
-              {extrasLines.map((extra) => (
-                <li key={extra.label} className="flex justify-between gap-3">
-                  <span>{extra.label}</span>
-                  <span className="tabular-nums">
-                    {formatCurrency(extra.cents, pricing.currency)}
-                  </span>
-                </li>
-              ))}
-              {(pricing.feesCents ?? pricing.platformFeeCents) > 0 ? (
-                <li className="flex justify-between gap-3 text-[var(--ml-book-ink-muted)]">
-                  <span>Service fee</span>
-                  <span className="tabular-nums">
-                    {formatCurrency(
-                      pricing.feesCents ?? pricing.platformFeeCents,
-                      pricing.currency,
-                    )}
-                  </span>
-                </li>
-              ) : null}
-              <li className="flex justify-between gap-3 border-t border-[var(--ml-book-border)] pt-2 text-base font-bold">
-                <span>Total USD</span>
-                <span className="tabular-nums">{totalLabel}</span>
-              </li>
-            </ul>
-          ) : (
-            <PriceSummary
-              pricing={pricing}
-              loading={loading}
-              isServerVerified={isServerVerified}
-              showDeposit
-              variant="embedded"
-            />
-          )}
-        </div>
+          </div>
+        ) : null}
 
         <PromoCodeField />
 
         {pricingError ? (
           <p
-            className="rounded-2xl border border-red-300 bg-red-50 px-4 py-3 text-center text-sm text-red-700"
+            className="rounded-2xl border border-red-400/40 bg-red-500/10 px-4 py-3 text-center text-sm text-red-200"
             role="alert"
           >
             {pricingError}

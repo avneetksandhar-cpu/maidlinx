@@ -5,11 +5,11 @@ import { BOOKING_SCREEN_PATHS, type BookingScreenId } from "@/lib/bookings/booki
 export const BOOKING_RESUME_AFTER_AUTH = BOOKING_SCREEN_PATHS.review;
 
 /**
- * Auth gate: address check + quote + schedule work as guest.
- * Sign-in required at review/payment (Stripe TEST checkout).
+ * Auth gate: address + clean + schedule work as guest.
+ * Sign-in at Review (“Save your booking”) — never charges; payment still requires session.
  */
 export const BOOKING_AUTH_REQUIRED_SCREENS: ReadonlySet<BookingScreenId> = new Set([
-  // Review is readable as guest (quote check); Stripe checkout still requires auth.
+  "review",
   "payment",
 ]);
 

@@ -8,7 +8,11 @@ import {
   getFurthestScreenPath,
   isAddressComplete,
 } from "@/lib/bookings/booking-routes";
-import { bookingSignInHref, isBookingAuthRequired } from "@/lib/bookings/booking-auth";
+import {
+  BOOKING_RESUME_AFTER_AUTH,
+  bookingSignInHref,
+  isBookingAuthRequired,
+} from "@/lib/bookings/booking-auth";
 import { readUsualClean } from "@/lib/bookings/usual-clean";
 import { useBooking } from "@/components/booking/booking-provider";
 import { useAuthSession } from "@/hooks/use-auth-session";
@@ -65,7 +69,8 @@ function BookEntryInner() {
         isBookingAuthRequired(screenId) &&
         authStatus !== "authenticated"
       ) {
-        router.replace(bookingSignInHref(furthest));
+        // Resume at Review after sign-in — never jump straight into charge.
+        router.replace(bookingSignInHref(BOOKING_RESUME_AFTER_AUTH));
         return;
       }
       router.replace(qs ? `${furthest}?${qs}` : furthest);

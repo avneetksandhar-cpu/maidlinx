@@ -60,7 +60,11 @@ export function useBookingGuard(screenId: BookingScreenId) {
       return;
     }
     if (authBlocked) {
-      const resumePath = BOOKING_SCREEN_PATHS[screenId];
+      // Always resume at Review after auth — signing in must never submit or charge.
+      const resumePath =
+        screenId === "payment" || screenId === "review"
+          ? BOOKING_SCREEN_PATHS.review
+          : BOOKING_SCREEN_PATHS[screenId];
       router.replace(bookingSignInHref(resumePath));
     }
   }, [hydrated, screenId, state, router, allowResumePayment, authBlocked]);

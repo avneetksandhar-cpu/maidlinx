@@ -49,7 +49,6 @@ export function ServiceScreen() {
 
   const propertyType = state.propertyType ?? "house";
 
-  // Seed residential defaults + Standard clean so the panel is immediately bookable.
   useEffect(() => {
     if (!hydrated || blocked) return;
     const patch: Record<string, unknown> = {};
@@ -76,7 +75,6 @@ export function ServiceScreen() {
 
   const tiers = useMemo(() => {
     const all = getServiceTiersForProperty(propertyType);
-    // Home clean panel: Standard + Deep first (match design); keep others if present.
     const preferred = ["standard", "deep"];
     const sorted = [...all].sort((a, b) => {
       const ai = preferred.indexOf(a.id);
@@ -124,7 +122,6 @@ export function ServiceScreen() {
   };
 
   const handleContinue = () => {
-    // Ensure residential defaults before leaving the Clean panel.
     if (!state.propertyType) {
       updateState({
         propertyType: "house",
@@ -157,7 +154,7 @@ export function ServiceScreen() {
     return (
       <div
         data-theme="ml-book"
-        className="flex min-h-[40dvh] items-center justify-center bg-white text-sm text-[var(--ml-book-ink-muted)]"
+        className="flex min-h-[40dvh] items-center justify-center bg-[var(--ml-book-bg,#01193D)] text-sm text-[var(--ml-book-ink-muted)]"
       >
         Loading…
       </div>
@@ -184,15 +181,14 @@ export function ServiceScreen() {
       ctaLabel="Choose a time"
       ctaDisabled={!canContinue}
       backHref={fromReview ? reviewPath : BOOKING_SCREEN_PATHS.address}
+      hideDefaultTotal
       footerHint={
-        totalLabel ? (
-          <div className="flex items-center justify-between gap-3 text-[15px]">
-            <span className="text-[var(--ml-book-ink-muted)]">Estimated total</span>
-            <span className="font-bold tabular-nums text-[var(--ml-book-ink,#01193D)]">
-              {priceLoading ? "Updating…" : totalLabel}
-            </span>
-          </div>
-        ) : null
+        <div className="flex items-center justify-between gap-3 text-[16px]">
+          <span className="text-[var(--ml-book-ink-muted)]">Estimated total</span>
+          <span className="font-bold tabular-nums text-white">
+            {priceLoading ? "Updating…" : totalLabel ?? "—"}
+          </span>
+        </div>
       }
       onContinue={handleContinue}
     >
@@ -201,7 +197,8 @@ export function ServiceScreen() {
           <legend className="sr-only">Service</legend>
           <div className="grid gap-2.5">
             {tiers.map((tier) => {
-              const selected = state.serviceTierId === tier.id || state.serviceType === tier.serviceType;
+              const selected =
+                state.serviceTierId === tier.id || state.serviceType === tier.serviceType;
               return (
                 <button
                   key={tier.id}
@@ -210,17 +207,15 @@ export function ServiceScreen() {
                   aria-pressed={selected}
                   data-selected={selected}
                   className={cn(
-                    "flex w-full items-start gap-3 rounded-2xl border px-4 py-4 text-left transition-all",
+                    "booking-select-card flex w-full items-start gap-3 rounded-2xl border px-4 py-4 text-left transition-all",
                     selected
-                      ? "border-[var(--ml-book-primary,#04CED2)] bg-[var(--ml-book-selected,#E6FAFA)]"
-                      : "border-[var(--ml-book-border)] bg-white hover:border-[var(--ml-book-border-strong)]",
+                      ? "border-[var(--ml-book-primary,#04CED2)] bg-[var(--ml-book-selected,#163556)]"
+                      : "border-[var(--ml-book-border-strong)] bg-[var(--ml-book-surface,#102B49)]",
                   )}
                 >
                   <span className="min-w-0 flex-1">
-                    <span className="block text-base font-bold text-[var(--ml-book-ink,#01193D)]">
-                      {tier.label}
-                    </span>
-                    <span className="mt-0.5 block text-sm text-[var(--ml-book-ink-muted)]">
+                    <span className="block text-[16px] font-bold text-white">{tier.label}</span>
+                    <span className="mt-0.5 block text-[15px] text-[var(--ml-book-ink-muted)]">
                       {TIER_BLURBS[tier.id] ?? tier.description}
                     </span>
                   </span>
@@ -228,8 +223,8 @@ export function ServiceScreen() {
                     className={cn(
                       "mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full border-2 transition-colors",
                       selected
-                        ? "border-[var(--ml-book-primary,#04CED2)] bg-[var(--ml-book-primary,#04CED2)] text-[var(--ml-book-ink,#01193D)]"
-                        : "border-[var(--ml-book-border-strong)] bg-white",
+                        ? "border-[var(--ml-book-primary,#04CED2)] bg-[var(--ml-book-primary,#04CED2)] text-[#01193D]"
+                        : "border-[var(--ml-book-border-strong)] bg-transparent",
                     )}
                     aria-hidden
                   >
@@ -245,7 +240,7 @@ export function ServiceScreen() {
           type="button"
           onClick={() => setIncludedOpen((o) => !o)}
           aria-expanded={includedOpen}
-          className="inline-flex items-center gap-1 text-sm font-semibold text-[var(--ml-book-primary,#04CED2)]"
+          className="inline-flex items-center gap-1 text-[15px] font-semibold text-[var(--ml-book-primary,#04CED2)]"
         >
           What&apos;s included?
           <ChevronDown
@@ -254,10 +249,13 @@ export function ServiceScreen() {
           />
         </button>
         {includedOpen ? (
-          <ul className="space-y-2 rounded-2xl border border-[var(--ml-book-border)] bg-[var(--ml-book-selected,#E6FAFA)]/40 px-4 py-3 text-sm text-[var(--ml-book-ink,#01193D)]">
+          <ul className="space-y-2 rounded-2xl border border-[var(--ml-book-border)] bg-[var(--ml-book-surface,#102B49)] px-4 py-3 text-[15px] text-white">
             {STANDARD_INCLUDED.map((item) => (
               <li key={item} className="flex gap-2">
-                <Check className="mt-0.5 size-4 shrink-0 text-[var(--ml-book-primary,#04CED2)]" aria-hidden />
+                <Check
+                  className="mt-0.5 size-4 shrink-0 text-[var(--ml-book-primary,#04CED2)]"
+                  aria-hidden
+                />
                 <span>{item}</span>
               </li>
             ))}
@@ -265,9 +263,7 @@ export function ServiceScreen() {
         ) : null}
 
         <div>
-          <p className="mb-3 text-sm font-semibold text-[var(--ml-book-ink,#01193D)]">
-            Home details
-          </p>
+          <p className="mb-3 text-[15px] font-semibold text-white">Home details</p>
           <div className="grid grid-cols-2 gap-3">
             <BedroomSelector
               value={state.bedrooms ?? 2}
@@ -286,7 +282,7 @@ export function ServiceScreen() {
         </div>
 
         <div>
-          <p className="mb-3 text-sm font-semibold text-[var(--ml-book-ink,#01193D)]">Extras</p>
+          <p className="mb-3 text-[15px] font-semibold text-white">Extras</p>
           <ExtrasSelector
             hideLegend
             value={state.extras ?? []}

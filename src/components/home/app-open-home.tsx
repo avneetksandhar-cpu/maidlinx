@@ -1,10 +1,10 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronDown, ChevronRight, UserRound } from "lucide-react";
-import { SiteLogo } from "@/components/brand/site-logo";
+import { ChevronDown, ChevronRight, Plus, UserRound } from "lucide-react";
 import { CustomerBottomNav } from "@/components/customer/customer-bottom-nav";
 import { AddressAutocomplete } from "@/components/booking/address-autocomplete";
 import { GoogleMapsProvider } from "@/components/booking/google-maps-provider";
@@ -92,6 +92,7 @@ function AppOpenHomeInner() {
   const authStatus = useAuthSession();
   const [hint, setHint] = useState<string | null>(null);
   const [includedOpen, setIncludedOpen] = useState(false);
+  const [showUnit, setShowUnit] = useState(false);
   const [upcoming, setUpcoming] = useState<DashboardBooking | null>(null);
 
   useEffect(() => {
@@ -254,14 +255,28 @@ function AppOpenHomeInner() {
 
   const upcomingWhen = upcoming ? formatUpcomingWhen(upcoming) : null;
 
+  // Seed unit field open when draft already has one.
+  useEffect(() => {
+    if (hydrated && state.line2?.trim()) setShowUnit(true);
+  }, [hydrated, state.line2]);
+
   return (
     <div
-      className="relative flex min-h-dvh flex-col overflow-x-hidden bg-[#003474] text-white"
+      className="relative flex min-h-dvh flex-col overflow-x-hidden bg-[#01193D] text-white"
       style={{ fontFamily: "var(--ml-font-ios)" }}
     >
-      {/* Top bar */}
-      <header className="relative z-10 flex items-center justify-between px-4 pt-[max(0.65rem,env(safe-area-inset-top))] pb-1">
-        <SiteLogo variant="horizontal" tone="onDark" href={routes.home} priority />
+      {/* Top bar — compact 48px mark */}
+      <header className="relative z-10 flex items-center justify-between px-5 pt-[max(0.65rem,env(safe-area-inset-top))] pb-1">
+        <Link href={routes.home} aria-label="MaidLinx home" className="inline-flex">
+          <Image
+            src="/brand/maidlinx-mark.png"
+            alt="MaidLinx"
+            width={48}
+            height={48}
+            className="size-12 rounded-full object-cover"
+            priority
+          />
+        </Link>
         <Link
           href={accountHref}
           aria-label={authStatus === "authenticated" ? "Account" : "Sign in"}
@@ -271,28 +286,28 @@ function AppOpenHomeInner() {
         </Link>
       </header>
 
-      <main className="relative z-10 flex flex-1 flex-col px-4 pb-[calc(5.25rem+env(safe-area-inset-bottom))] pt-3">
+      <main className="relative z-10 flex flex-1 flex-col px-5 pb-[calc(5.25rem+env(safe-area-inset-bottom))] pt-3">
         <div className="mx-auto flex w-full max-w-md flex-1 flex-col">
-          {/* Returning upcoming booking — above new-booking panel */}
+          {/* Upcoming clean → View my booking first; else usual clean */}
           {upcoming && upcomingWhen ? (
             <Link
               href={routes.bookingDetail(upcoming.id)}
-              className="mb-3 flex items-center justify-between gap-3 rounded-2xl border border-white/15 bg-white/10 px-3.5 py-3 text-left"
+              className="mb-3 flex items-center justify-between gap-3 rounded-2xl border border-white/15 bg-[#102B49] px-3.5 py-3 text-left"
             >
               <div className="min-w-0">
-                <p className="text-[11px] font-semibold tracking-[0.14em] text-[#08e0d4] uppercase">
+                <p className="text-[11px] font-semibold tracking-[0.14em] text-[#04CED2] uppercase">
                   Upcoming clean
                 </p>
-                <p className="mt-0.5 truncate text-[15px] font-semibold text-white">
+                <p className="mt-0.5 truncate text-[16px] font-semibold text-white">
                   {upcomingWhen.dateLabel}
                 </p>
-                <p className="truncate text-sm text-white/70">{upcomingWhen.windowLabel}</p>
-                <p className="mt-1 text-xs font-medium text-[#08e0d4]">
+                <p className="truncate text-[15px] text-white/70">{upcomingWhen.windowLabel}</p>
+                <p className="mt-1 text-xs font-medium text-[#04CED2]">
                   {getCustomerFriendlyStatusLabel(upcoming.status)}
                 </p>
               </div>
-              <span className="inline-flex shrink-0 items-center gap-0.5 text-sm font-semibold text-[#08e0d4]">
-                View booking
+              <span className="inline-flex shrink-0 items-center gap-0.5 text-sm font-semibold text-[#04CED2]">
+                View my booking
                 <ChevronRight className="size-4" aria-hidden />
               </span>
             </Link>
@@ -300,24 +315,25 @@ function AppOpenHomeInner() {
             <HomeUsualCleanCard className="mb-3" />
           )}
 
-          {/* Main heading — left aligned */}
-          <h1 className="max-w-[14ch] text-[2rem] font-semibold leading-[1.12] tracking-tight text-white sm:text-[2.25rem]">
-            Come home to clean.
-          </h1>
-          <p className="mt-1.5 text-[13px] font-medium text-white/65">
+          <h1 className="booking-step-title max-w-[16ch] text-white">Come home to clean.</h1>
+          <p className="mt-1.5 text-[16px] font-medium text-white/65">
             South Florida home cleaning
           </p>
 
-          {/* Booking panel — light surface; field + CTA above fold on 375×667 */}
-          <section className="mt-4 rounded-2xl bg-white p-3.5 text-[#003474]">
-            <p className="text-[13px] font-semibold text-[#003474]">Where are we cleaning?</p>
+          {/* Address near top — lighter surface only for the field */}
+          <section className="mt-4">
+            <p className="text-[16px] font-semibold text-white">Where are we cleaning?</p>
 
-            <div className="mt-2.5">
+            <div className="mt-2.5 rounded-xl bg-[#102B49] p-1">
               <AddressAutocomplete
                 value={state}
-                onChange={(value) => applyAddress(value)}
+                onChange={(value) => {
+                  applyAddress(value);
+                  if (value.line2?.trim()) setShowUnit(true);
+                }}
                 onAddressSelected={(value) => {
                   applyAddress(value);
+                  if (value.line2?.trim()) setShowUnit(true);
                   trackBookingEvent("address_selected", {
                     marketId: value.marketId ?? state.marketId,
                     placeId: value.googlePlaceId,
@@ -335,7 +351,6 @@ function AppOpenHomeInner() {
                     patched.city &&
                     patched.postalCode
                   ) {
-                    // Address check OK before sign-in — enter Clean panel.
                     router.push(BOOKING_SCREEN_PATHS.service);
                   }
                 }}
@@ -344,9 +359,37 @@ function AppOpenHomeInner() {
                 locationBiasMarket="SOUTH_FLORIDA"
                 label="Address or ZIP"
                 placeholder="South Florida address or ZIP"
-                className="[&_label]:sr-only [&_input]:h-12 [&_input]:rounded-xl [&_input]:border-slate-200 [&_input]:bg-[#f7f9fc] [&_input]:pl-11 [&_input]:text-[15px] [&_input]:text-[#003474] [&_input]:placeholder:text-slate-400 [&_[data-hero-pin]]:text-[#003474]/55"
+                className="[&_label]:sr-only [&_input]:h-12 [&_input]:rounded-xl [&_input]:border-transparent [&_input]:bg-[#102B49] [&_input]:pl-11 [&_input]:text-[16px] [&_input]:text-white [&_input]:placeholder:text-white/40 [&_[data-hero-pin]]:text-white/55"
               />
             </div>
+
+            {!showUnit ? (
+              <button
+                type="button"
+                onClick={() => setShowUnit(true)}
+                className="mt-2 inline-flex items-center gap-1.5 text-[15px] font-semibold text-[#04CED2]"
+              >
+                <Plus className="size-4" aria-hidden />
+                Add apartment or unit
+              </button>
+            ) : (
+              <div className="mt-2">
+                <label
+                  htmlFor="home-unit"
+                  className="mb-1.5 block text-sm font-medium text-white/80"
+                >
+                  Apartment or unit
+                </label>
+                <input
+                  id="home-unit"
+                  value={state.line2 ?? ""}
+                  onChange={(e) => updateState({ line2: e.target.value })}
+                  placeholder="Apt, suite, floor…"
+                  autoComplete="address-line2"
+                  className="h-12 w-full rounded-xl border border-white/25 bg-[#102B49] px-3.5 text-[16px] text-white placeholder:text-white/40 focus:border-[#04CED2] focus:outline-none"
+                />
+              </div>
+            )}
 
             {hint ||
             (hydrated &&
@@ -355,7 +398,7 @@ function AppOpenHomeInner() {
                 inServiceArea: state.inServiceArea,
                 marketId: state.marketId,
               })) ? (
-              <p className="mt-2 text-[13px] leading-snug text-slate-600" role="status">
+              <p className="mt-2 text-[15px] leading-snug text-white/70" role="status">
                 {hint ?? outsideFloridaHint}
               </p>
             ) : null}
@@ -376,13 +419,12 @@ function AppOpenHomeInner() {
             <button
               type="button"
               onClick={onCheckAvailability}
-              className="mt-3 inline-flex h-12 w-full items-center justify-center rounded-xl bg-[#08e0d4] text-[15px] font-semibold text-[#003474] transition-opacity hover:opacity-95 active:opacity-90"
+              className="mt-3 inline-flex h-12 w-full items-center justify-center rounded-xl bg-[#04CED2] text-[16px] font-semibold text-[#01193D] transition-opacity hover:opacity-95 active:opacity-90"
             >
               Check availability
             </button>
           </section>
 
-          {/* Included checklist — single row, not a feature grid */}
           <section className="mt-3">
             <button
               type="button"
@@ -390,7 +432,7 @@ function AppOpenHomeInner() {
               aria-expanded={includedOpen}
               onClick={() => setIncludedOpen((v) => !v)}
             >
-              <span className="text-[14px] font-medium text-white/85">
+              <span className="text-[15px] font-medium text-white/85">
                 What&apos;s included in a standard clean?
               </span>
               <ChevronDown
@@ -401,7 +443,7 @@ function AppOpenHomeInner() {
             {includedOpen ? (
               <ul className="space-y-2 pb-2">
                 {STANDARD_CLEAN_CHECKLIST.map((item) => (
-                  <li key={item} className="text-[13px] leading-snug text-white/70">
+                  <li key={item} className="text-[15px] leading-snug text-white/70">
                     {item}
                   </li>
                 ))}
@@ -409,8 +451,7 @@ function AppOpenHomeInner() {
             ) : null}
           </section>
 
-          {/* Secondary links — text only, below fold OK */}
-          <div className="mt-auto flex flex-wrap gap-x-4 gap-y-2 pt-6 text-[13px] text-white/55">
+          <div className="mt-auto flex flex-wrap gap-x-4 gap-y-2 pt-6 text-[15px] text-white/55">
             <Link href={routes.forBusiness} className="hover:text-white/80">
               Business cleaning
             </Link>

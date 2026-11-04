@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
@@ -38,10 +38,10 @@ interface BookingFlowChromeProps {
   hideDefaultTotal?: boolean;
 }
 
-/** Customer-facing 4 panels: Where → Clean → When → Review */
+/** Founder 4 panels: Choose clean → Make it yours → Arrival → Review */
 const BOOKING_PHASES: BookingScreenId[][] = [
-  ["welcome", "address"],
-  ["property", "service", "details", "addons"],
+  ["welcome", "address", "property", "service"],
+  ["details", "addons"],
   ["date", "time", "access"],
   ["review", "payment"],
 ];
@@ -64,7 +64,7 @@ export function BookingProgressBar({
 
   return (
     <div className={cn("booking-progress w-full", className)}>
-      <div className="mb-1.5 text-center text-[11px] font-semibold tracking-wide text-[var(--ml-book-ink-muted,#4a5568)]">
+      <div className="mb-1.5 text-center text-[11px] font-semibold tracking-wide text-[var(--ml-book-ink-muted)]">
         Step {step} of {total}
       </div>
       <div
@@ -80,7 +80,7 @@ export function BookingProgressBar({
             key={i}
             className={cn(
               "h-1.5 flex-1 rounded-full transition-colors duration-200",
-              i <= phase ? "bg-[var(--ml-book-primary,#04CED2)]" : "bg-[#e5e7eb]",
+              i <= phase ? "bg-[var(--ml-book-primary,#04CED2)]" : "bg-[var(--ml-book-border-strong)]",
             )}
             aria-hidden
           />
@@ -101,28 +101,48 @@ export function BookingProgressDots({
   return <BookingProgressBar currentId={currentId} className={className} />;
 }
 
-function CircularMark({ href }: { href: string }) {
+function CompactMark({ href }: { href: string }) {
   return (
     <a
       href={href}
-      className="inline-flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-white ring-1 ring-[var(--ml-book-border,#e2e8f0)]"
+      className="inline-flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-full"
       aria-label="MaidLinx home"
     >
       <Image
         src="/brand/maidlinx-mark.png"
         alt="MaidLinx"
-        width={36}
-        height={36}
-        className="size-9 object-cover"
+        width={48}
+        height={48}
+        className="size-12 object-cover"
         priority
       />
     </a>
   );
 }
 
+/** Lift sticky footer above the soft keyboard (iOS Safari / Android Chrome). */
+function useKeyboardInset(): number {
+  const [inset, setInset] = useState(0);
+  useEffect(() => {
+    const vv = window.visualViewport;
+    if (!vv) return;
+    const sync = () => {
+      const overlap = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
+      setInset(overlap > 40 ? overlap : 0);
+    };
+    sync();
+    vv.addEventListener("resize", sync);
+    vv.addEventListener("scroll", sync);
+    return () => {
+      vv.removeEventListener("resize", sync);
+      vv.removeEventListener("scroll", sync);
+    };
+  }, []);
+  return inset;
+}
+
 /**
- * Light 4-step booking shell — white / navy #01193D / turquoise #04CED2.
- * Sticky primary CTA, Step X of 4 progress, circular mark.
+ * Midnight-navy booking shell — 20px margins, 48px mark, total + CTA together.
  */
 export function BookingShell({
   screenId,
@@ -145,6 +165,7 @@ export function BookingShell({
   const prev = getPreviousScreen(screenId, state);
   const phase = bookingPhaseIndex(screenId);
   const showBack = phase > 0 || Boolean(backHref);
+  const keyboardInset = useKeyboardInset();
 
   const quoteInput = useMemo(
     () => buildQuoteInput(state, { requireAddress: true, allowPreview: true }),
@@ -178,65 +199,66 @@ export function BookingShell({
     <div
       data-theme="ml-book"
       className={cn(
-        "booking-shell flex h-dvh flex-col overflow-hidden bg-white text-[var(--ml-book-ink,#01193D)]",
+        "booking-shell flex h-dvh flex-col overflow-hidden bg-[var(--ml-book-bg,#01193D)] text-[var(--ml-book-ink,#ffffff)]",
         className,
       )}
-      style={{ fontFamily: "var(--ml-font-ios)" }}
+      style={
+        {
+          fontFamily: "var(--ml-font-ios)",
+          ["--ml-keyboard-inset" as string]: `${keyboardInset}px`,
+        } as React.CSSProperties
+      }
     >
-      <header className="z-50 shrink-0 border-b border-[var(--ml-book-border,#e2e8f0)] bg-white">
-        <div className="relative mx-auto flex h-14 max-w-[680px] items-center px-3 pt-[env(safe-area-inset-top)] sm:px-4">
-          <div className="z-10 flex min-w-[2.75rem] items-center justify-start gap-1">
+      <header className="z-50 shrink-0 border-b border-[var(--ml-book-border)] bg-[var(--ml-book-bg,#01193D)]">
+        <div className="relative mx-auto flex h-14 max-w-[680px] items-center px-5 pt-[env(safe-area-inset-top)]">
+          <div className="z-10 flex min-w-[3rem] items-center justify-start gap-1">
             {showBack ? (
               <button
                 type="button"
                 onClick={handleBack}
-                className="inline-flex size-10 items-center justify-center rounded-xl text-[var(--ml-book-ink,#01193D)] transition-colors hover:bg-black/5"
+                className="inline-flex size-10 items-center justify-center rounded-xl text-white transition-colors hover:bg-white/10"
                 aria-label="Go back"
               >
                 <ChevronLeft className="size-6" strokeWidth={2.25} aria-hidden />
               </button>
             ) : null}
-            <CircularMark href={routes.home} />
+            <CompactMark href={routes.home} />
           </div>
 
-          <div className="pointer-events-none absolute inset-x-16 flex justify-center sm:inset-x-24">
+          <div className="pointer-events-none absolute inset-x-20 flex justify-center sm:inset-x-24">
             <BookingProgressBar currentId={screenId} />
           </div>
 
-          <div className="z-10 ml-auto flex min-w-[2.75rem] items-center justify-end" />
+          <div className="z-10 ml-auto flex min-w-[3rem] items-center justify-end" />
         </div>
       </header>
 
       <main
         className={cn(
-          "booking-slide-main mx-auto w-full max-w-[680px] flex-1 overflow-y-auto overscroll-y-contain px-4 pt-5 sm:pt-6",
+          "booking-slide-main mx-auto w-full max-w-[680px] flex-1 overflow-y-auto overscroll-y-contain px-5 pt-5",
           showSticky
-            ? "pb-[calc(8.5rem+env(safe-area-inset-bottom))]"
+            ? "pb-[calc(9rem+env(safe-area-inset-bottom)+var(--ml-keyboard-inset,0px))]"
             : "pb-[max(1.5rem,env(safe-area-inset-bottom))]",
         )}
       >
-        <div className="booking-shell-enter mb-5 sm:mb-6">
-          <h1 className="booking-step-title text-[var(--ml-book-ink,#01193D)]">{title}</h1>
-          {subtitle ? (
-            <p className="booking-step-subtitle text-[var(--ml-book-ink-muted,#4a5568)]">
-              {subtitle}
-            </p>
-          ) : null}
+        <div className="booking-shell-enter mb-5">
+          <h1 className="booking-step-title">{title}</h1>
+          {subtitle ? <p className="booking-step-subtitle">{subtitle}</p> : null}
           {locationSlot ? <div className="mt-2.5">{locationSlot}</div> : null}
         </div>
-        <div className="booking-shell-enter" style={{ animationDelay: "40ms" }}>
+        <div className="booking-shell-enter booking-body" style={{ animationDelay: "40ms" }}>
           {children}
         </div>
       </main>
 
       {showSticky ? (
-        <div className="booking-sticky-footer shrink-0 border-t border-[var(--ml-book-border,#e2e8f0)] bg-white/95 backdrop-blur-md">
-          <div className="mx-auto w-full max-w-[680px] space-y-2 px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+        <div className="booking-sticky-footer shrink-0 border-t border-[var(--ml-book-border)] bg-[var(--ml-book-bg,#01193D)]/95 backdrop-blur-md">
+          <div className="mx-auto w-full max-w-[680px] space-y-2 px-5 pt-3">
             {footerHint ??
               (!hideDefaultTotal && estimatedTotal ? (
-                <div className="flex items-center justify-between gap-3 text-[15px]">
-                  <span className="text-[var(--ml-book-ink-muted,#4a5568)]">Estimated total</span>
-                  <span className="font-semibold tabular-nums text-[var(--ml-book-ink,#01193D)]">
+                <div className="flex items-center justify-between gap-3 text-[16px]">
+                  <span className="text-[var(--ml-book-ink-muted)]">Estimated total</span>
+                  <span className="font-semibold tabular-nums text-white">
                     {priceLoading ? "Updating…" : estimatedTotal}
                   </span>
                 </div>

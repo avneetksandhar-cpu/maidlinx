@@ -127,11 +127,11 @@ describe("booking route guards (4-panel address-first)", () => {
     ).toBe(false);
   });
 
-  it("gates auth at payment — quote/review before sign-in OK", () => {
+  it("gates auth at review — save booking before pay; sign-in never charges", () => {
     expect(isBookingAuthRequired("address")).toBe(false);
     expect(isBookingAuthRequired("service")).toBe(false);
     expect(isBookingAuthRequired("date")).toBe(false);
-    expect(isBookingAuthRequired("review")).toBe(false);
+    expect(isBookingAuthRequired("review")).toBe(true);
     expect(isBookingAuthRequired("payment")).toBe(true);
     expect(BOOKING_RESUME_AFTER_AUTH).toBe(BOOKING_SCREEN_PATHS.review);
     expect(bookingSignInHref()).toContain("from=booking");

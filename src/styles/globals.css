@@ -144,24 +144,23 @@
 
   .booking-step-title {
     font-family: var(--ml-font-ios, var(--font-sans));
-    font-size: 1.5rem;
+    font-size: 1.375rem; /* ~22px — one consistent heading on 390px */
     font-weight: 650;
     letter-spacing: -0.03em;
-    line-height: 1.15;
+    line-height: 1.2;
     color: var(--color-ink);
-  }
-
-  @media (min-width: 640px) {
-    .booking-step-title {
-      font-size: 1.75rem;
-    }
   }
 
   .booking-step-subtitle {
     margin-top: 0.35rem;
-    font-size: 0.9rem;
-    line-height: 1.4;
+    font-size: 1rem; /* 16px body companion */
+    line-height: 1.45;
     color: var(--color-ink-muted);
+  }
+
+  .booking-body {
+    font-size: 1.0625rem; /* 17px */
+    line-height: 1.45;
   }
 
   .booking-slide-main {
@@ -198,9 +197,22 @@
     box-shadow: none;
   }
 
+  [data-theme="ml-book"] .booking-select-card {
+    border-color: var(--ml-book-border-strong, #2a5478);
+    background-color: var(--ml-book-surface, #102b49);
+    color: var(--ml-book-ink, #ffffff);
+  }
+
+  [data-theme="ml-book"] .booking-select-card:hover:not(:disabled) {
+    border-color: var(--ml-book-primary, #04ced2);
+    background-color: var(--ml-book-surface, #102b49);
+  }
+
+  /* Selection = check + visible outline (not a solid turquoise fill) */
   [data-theme="ml-book"] .booking-select-card[data-selected="true"] {
     border-color: var(--ml-book-primary, #04ced2);
-    background-color: var(--ml-book-selected, #e6fafa);
+    background-color: var(--ml-book-selected, #163556);
+    box-shadow: inset 0 0 0 1px var(--ml-book-primary, #04ced2);
   }
 
   [data-theme="ml-book"] .booking-cta-btn {
@@ -210,6 +222,11 @@
 
   [data-theme="ml-book"] .booking-cta-btn:hover:not(:disabled) {
     background-color: #03b8bc;
+  }
+
+  /* Sticky footer lifts above iOS keyboard so inputs/errors stay visible */
+  [data-theme="ml-book"] .booking-sticky-footer {
+    padding-bottom: max(0.75rem, env(safe-area-inset-bottom), var(--ml-keyboard-inset, 0px));
   }
 
   .booking-shell-enter {
