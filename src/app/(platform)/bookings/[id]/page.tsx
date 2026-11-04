@@ -17,7 +17,11 @@ interface BookingDetailPageProps {
   searchParams: Promise<{ token?: string }>;
 }
 
-/** Live job status after pay — Uber arriving loop (real status only). */
+/**
+ * Live job status after pay — Uber arriving loop (real status only).
+ * Commercial visits share the same booking from Home / Bookings → status detail
+ * (confirmation + entry instructions). Refresh never creates a second charge.
+ */
 export default async function BookingDetailPage({
   params,
   searchParams,
@@ -35,6 +39,11 @@ export default async function BookingDetailPage({
       redirect(`${routes.signIn}?redirect=${encodeURIComponent(`/bookings/${id}`)}`);
     }
     notFound();
+  }
+
+  // Same commercial booking surface as Jobs / post-approve redirect.
+  if (booking.is_commercial || booking.service_order_id) {
+    redirect(routes.dashboardBookStatus(id));
   }
 
   return (

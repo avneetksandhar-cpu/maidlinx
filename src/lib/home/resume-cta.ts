@@ -66,12 +66,19 @@ export function resolveHomeResumeCta(input: {
 }): HomeResumeCta | null {
   const { upcoming, draft, hasUsualClean } = input;
 
+  const bookingHref =
+    upcoming && (upcoming.isCommercial || upcoming.serviceOrderId)
+      ? `/dashboard/book/status/${upcoming.id}`
+      : upcoming
+        ? `/bookings/${upcoming.id}`
+        : "";
+
   if (upcoming && isCleanerOnTheWay(upcoming.status)) {
     return {
       kind: "on_the_way",
       label: "Cleaner on the way",
       cta: "View arrival",
-      href: `/bookings/${upcoming.id}`,
+      href: bookingHref,
       bookingId: upcoming.id,
     };
   }
@@ -81,7 +88,7 @@ export function resolveHomeResumeCta(input: {
       kind: "upcoming",
       label: "Upcoming clean",
       cta: "View my clean",
-      href: `/bookings/${upcoming.id}`,
+      href: bookingHref,
       bookingId: upcoming.id,
     };
   }

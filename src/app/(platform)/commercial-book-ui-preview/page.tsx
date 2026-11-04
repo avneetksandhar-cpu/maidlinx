@@ -152,26 +152,48 @@ function ScreenC() {
   return (
     <div className="space-y-4" data-screen="c">
       <h1 className="text-[1.75rem] leading-tight font-bold tracking-tight text-white">
-        Your crew is on the way
+        Booking confirmed
       </h1>
-      <div className="rounded-2xl border border-dashed border-white/15 bg-[var(--ml-dark-surface)] px-4 py-6 text-center">
-        <MapPin className="mx-auto size-6 text-[#04CED2]" aria-hidden />
-        <p className="mt-2 text-sm font-semibold text-white">Live map unavailable</p>
-        <p className="mt-1 text-sm text-white/55">
-          Map and ETA appear only with consented live location from an assigned
-          crew. No simulated Brickell route.
+      <p className="text-sm text-white/65">
+        Your visit is reserved. Add entry instructions so the crew can get in.
+      </p>
+      <div className="rounded-2xl border border-white/10 bg-[var(--ml-dark-surface)] px-4 py-4 text-sm">
+        <p className="text-[11px] font-semibold tracking-wide text-white/55 uppercase">
+          Visit details
         </p>
+        <p className="mt-2 font-semibold text-white">Property · Suite TBD</p>
+        <p className="mt-1 text-white/70">Cleaning team · Assigned crew</p>
+        <p className="mt-1 text-white/70">Arrival window · 6:00 – 8:00 PM</p>
+        <p className="mt-1 text-white/70">Price / visit · from proposal</p>
+        <p className="mt-1 text-white/45">Paid today · $0 (Stripe LIVE OFF)</p>
       </div>
       <div className="rounded-2xl border border-white/10 bg-[var(--ml-dark-surface)] px-4 py-4">
-        <p className="text-[1.35rem] font-bold text-white">Visit confirmed</p>
-        <p className="mt-3 text-[15px] font-semibold text-white">
-          Crew assigning…
+        <p className="text-[1.25rem] font-bold text-white">Scheduled</p>
+        <p className="mt-1 text-sm text-white/65">Arrival 6:00 – 8:00 PM</p>
+        <div className="mt-4 rounded-2xl border border-dashed border-white/15 px-4 py-5 text-center">
+          <MapPin className="mx-auto size-6 text-[#04CED2]" aria-hidden />
+          <p className="mt-2 text-sm font-semibold text-white">Live map unavailable</p>
+          <p className="mt-1 text-sm text-white/55">
+            Map and ETA only with consented live location. No simulated route.
+          </p>
+        </div>
+      </div>
+      <div className="rounded-2xl border border-[#04CED2]/35 bg-[var(--ml-dark-surface)] px-4 py-4">
+        <p className="text-[11px] font-semibold tracking-wide text-white/55 uppercase">
+          After-hours entry
         </p>
-        <p className="mt-1 text-sm text-white/55">Status · awaiting assignment</p>
-        <p className="mt-3 text-[15px] font-medium text-white">Site · TBD</p>
-        <p className="mt-3 text-sm text-white/45">
-          Entry instructions appear when saved on the site scope.
+        <p className="mt-1 text-[1.05rem] font-bold text-white">
+          How should the crew get in?
         </p>
+        <p className="mt-2 text-sm text-white/60">
+          Check in at reception · Call on arrival · Designated entrance
+        </p>
+        <button
+          type="button"
+          className="mt-4 inline-flex h-12 w-full items-center justify-center rounded-2xl bg-[#04CED2] text-sm font-semibold text-[#01193D]"
+        >
+          Add entry instructions
+        </button>
       </div>
       <button
         type="button"

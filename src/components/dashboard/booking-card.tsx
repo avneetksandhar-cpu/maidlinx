@@ -82,7 +82,11 @@ export function BookingCard({ booking, showActions = true }: BookingCardProps) {
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
               <Link
-                href={routes.bookingDetail(booking.id)}
+                href={
+                  booking.isCommercial || booking.serviceOrderId
+                    ? routes.dashboardBookStatus(booking.id)
+                    : routes.bookingDetail(booking.id)
+                }
                 className="font-display text-base font-semibold text-white hover:underline"
               >
                 {getServiceLabel(booking.serviceType)}
@@ -155,7 +159,13 @@ export function BookingCard({ booking, showActions = true }: BookingCardProps) {
                   </Button>
                 </Link>
               ) : null}
-              <Link href={routes.bookingDetail(booking.id)}>
+              <Link
+                href={
+                  booking.isCommercial || booking.serviceOrderId
+                    ? routes.dashboardBookStatus(booking.id)
+                    : routes.bookingDetail(booking.id)
+                }
+              >
                 <Button variant="ghost" size="sm">
                   View booking
                 </Button>

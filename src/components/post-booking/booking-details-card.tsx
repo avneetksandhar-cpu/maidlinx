@@ -198,7 +198,11 @@ export function BookingDetailsCard({ booking, showHelp = true }: BookingDetailsC
           </dd>
         </div>
 
-        {booking.notes?.trim() ? (
+        {/* Residential entry only — commercial private entry lives on status page (ACL). Never mirror codes onto receipts. */}
+        {booking.notes?.trim() &&
+        booking.notes.trim() !== "Commercial service order visit" &&
+        !booking.is_commercial &&
+        !booking.service_order_id ? (
           <div className="border-t border-[var(--ml-dark-border)] pt-3">
             <dt className="text-[var(--ml-dark-ink-muted)]">Entry instructions</dt>
             <dd className="mt-1 whitespace-pre-wrap text-right font-medium text-white">

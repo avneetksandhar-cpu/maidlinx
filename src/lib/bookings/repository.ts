@@ -92,6 +92,9 @@ export interface StoredBooking {
   legal_consent_policy_version: string | null;
   cleaner: StoredBookingCleaner | null;
   created_at: string;
+  /** Commercial visit order — present when booking is from B2B approve flow. */
+  service_order_id: string | null;
+  is_commercial: boolean;
 }
 
 function mapRow(
@@ -167,6 +170,13 @@ function mapRow(
       : null,
     cleaner,
     created_at: String(row.created_at),
+    service_order_id: row.service_order_id ? String(row.service_order_id) : null,
+    is_commercial: Boolean(
+      row.service_order_id ||
+        (row.booking_answers &&
+          typeof row.booking_answers === "object" &&
+          (row.booking_answers as Record<string, unknown>).commercial === true),
+    ),
   };
 }
 

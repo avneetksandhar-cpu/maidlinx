@@ -6,12 +6,14 @@ import type { ArrivalWindowId } from "@/lib/bookings/constants";
 export interface DashboardBooking {
   id: string;
   status: string;
+  paymentStatus: string;
   serviceType: string;
   scheduledAt: string;
   arrivalWindowStart: string | null;
   arrivalWindowEnd: string | null;
   totalCents: number;
   currency: string;
+  addressId: string | null;
   addressLine1: string | null;
   addressLine2: string | null;
   addressCity: string | null;
@@ -19,6 +21,7 @@ export interface DashboardBooking {
   addressPostalCode: string | null;
   addressCountry: string | null;
   professionalProfileId: string | null;
+  cleanerId: string | null;
   professionalName: string | null;
   invoiceNumber: string | null;
   stripeReceiptUrl: string | null;
@@ -31,6 +34,14 @@ export interface DashboardBooking {
   extras: string[];
   propertyType: string | null;
   preferredCleanerId: string | null;
+  /** Commercial visit linkage */
+  serviceOrderId: string | null;
+  isCommercial: boolean;
+  frequency: string | null;
+  billingCadence: string | null;
+  nextVisitAt: string | null;
+  dueNowCents: number;
+  bookingAnswers: Record<string, unknown> | null;
 }
 
 function mapBooking(row: Record<string, unknown>): DashboardBooking {
@@ -53,15 +64,28 @@ function mapBooking(row: Record<string, unknown>): DashboardBooking {
         })()
       : [];
 
+  const serviceOrderId = row.service_order_id
+    ? String(row.service_order_id)
+    : answers.service_order_id
+      ? String(answers.service_order_id)
+      : null;
+  const isCommercial =
+    Boolean(serviceOrderId) || answers.commercial === true;
+
+  const serviceOrder =
+    (row.service_order as Record<string, unknown> | null) ?? null;
+
   return {
     id: String(row.id),
     status: String(row.status),
+    paymentStatus: row.payment_status ? String(row.payment_status) : "pending",
     serviceType: String(row.service_type),
     scheduledAt: String(row.scheduled_at),
     arrivalWindowStart: row.arrival_window_start ? String(row.arrival_window_start) : null,
     arrivalWindowEnd: row.arrival_window_end ? String(row.arrival_window_end) : null,
     totalCents: Number(row.total_cents),
     currency: String(row.currency),
+    addressId: row.address_id ? String(row.address_id) : null,
     addressLine1: row.address_line1 ? String(row.address_line1) : null,
     addressLine2: row.address_line2 ? String(row.address_line2) : null,
     addressCity: row.address_city ? String(row.address_city) : null,
@@ -71,6 +95,7 @@ function mapBooking(row: Record<string, unknown>): DashboardBooking {
     professionalProfileId: row.professional_profile_id
       ? String(row.professional_profile_id)
       : null,
+    cleanerId: row.cleaner_id ? String(row.cleaner_id) : null,
     professionalName: professional
       ? [professional.first_name, professional.last_name].filter(Boolean).join(" ") || null
       : null,
@@ -89,6 +114,21 @@ function mapBooking(row: Record<string, unknown>): DashboardBooking {
     preferredCleanerId: row.preferred_professional_id
       ? String(row.preferred_professional_id)
       : null,
+    serviceOrderId,
+    isCommercial,
+    frequency: serviceOrder?.frequency
+      ? String(serviceOrder.frequency)
+      : answers.frequency
+        ? String(answers.frequency)
+        : null,
+    billingCadence: serviceOrder?.billing_cadence
+      ? String(serviceOrder.billing_cadence)
+      : null,
+    nextVisitAt: serviceOrder?.next_visit_at
+      ? String(serviceOrder.next_visit_at)
+      : null,
+    dueNowCents: 0, // commercial Stripe LIVE OFF — nothing charged at confirm
+    bookingAnswers: Object.keys(answers).length > 0 ? answers : null,
   };
 }
 
@@ -97,6 +137,11 @@ const bookingSelect = `
   professional:profiles!bookings_professional_profile_id_fkey (
     first_name,
     last_name
+  ),
+  service_order:service_orders!bookings_service_order_id_fkey (
+    frequency,
+    billing_cadence,
+    next_visit_at
   )
 `;
 
@@ -126,7 +171,11 @@ export async function getCustomerBookings(
     status !== "pending_payment" && status !== "draft";
 
   if (error) {
-    if (error.message.includes("bookings_professional_profile_id_fkey")) {
+    if (
+      /bookings_professional_profile_id_fkey|service_orders|bookings_service_order_id|schema cache|does not exist/i.test(
+        error.message,
+      )
+    ) {
       const fallback = await supabase
         .from("bookings")
         .select("*")
@@ -154,12 +203,31 @@ export async function getBookingForCustomer(
   const supabase = createAdminClient();
   const { data, error } = await supabase
     .from("bookings")
-    .select("*")
+    .select(bookingSelect)
     .eq("id", bookingId)
     .or(`customer_id.eq.${profileId},customer_email.eq.${email}`)
     .maybeSingle();
 
-  if (error) throw new Error(error.message);
+  if (error) {
+    // Soft-fallback when commercial FK / join missing in older DBs.
+    if (
+      /service_orders|bookings_service_order_id|schema cache|does not exist/i.test(
+        error.message,
+      )
+    ) {
+      const fallback = await supabase
+        .from("bookings")
+        .select("*")
+        .eq("id", bookingId)
+        .or(`customer_id.eq.${profileId},customer_email.eq.${email}`)
+        .maybeSingle();
+      if (fallback.error) throw new Error(fallback.error.message);
+      return fallback.data
+        ? mapBooking(fallback.data as Record<string, unknown>)
+        : null;
+    }
+    throw new Error(error.message);
+  }
   return data ? mapBooking(data as Record<string, unknown>) : null;
 }
 

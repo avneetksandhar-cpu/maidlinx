@@ -93,6 +93,8 @@ function fixtureBooking(state: FixtureState): StoredBooking {
     legal_consent_policy_version: null,
     cleaner,
     created_at: new Date().toISOString(),
+    service_order_id: null,
+    is_commercial: false,
   };
   return base;
 }
