@@ -7,6 +7,7 @@ import { BookingFlowChrome } from "@/components/booking/booking-flow-chrome";
 import { useBooking } from "@/components/booking/booking-provider";
 import { useBookingGuard } from "@/components/booking/use-booking-guard";
 import { useReturnToReview } from "@/components/booking/use-return-to-review";
+import { useFinishBookingTitle } from "@/components/booking/use-finish-booking-title";
 import { BOOKING_SCREEN_PATHS } from "@/lib/bookings/booking-routes";
 import { getServiceBySlug } from "@/config/services";
 import { trackBookingEvent } from "@/lib/analytics/booking";
@@ -45,6 +46,7 @@ export function ServiceScreen() {
   const { updateState } = useBooking();
   const { hydrated, blocked } = useBookingGuard("service");
   const { fromReview, reviewPath } = useReturnToReview();
+  const title = useFinishBookingTitle("Choose your clean");
 
   if (!hydrated || blocked) {
     return (
@@ -86,7 +88,7 @@ export function ServiceScreen() {
   return (
     <BookingFlowChrome
       screenId="service"
-      title="Choose your clean"
+      title={title}
       hideCta
       hideDefaultTotal
       backHref={fromReview ? reviewPath : routes.home}

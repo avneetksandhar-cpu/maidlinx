@@ -9,7 +9,7 @@ import {
   usualCleanToBookingPatch,
   type UsualCleanProfile,
 } from "@/lib/bookings/usual-clean";
-import { BOOKING_SCREEN_PATHS, getFurthestScreenPath } from "@/lib/bookings/booking-routes";
+import { BOOKING_SCREEN_PATHS } from "@/lib/bookings/booking-routes";
 import { getBookingServiceLabel, BOOKING_EXTRAS } from "@/lib/bookings/constants";
 import { trackBookingEvent } from "@/lib/analytics/booking";
 import { buildAddressStatePatch, buildQuoteInput } from "@/lib/bookings/booking-helpers";
@@ -21,12 +21,23 @@ import {
 } from "@/lib/bookings/arrival-labels";
 import type { ArrivalWindowId } from "@/lib/bookings/constants";
 import { formatCurrency } from "@/lib/utils";
+import { usualNewTimeHref } from "@/lib/home/resume-cta";
+
+interface HomeUsualCleanCardProps {
+  className?: string;
+  ctaLabel?: string;
+  onBeforeNavigate?: () => void;
+}
 
 /**
- * “Book my usual clean” — saved home + prefs + current price + next opening together.
- * Never invents price or slots; lands on furthest incomplete step with draft preserved.
+ * “Choose a new time” — keep home + service + extras; clear schedule;
+ * show current price + next opening together before confirm on arrival panel.
  */
-export function HomeUsualCleanCard({ className }: { className?: string }) {
+export function HomeUsualCleanCard({
+  className,
+  ctaLabel = "Choose a new time",
+  onBeforeNavigate,
+}: HomeUsualCleanCardProps) {
   const router = useRouter();
   const { state, updateState } = useBookingState();
   const [profile] = useState<UsualCleanProfile | null>(() =>
@@ -89,7 +100,7 @@ export function HomeUsualCleanCard({ className }: { className?: string }) {
           <Home className="size-5" strokeWidth={2} aria-hidden />
         </span>
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-semibold text-white">Book my usual clean</p>
+          <p className="text-sm font-semibold text-white">Your usual clean</p>
           <p className="mt-0.5 truncate text-[15px] text-white/85">{place}</p>
           <p className="mt-1 text-[14px] text-white/70">
             {serviceLabel}
@@ -114,14 +125,20 @@ export function HomeUsualCleanCard({ className }: { className?: string }) {
         onClick={() => {
           const patch = usualCleanToBookingPatch(profile);
           const next = buildAddressStatePatch(state, patch);
-          updateState({ ...next, ...patch });
+          // Keep home / service / extras; clear schedule so they pick a fresh window.
+          updateState({
+            ...next,
+            ...patch,
+            date: undefined,
+            schedulePreset: undefined,
+            arrivalWindow: undefined,
+          });
+          onBeforeNavigate?.();
           trackBookingEvent("booking_started", { entry: "usual_clean_home" });
-          const merged = { ...state, ...next, ...patch };
-          const path = getFurthestScreenPath(merged) || BOOKING_SCREEN_PATHS.date;
-          router.push(path);
+          router.push(usualNewTimeHref() || BOOKING_SCREEN_PATHS.date);
         }}
       >
-        Book my usual clean
+        {ctaLabel}
       </button>
     </section>
   );

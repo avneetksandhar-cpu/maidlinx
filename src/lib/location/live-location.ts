@@ -5,6 +5,7 @@
 
 import { estimateTravelMinutes } from "@/lib/eta";
 import { isLiveLocationStatus, normalizeBookingStatus } from "@/lib/bookings/status";
+import { isLiveLocationFresh } from "@/lib/location/freshness";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 export interface CleanerLiveLocation {
@@ -179,12 +180,16 @@ export async function getCustomerLiveLocationView(params: {
     };
   }
 
-  const etaMinutes = estimateTravelMinutes({
-    originLatitude: location.lat,
-    originLongitude: location.lng,
-    destinationLatitude: params.customerLat,
-    destinationLongitude: params.customerLng,
-  });
+  const fresh = isLiveLocationFresh(location.updatedAt);
+  // Live ETA only when location is fresh — never invent from a stale point.
+  const etaMinutes = fresh
+    ? estimateTravelMinutes({
+        originLatitude: location.lat,
+        originLongitude: location.lng,
+        destinationLatitude: params.customerLat,
+        destinationLongitude: params.customerLng,
+      })
+    : null;
 
   return {
     available: true,

@@ -27,13 +27,14 @@
 | Review | DONE — address, scope, arrival, total + Edit; payment timing above Request clean |
 | Save your booking | DONE — compact gate; email magic link (OAuth only if env flags true) |
 
-## RETURNING_PATHS
+## RETURNING_PATHS (one primary tap — see also `2026-11-04-founder-home-resume.md`)
 
-| Condition | Home CTA |
-|-----------|----------|
-| Cleaner on the way / arrived / in progress | **Track my clean** → `/bookings/[id]` |
-| Other live upcoming | **View my booking** |
-| No live booking + usual clean saved (or past completed) | **Book my usual clean** |
+| Condition | Priority | Home CTA |
+|-----------|----------|----------|
+| Cleaner on the way / arrived / in progress | 1 | **View arrival** → `/bookings/[id]` (live ETA only if location fresh) |
+| Other live upcoming | 2 | **View my clean** → `/bookings/[id]` |
+| Mid-booking draft (session) | 3 | **Continue booking** → unfinished step titled **Finish your booking** |
+| Usual clean saved (My Home prefs) | 4 | **Choose a new time** → `/book/date?usual=1` |
 
 ## STRIPE_LIVE
 

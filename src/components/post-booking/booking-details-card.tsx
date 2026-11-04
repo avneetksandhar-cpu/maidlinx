@@ -163,6 +163,26 @@ export function BookingDetailsCard({ booking, showHelp = true }: BookingDetailsC
             </span>
           </dd>
         </div>
+
+        {booking.notes?.trim() ? (
+          <div className="border-t border-[var(--ml-dark-border)] pt-3">
+            <dt className="text-[var(--ml-dark-ink-muted)]">Entry instructions</dt>
+            <dd className="mt-1 whitespace-pre-wrap text-right font-medium text-white">
+              {booking.notes.trim()}
+            </dd>
+          </div>
+        ) : null}
+
+        {booking.cleaner ? (
+          <div className="flex justify-between gap-4 border-t border-[var(--ml-dark-border)] pt-3">
+            <dt className="text-[var(--ml-dark-ink-muted)]">Cleaner</dt>
+            <dd className="max-w-[60%] text-right font-medium text-white">
+              {[booking.cleaner.firstName, booking.cleaner.lastName]
+                .filter(Boolean)
+                .join(" ") || "Your MaidLinx Pro"}
+            </dd>
+          </div>
+        ) : null}
       </dl>
 
       {showHelp ? (

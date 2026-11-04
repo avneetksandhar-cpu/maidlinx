@@ -24,11 +24,8 @@ interface LiveStatusCardProps {
 }
 
 function formatArrivalEstimate(booking: StoredBooking): string | null {
-  // Only surface real ETA / window from backend — never invent.
-  if (booking.estimated_eta_minutes != null && Number.isFinite(booking.estimated_eta_minutes)) {
-    const arrive = new Date(Date.now() + booking.estimated_eta_minutes * 60_000);
-    return `Arriving around ${arrive.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}`;
-  }
+  // Live ETA is owned by LiveCleanerMap (fresh location only).
+  // Here we only surface the booked arrival window — never invent travel time.
   if (booking.arrival_window_start && booking.arrival_window_end) {
     return `Arrival window ${formatBookingTimeRange(
       booking.scheduled_at,

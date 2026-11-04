@@ -7,6 +7,7 @@ import {
   type BookingState,
 } from "@/lib/bookings/booking-state";
 import { BOOKING_SCREEN_PATHS, getFurthestScreenPath } from "@/lib/bookings/booking-routes";
+import { finishBookingHref } from "@/lib/home/resume-cta";
 import { Button } from "@/components/ui";
 
 function hasMeaningfulDraft(raw: string | null): boolean {
@@ -31,7 +32,10 @@ export function ContinueBookingBanner() {
       const raw = sessionStorage.getItem(BOOKING_STATE_STORAGE_KEY);
       if (!hasMeaningfulDraft(raw)) return;
       const state = JSON.parse(raw!) as BookingState;
-      const next = getFurthestScreenPath(state) ?? BOOKING_SCREEN_PATHS.address;
+      const next =
+        finishBookingHref(state) ||
+        getFurthestScreenPath(state) ||
+        BOOKING_SCREEN_PATHS.address;
       startTransition(() => setHref(next));
     } catch {
       startTransition(() => setHref(null));

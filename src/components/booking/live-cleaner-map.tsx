@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { MapPin, Navigation } from "lucide-react";
 import { useGoogleMaps } from "@/components/booking/google-maps-context";
 import { isLiveLocationStatus } from "@/lib/bookings/status";
+import { isLiveLocationFresh } from "@/lib/location/freshness";
 import { cn } from "@/lib/utils";
 
 interface LiveLocationPayload {
@@ -187,6 +188,11 @@ export function LiveCleanerMap({
   if (!tracking) return null;
 
   const updatedLabel = formatUpdatedAt(activeLocation?.updatedAt);
+  const freshEta =
+    activeLocation?.etaMinutes != null &&
+    isLiveLocationFresh(activeLocation.updatedAt)
+      ? activeLocation.etaMinutes
+      : null;
   const title =
     status === "arrived"
       ? "Your MaidLinx Pro has arrived"
@@ -208,10 +214,8 @@ export function LiveCleanerMap({
             <Navigation className="size-4 text-accent" aria-hidden />
             {title}
           </p>
-          {activeLocation?.etaMinutes != null ? (
-            <p className="text-sm font-medium text-accent">
-              ETA ~{activeLocation.etaMinutes} min
-            </p>
+          {freshEta != null ? (
+            <p className="text-sm font-medium text-accent">ETA ~{freshEta} min</p>
           ) : null}
           {updatedLabel ? <p className="text-xs text-ink-muted">{updatedLabel}</p> : null}
           {!activeLocation?.available ? (
@@ -222,10 +226,8 @@ export function LiveCleanerMap({
         </div>
       ) : null}
 
-      {!showHeader && activeLocation?.etaMinutes != null ? (
-        <p className="px-1 pb-2 text-sm font-medium text-accent">
-          ETA ~{activeLocation.etaMinutes} min
-        </p>
+      {!showHeader && freshEta != null ? (
+        <p className="px-1 pb-2 text-sm font-medium text-accent">ETA ~{freshEta} min</p>
       ) : null}
       {!showHeader && !activeLocation?.available ? (
         <p className="px-1 pb-2 text-sm text-ink-muted">

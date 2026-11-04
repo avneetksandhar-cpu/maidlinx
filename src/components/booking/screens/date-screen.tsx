@@ -8,6 +8,7 @@ import { DateStrip } from "@/components/booking/date-strip";
 import { useBooking } from "@/components/booking/booking-provider";
 import { useBookingGuard } from "@/components/booking/use-booking-guard";
 import { useReturnToReview } from "@/components/booking/use-return-to-review";
+import { useFinishBookingTitle } from "@/components/booking/use-finish-booking-title";
 import { BOOKING_SCREEN_PATHS } from "@/lib/bookings/booking-routes";
 import { formatWindowRangeShort } from "@/lib/bookings/arrival-labels";
 import { ARRIVAL_WINDOWS, type ArrivalWindowId } from "@/lib/bookings/constants";
@@ -34,6 +35,7 @@ export function DateScreen() {
   const { updateState } = useBooking();
   const { state, hydrated, blocked } = useBookingGuard("date");
   const { fromReview, continuePath, reviewPath } = useReturnToReview();
+  const title = useFinishBookingTitle("Choose an arrival");
 
   const quoteInput = useMemo(
     () => buildQuoteInput(state, { requireAddress: true }),
@@ -113,7 +115,7 @@ export function DateScreen() {
   return (
     <BookingFlowChrome
       screenId="date"
-      title="Choose an arrival"
+      title={title}
       hideCta
       hideDefaultTotal
       backHref={fromReview ? reviewPath : BOOKING_SCREEN_PATHS.details}

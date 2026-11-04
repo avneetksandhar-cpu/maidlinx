@@ -11,6 +11,7 @@ import { SavedPlaceChips } from "@/components/booking/saved-place-chips";
 import { useBooking } from "@/components/booking/booking-provider";
 import { useBookingGuard } from "@/components/booking/use-booking-guard";
 import { useReturnToReview } from "@/components/booking/use-return-to-review";
+import { useFinishBookingTitle } from "@/components/booking/use-finish-booking-title";
 import {
   BOOKING_SCREEN_PATHS,
   getNextScreen,
@@ -52,6 +53,7 @@ export function AddressScreen() {
   const { updateState } = useBooking();
   const { state, hydrated, blocked } = useBookingGuard("address");
   const { fromReview, continuePath, reviewPath } = useReturnToReview();
+  const title = useFinishBookingTitle("Where are we cleaning?");
   const [showUnit, setShowUnit] = useState(Boolean(state.line2?.trim()));
   const [checking, setChecking] = useState(false);
 
@@ -121,7 +123,7 @@ export function AddressScreen() {
   return (
     <BookingFlowChrome
       screenId="address"
-      title="Where are we cleaning?"
+      title={title}
       subtitle="Home cleaning in South Florida."
       ctaLabel="Check my address"
       ctaDisabled={!flAddressReady}

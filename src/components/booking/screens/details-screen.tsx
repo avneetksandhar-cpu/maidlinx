@@ -9,6 +9,7 @@ import { ExtrasSelector } from "@/components/booking/extras-selector";
 import { useBooking } from "@/components/booking/booking-provider";
 import { useBookingGuard } from "@/components/booking/use-booking-guard";
 import { useReturnToReview } from "@/components/booking/use-return-to-review";
+import { useFinishBookingTitle } from "@/components/booking/use-finish-booking-title";
 import {
   BOOKING_SCREEN_PATHS,
   getNextScreen,
@@ -35,6 +36,7 @@ export function DetailsScreen() {
   const { updateState } = useBooking();
   const { state, hydrated, blocked } = useBookingGuard("details");
   const { fromReview, continuePath, reviewPath } = useReturnToReview();
+  const title = useFinishBookingTitle("Make it yours");
 
   useEffect(() => {
     if (!hydrated || blocked) return;
@@ -117,7 +119,7 @@ export function DetailsScreen() {
   return (
     <BookingFlowChrome
       screenId="details"
-      title="Make it yours"
+      title={title}
       ctaLabel="Choose a time"
       ctaDisabled={!canContinue}
       hideDefaultTotal

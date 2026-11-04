@@ -10,7 +10,7 @@ import { AddressAutocomplete } from "@/components/booking/address-autocomplete";
 import { GoogleMapsProvider } from "@/components/booking/google-maps-provider";
 import { WaitlistSignup } from "@/components/waitlist/waitlist-signup";
 import { FloorPlanArt } from "@/components/home/floor-plan-art";
-import { HomeUsualCleanCard } from "@/components/home/home-usual-clean-card";
+import { HomeResumeCard } from "@/components/home/home-resume-card";
 import { useBookingState } from "@/hooks/use-booking-state";
 import { buildAddressStatePatch } from "@/lib/bookings/booking-helpers";
 import {
@@ -30,8 +30,8 @@ import { routes } from "@/config/site";
 import { trackBookingEvent } from "@/lib/analytics/booking";
 import type { BookingState } from "@/lib/bookings/booking-state";
 import type { DashboardBooking } from "@/lib/dashboard/bookings";
-import { getCustomerFriendlyStatusLabel } from "@/lib/bookings/status-timeline";
-import { normalizeBookingStatus } from "@/lib/bookings/status";
+import { isLiveUpcoming, resolveHomeResumeCta } from "@/lib/home/resume-cta";
+import { readUsualClean } from "@/lib/bookings/usual-clean";
 
 const STANDARD_CLEAN_CHECKLIST = [
   "Kitchen surfaces, sink, and appliance exteriors",
@@ -59,39 +59,6 @@ function normalizePostalDraft(raw: string): string {
   return trimmed;
 }
 
-function formatUpcomingWhen(booking: DashboardBooking): { dateLabel: string; windowLabel: string } {
-  const start = booking.arrivalWindowStart
-    ? new Date(booking.arrivalWindowStart)
-    : new Date(booking.scheduledAt);
-  const end = booking.arrivalWindowEnd ? new Date(booking.arrivalWindowEnd) : null;
-  const dateLabel = start.toLocaleDateString(undefined, {
-    weekday: "short",
-    month: "short",
-    day: "numeric",
-  });
-  const fmt = (d: Date) =>
-    d.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
-  const windowLabel = end ? `${fmt(start)} – ${fmt(end)}` : fmt(start);
-  return { dateLabel, windowLabel };
-}
-
-function isCleanerOnTheWay(status: string): boolean {
-  const n = normalizeBookingStatus(status);
-  return n === "on_the_way" || n === "arrived" || n === "in_progress";
-}
-
-function isLiveUpcoming(status: string): boolean {
-  const n = normalizeBookingStatus(status);
-  return (
-    n === "confirmed" ||
-    n === "awaiting_assignment" ||
-    n === "offered" ||
-    n === "assigned" ||
-    n === "accepted" ||
-    isCleanerOnTheWay(n)
-  );
-}
-
 export function AppOpenHome() {
   return (
     <GoogleMapsProvider>
@@ -107,12 +74,16 @@ function AppOpenHomeInner() {
   const [hint, setHint] = useState<string | null>(null);
   const [includedOpen, setIncludedOpen] = useState(false);
   const [upcoming, setUpcoming] = useState<DashboardBooking | null>(null);
-  const [lastCompleted, setLastCompleted] = useState(false);
+  const [hasUsualClean, setHasUsualClean] = useState(false);
+
+  useEffect(() => {
+    const usual = readUsualClean();
+    setHasUsualClean(Boolean(usual?.line1 && usual.serviceType));
+  }, [hydrated]);
 
   useEffect(() => {
     if (authStatus !== "authenticated") {
       setUpcoming(null);
-      setLastCompleted(false);
       return;
     }
     let cancelled = false;
@@ -133,18 +104,9 @@ function AppOpenHomeInner() {
         if (cancelled || !payload) return;
         const live = (payload.upcoming ?? []).find((b) => isLiveUpcoming(b.status));
         setUpcoming(live ?? null);
-        setLastCompleted(
-          !live &&
-            (payload.past ?? []).some(
-              (b) => normalizeBookingStatus(b.status) === "completed",
-            ),
-        );
       })
       .catch(() => {
-        if (!cancelled) {
-          setUpcoming(null);
-          setLastCompleted(false);
-        }
+        if (!cancelled) setUpcoming(null);
       });
     return () => {
       cancelled = true;
@@ -275,9 +237,10 @@ function AppOpenHomeInner() {
 
   const accountHref =
     authStatus === "authenticated" ? routes.dashboardProfile : routes.signIn;
-  const upcomingWhen = upcoming ? formatUpcomingWhen(upcoming) : null;
-  const trackFirst = upcoming && isCleanerOnTheWay(upcoming.status);
-  const showUsual = !upcoming && (lastCompleted || authStatus !== "authenticated");
+
+  const resume = hydrated
+    ? resolveHomeResumeCta({ upcoming, draft: state, hasUsualClean })
+    : null;
 
   return (
     <div
@@ -310,31 +273,9 @@ function AppOpenHomeInner() {
 
       <main className="relative z-10 flex flex-1 flex-col px-5 pb-[calc(5.25rem+env(safe-area-inset-bottom))] pt-2">
         <div className="mx-auto flex w-full max-w-md flex-1 flex-col">
-          {/* Returning: Track my clean first when cleaner on the way */}
-          {upcoming && upcomingWhen ? (
-            <Link
-              href={routes.bookingDetail(upcoming.id)}
-              className="mb-3 flex items-center justify-between gap-3 rounded-2xl border border-white/15 bg-[#102B49] px-3.5 py-3 text-left"
-            >
-              <div className="min-w-0">
-                <p className="text-[11px] font-semibold tracking-[0.14em] text-[#04CED2] uppercase">
-                  {trackFirst ? "Cleaner on the way" : "Upcoming clean"}
-                </p>
-                <p className="mt-0.5 truncate text-[16px] font-semibold text-white">
-                  {upcomingWhen.dateLabel}
-                </p>
-                <p className="truncate text-[15px] text-white/70">{upcomingWhen.windowLabel}</p>
-                <p className="mt-1 text-xs font-medium text-[#04CED2]">
-                  {getCustomerFriendlyStatusLabel(upcoming.status)}
-                </p>
-              </div>
-              <span className="inline-flex shrink-0 items-center gap-0.5 text-sm font-semibold text-[#04CED2]">
-                {trackFirst ? "Track my clean" : "View my booking"}
-                <ChevronRight className="size-4" aria-hidden />
-              </span>
-            </Link>
-          ) : showUsual ? (
-            <HomeUsualCleanCard className="mb-3" />
+          {/* One primary resume tap — urgency: on the way > upcoming > finish > usual */}
+          {resume ? (
+            <HomeResumeCard resume={resume} upcoming={upcoming} className="mb-3" />
           ) : null}
 
           {/* Floor plan — shrinks on short phones so address+CTA stay visible */}

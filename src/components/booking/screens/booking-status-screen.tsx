@@ -304,13 +304,7 @@ export function BookingStatusScreen({
                 )}
               </div>
             </div>
-            {/* ETA only when backend provides a real value — never invent */}
-            {booking.estimated_eta_minutes != null &&
-            Number.isFinite(booking.estimated_eta_minutes) ? (
-              <p className="mt-3 text-sm font-medium text-[var(--ml-dark-mint)]">
-                ETA ~{booking.estimated_eta_minutes} min
-              </p>
-            ) : null}
+            {/* Live ETA only via LiveCleanerMap when location is fresh */}
             <p className="mt-2 text-sm text-[var(--ml-dark-ink-muted)]">
               Status: {getBookingStatusLabel(booking.status)}
             </p>

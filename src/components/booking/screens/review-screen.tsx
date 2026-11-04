@@ -17,6 +17,7 @@ import { getBookingServiceLabel } from "@/lib/bookings/constants";
 import { calculateDepositCents, getDepositPercent } from "@/lib/payments/deposit";
 import { formatCurrency } from "@/lib/utils";
 import { useBooking } from "@/components/booking/booking-provider";
+import { useFinishBookingTitle } from "@/components/booking/use-finish-booking-title";
 import { trackFunnelStep } from "@/lib/analytics/booking-funnel";
 import {
   captureReviewSnapshot,
@@ -56,6 +57,7 @@ export function ReviewScreen() {
   const router = useRouter();
   const { updateState } = useBooking();
   const { state, hydrated, blocked } = useBookingGuard("review");
+  const title = useFinishBookingTitle("Review your clean");
   const [changeLines, setChangeLines] = useState<string[]>([]);
 
   const quoteInput = useMemo(
@@ -153,7 +155,7 @@ export function ReviewScreen() {
   return (
     <BookingFlowChrome
       screenId="review"
-      title="Review your clean"
+      title={title}
       subtitle="Edit anything — we refresh your quote before checkout."
       ctaLabel="Request clean"
       ctaDisabled={loading || Boolean(pricingError) || !totalLabel}
