@@ -138,19 +138,15 @@ export function ReviewScreen() {
     .join(" · ");
 
   const extrasLines =
-    pricing && !pricing.quoteOnly
-      ? (state.extras ?? [])
-          .map((id) => {
-            const extra = BOOKING_EXTRAS.find((e) => e.id === id);
-            return extra
-              ? {
-                  label: extra.label,
-                  cents: pricing.extrasBreakdown?.[id] ?? 0,
-                }
-              : null;
-          })
-          .filter((row): row is { label: string; cents: number } => Boolean(row))
-      : [];
+    (state.extras?.length ?? 0) === 0
+      ? []
+      : (state.extras ?? []).map((id) => {
+          const extra = BOOKING_EXTRAS.find((e) => e.id === id);
+          return {
+            label: extra?.label ?? id,
+            cents: extra?.priceCents ?? 0,
+          };
+        });
 
   const totalLabel =
     pricing && !pricing.quoteOnly
