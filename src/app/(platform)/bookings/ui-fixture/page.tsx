@@ -114,7 +114,9 @@ export default async function BookingUiFixturePage({
 }) {
   // Local + Vercel Preview only — never on production alias.
   const allow =
-    process.env.NODE_ENV !== "production" || process.env.VERCEL_ENV === "preview";
+    process.env.NODE_ENV !== "production" ||
+    process.env.VERCEL_ENV === "preview" ||
+    process.env.ALLOW_BOOKING_UI_FIXTURE === "true";
   if (!allow) notFound();
 
   const { state: raw } = await searchParams;
