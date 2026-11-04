@@ -7,29 +7,29 @@ import { CustomerBottomNav } from "@/components/customer/customer-bottom-nav";
 import { routes } from "@/config/site";
 
 /**
- * Light post-booking chrome — matches 4-panel booking (white / navy / turquoise).
- * Bottom tabs stay so customers can jump Home / Bookings / Account.
+ * Dark post-booking chrome — founder midnight mockup
+ * BG #01193D · surfaces #102B49 · CTA #04CED2 · circular mark
  */
 export function LiveJobShell({ children }: { children: React.ReactNode }) {
   return (
     <div
-      data-theme="ml-book"
-      className="flex min-h-dvh flex-col bg-white text-[var(--ml-book-ink,#01193D)]"
+      data-theme="ml-dark"
+      className="flex min-h-dvh flex-col bg-[var(--ml-dark-bg,#01193D)] text-[var(--ml-dark-ink,#ffffff)]"
       style={{ fontFamily: "var(--ml-font-ios)" }}
     >
-      <header className="sticky top-0 z-40 border-b border-[var(--ml-book-border,#e2e8f0)] bg-white/95 backdrop-blur-md">
+      <header className="sticky top-0 z-40 border-b border-[var(--ml-dark-border)]/80 bg-[var(--ml-dark-bg,#01193D)]/95 backdrop-blur-md">
         <div className="mx-auto flex h-12 w-full max-w-[680px] items-center justify-between gap-3 px-4 pt-[env(safe-area-inset-top)] sm:h-14">
           <div className="flex min-w-0 items-center gap-1.5">
             <Link
               href={routes.home}
-              className="inline-flex size-10 items-center justify-center rounded-xl text-[var(--ml-book-ink,#01193D)] transition-colors hover:bg-black/5"
+              className="inline-flex size-10 items-center justify-center rounded-xl text-white transition-colors hover:bg-white/10"
               aria-label="Back to home"
             >
               <ChevronLeft className="size-5" strokeWidth={2.25} aria-hidden />
             </Link>
             <Link
               href={routes.home}
-              className="inline-flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-white ring-1 ring-[var(--ml-book-border,#e2e8f0)]"
+              className="inline-flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[var(--ml-dark-surface,#102B49)] ring-1 ring-white/15"
               aria-label="MaidLinx home"
             >
               <Image
@@ -44,7 +44,7 @@ export function LiveJobShell({ children }: { children: React.ReactNode }) {
           </div>
           <Link
             href={routes.dashboardBookings}
-            className="rounded-xl px-3 py-2 text-sm font-semibold text-[var(--ml-book-primary,#04CED2)] transition-colors hover:bg-[var(--ml-book-selected,#E6FAFA)]"
+            className="rounded-xl px-3 py-2 text-sm font-semibold text-[var(--ml-dark-mint,#04CED2)] transition-colors hover:bg-white/10"
           >
             My Bookings
           </Link>

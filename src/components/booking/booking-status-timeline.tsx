@@ -21,14 +21,17 @@ interface BookingStatusTimelineProps {
   assignedDetail?: string | null;
 }
 
-const primary = "bg-[var(--ml-book-primary,#04CED2)]";
-const primaryText = "text-[var(--ml-book-primary,#04CED2)]";
-const ink = "text-[var(--ml-book-ink,#01193D)]";
-const muted = "text-[var(--ml-book-ink-muted,#4a5568)]";
-const subtle = "text-[var(--ml-book-ink-subtle,#718096)]";
-const border = "bg-[var(--ml-book-border,#e2e8f0)]";
-const borderStrong = "bg-[var(--ml-book-border-strong,#cbd5e1)]";
-const selectedRing = "ring-[var(--ml-book-selected,#E6FAFA)]";
+/* Prefer semantic tokens so light (ml-book) and dark (ml-dark) both resolve. */
+const primary = "bg-[var(--color-accent,#04CED2)]";
+const primaryText = "text-[var(--color-accent,#04CED2)]";
+const ink = "text-[var(--color-ink,#ffffff)]";
+const muted = "text-[var(--color-ink-muted,#b0bcc8)]";
+const subtle = "text-[var(--color-ink-subtle,#8fa0b5)]";
+const border = "bg-[var(--color-border,#1e4064)]";
+const borderStrong = "bg-[var(--color-border-strong,#2a5478)]";
+const selectedRing = "ring-[var(--color-accent-muted,rgb(4_206_210_/_0.2))]";
+const checkFg = "text-[var(--color-accent-foreground,#01193D)]";
+const primaryBorder = "border-[var(--color-accent,#04CED2)]";
 
 export function BookingStatusTimeline({
   status,
@@ -111,17 +114,13 @@ export function BookingStatusTimeline({
             <span
               className={cn(
                 "relative z-10 flex size-7 shrink-0 items-center justify-center rounded-full border-2 transition-colors",
-                filled &&
-                  "border-[var(--ml-book-primary,#04CED2)] bg-[var(--ml-book-primary,#04CED2)] text-[var(--ml-book-ink,#01193D)]",
+                filled && cn(primaryBorder, primary, checkFg),
                 current &&
                   !filled &&
-                  cn(
-                    "border-[var(--ml-book-primary,#04CED2)] bg-transparent text-transparent ring-4",
-                    selectedRing,
-                  ),
+                  cn(primaryBorder, "bg-transparent text-transparent ring-4", selectedRing),
                 !filled &&
                   !current &&
-                  "border-[var(--ml-book-border-strong,#cbd5e1)] bg-transparent text-transparent",
+                  "border-[var(--color-border-strong,#2a5478)] bg-transparent text-transparent",
               )}
               aria-current={current ? "step" : undefined}
             >

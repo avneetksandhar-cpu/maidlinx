@@ -74,7 +74,7 @@ export function PostBookingDashboard({
   if (loading || !booking) {
     return (
       <div className="flex min-h-[50dvh] flex-col items-center justify-center px-4 text-center">
-        <span className="mb-4 flex size-14 items-center justify-center overflow-hidden rounded-full bg-white ring-1 ring-[var(--ml-book-border,#e2e8f0)]">
+        <span className="mb-4 flex size-14 items-center justify-center overflow-hidden rounded-full bg-[var(--ml-dark-surface,#102B49)] ring-1 ring-white/15">
           <Image
             src="/brand/maidlinx-mark.png"
             alt="MaidLinx"
@@ -84,10 +84,8 @@ export function PostBookingDashboard({
             priority
           />
         </span>
-        <p className="text-xl font-semibold text-[var(--ml-book-ink,#01193D)]">
-          Finding your cleaner
-        </p>
-        <p className="mt-2 text-sm text-[var(--ml-book-ink-muted,#4a5568)]">
+        <p className="text-xl font-semibold text-white">Finding your cleaner</p>
+        <p className="mt-2 text-sm text-[var(--ml-dark-ink-muted)]">
           {error ?? "Loading your booking…"}
         </p>
       </div>
@@ -98,15 +96,11 @@ export function PostBookingDashboard({
     if (booking.status === "pending_payment") {
       return (
         <div className="mx-auto max-w-lg py-12 text-center">
-          <h1 className="text-2xl font-bold text-[var(--ml-book-ink,#01193D)]">
-            Confirming payment…
-          </h1>
-          <p className="mt-2 text-[var(--ml-book-ink-muted,#4a5568)]">
-            This usually takes a few seconds.
-          </p>
+          <h1 className="text-2xl font-bold text-white">Confirming payment…</h1>
+          <p className="mt-2 text-[var(--ml-dark-ink-muted)]">This usually takes a few seconds.</p>
           <Button
             variant="secondary"
-            className="mt-6 rounded-2xl border-[var(--ml-book-border,#e2e8f0)] bg-white text-[var(--ml-book-ink,#01193D)] hover:bg-[var(--ml-book-selected,#E6FAFA)]"
+            className="mt-6 rounded-2xl border-[var(--ml-dark-border-strong)] bg-transparent text-white hover:bg-[var(--ml-dark-surface-2)]"
             onClick={() => {
               void fetchBooking(bookingId, accessToken).then(setBooking);
             }}
@@ -173,25 +167,25 @@ export function PostBookingDashboard({
   }
 
   return (
-    <div className="text-[var(--ml-book-ink,#01193D)]">
+    <div className="text-white">
       <div className="space-y-5">
         <header className="space-y-1">
-          <p className="text-sm text-[var(--ml-book-ink-muted,#4a5568)]">Hi, {name}</p>
-          <h1 className="text-[1.55rem] font-semibold leading-tight tracking-tight text-[var(--ml-book-ink,#01193D)] sm:text-[1.75rem]">
+          <p className="text-sm text-[var(--ml-dark-ink-muted)]">Hi, {name}</p>
+          <h1 className="text-[1.55rem] font-semibold leading-tight tracking-tight text-white sm:text-[1.75rem]">
             {booking.status === "completed"
-              ? "Cleaning complete"
+              ? "Your clean is complete"
               : finding
                 ? "Finding your cleaner"
                 : "Your clean is confirmed"}
           </h1>
-          <p className="text-[14px] text-[var(--ml-book-ink-muted,#4a5568)]">
+          <p className="text-[14px] text-[var(--ml-dark-ink-muted)]">
             {booking.status === "completed"
               ? "Here’s what was included, your receipt, and an easy way to book again."
               : finding
-                ? "Your booking is in — we’ll update this page the moment a Pro accepts."
+                ? "We’ll notify you when someone accepts."
                 : "Live status updates as your Pro is on the way, arrives, and finishes."}
           </p>
-          <p className="text-xs tabular-nums text-[var(--ml-book-ink-subtle,#718096)]">
+          <p className="text-xs tabular-nums text-[var(--ml-dark-ink-subtle)]">
             Booking #{booking.id.slice(0, 8).toUpperCase()}
           </p>
         </header>
@@ -205,33 +199,32 @@ export function PostBookingDashboard({
         ) : null}
 
         {booking.status === "completed" ? (
-          <div className="space-y-4 rounded-2xl border border-[var(--ml-book-border,#e2e8f0)] bg-white p-5 shadow-[var(--shadow-card)]">
+          <div className="space-y-4 rounded-2xl border border-[var(--ml-dark-border)] bg-[var(--ml-dark-surface,#102B49)] p-5 shadow-[var(--shadow-card)]">
             <div className="flex flex-col items-center text-center">
               <div
-                className="mb-4 flex size-14 items-center justify-center rounded-full bg-[var(--ml-book-primary,#04CED2)] text-[var(--ml-book-ink,#01193D)]"
+                className="mb-4 flex size-14 items-center justify-center rounded-full bg-[var(--ml-dark-mint,#04CED2)] text-[var(--ml-app-header-ink,#01193D)]"
                 aria-hidden
               >
                 <span className="text-2xl font-bold leading-none">✓</span>
               </div>
-              <h2 className="text-xl font-semibold text-[var(--ml-book-ink,#01193D)]">
-                All done
-              </h2>
-              <p className="mt-2 text-sm text-[var(--ml-book-ink-muted,#4a5568)]">
+              <h2 className="text-xl font-semibold text-white">Your clean is complete</h2>
+              <p className="mt-2 text-sm text-[var(--ml-dark-ink-muted)]">
                 Rate your Pro, grab your receipt, or book your usual clean.
               </p>
             </div>
 
             <div>
-              <p className="text-sm font-semibold text-[var(--ml-book-ink,#01193D)]">
-                What was included
-              </p>
+              <p className="text-sm font-semibold text-white">What was included</p>
               <ul className="mt-2 space-y-2">
                 {completedTasks.map((task) => (
                   <li
                     key={task}
-                    className="flex items-start gap-2 rounded-xl bg-[var(--ml-book-selected,#E6FAFA)] px-3 py-2 text-sm text-[var(--ml-book-ink,#01193D)]"
+                    className="flex items-start gap-2 rounded-xl bg-[var(--ml-dark-surface-2)] px-3 py-2 text-sm text-white"
                   >
-                    <span className="mt-0.5 font-bold text-[var(--ml-book-primary,#04CED2)]" aria-hidden>
+                    <span
+                      className="mt-0.5 font-bold text-[var(--ml-dark-mint,#04CED2)]"
+                      aria-hidden
+                    >
                       ✓
                     </span>
                     {task}
@@ -246,7 +239,7 @@ export function PostBookingDashboard({
               <Button
                 type="button"
                 variant="primary"
-                className="booking-cta-btn w-full rounded-2xl bg-[var(--ml-book-primary,#04CED2)] text-[var(--ml-book-ink,#01193D)]"
+                className="booking-cta-btn w-full rounded-2xl bg-[var(--ml-dark-mint,#04CED2)] text-[var(--ml-app-header-ink,#01193D)]"
                 onClick={bookUsualClean}
               >
                 Book my usual clean
@@ -255,7 +248,7 @@ export function PostBookingDashboard({
                 <Link href={routes.dashboardInvoices}>
                   <Button
                     variant="secondary"
-                    className="w-full rounded-2xl border-[var(--ml-book-border,#e2e8f0)] bg-white text-[var(--ml-book-ink,#01193D)] hover:bg-[var(--ml-book-selected,#E6FAFA)]"
+                    className="w-full rounded-2xl border-[var(--ml-dark-border-strong)] bg-transparent text-white hover:bg-[var(--ml-dark-surface-2)]"
                   >
                     View receipt
                   </Button>
@@ -263,7 +256,7 @@ export function PostBookingDashboard({
                 <Link href={routes.dashboardSupport}>
                   <Button
                     variant="secondary"
-                    className="w-full rounded-2xl border-[var(--ml-book-border,#e2e8f0)] bg-white text-[var(--ml-book-ink,#01193D)] hover:bg-[var(--ml-book-selected,#E6FAFA)]"
+                    className="w-full rounded-2xl border-[var(--ml-dark-border-strong)] bg-transparent text-white hover:bg-[var(--ml-dark-surface-2)]"
                   >
                     Report an issue
                   </Button>
@@ -271,7 +264,7 @@ export function PostBookingDashboard({
               </div>
               <a
                 href={siteConfig.links.support}
-                className="text-center text-sm font-semibold text-[var(--ml-book-ink-muted,#4a5568)]"
+                className="text-center text-sm font-semibold text-[var(--ml-dark-ink-muted)]"
               >
                 Email support
               </a>
@@ -282,15 +275,15 @@ export function PostBookingDashboard({
             <Link href={routes.dashboardBookings}>
               <Button
                 variant="secondary"
-                className="w-full rounded-2xl border-[var(--ml-book-border,#e2e8f0)] bg-white text-[var(--ml-book-ink,#01193D)] hover:bg-[var(--ml-book-selected,#E6FAFA)]"
+                className="w-full rounded-2xl border-[var(--ml-dark-border-strong)] bg-transparent text-white hover:bg-[var(--ml-dark-surface-2)]"
               >
-                My bookings
+                View request
               </Button>
             </Link>
             <Link href={routes.book}>
               <Button
                 variant="primary"
-                className="booking-cta-btn w-full rounded-2xl bg-[var(--ml-book-primary,#04CED2)] text-[var(--ml-book-ink,#01193D)] hover:bg-[var(--ml-book-primary-hover,#03B8BC)]"
+                className="booking-cta-btn w-full rounded-2xl bg-[var(--ml-dark-mint,#04CED2)] text-[var(--ml-app-header-ink,#01193D)]"
               >
                 Book another
               </Button>

@@ -67,11 +67,11 @@ function showsLiveProgress(status: string): boolean {
 
 function nextStepCopy(booking: StoredBooking, finding: boolean): string {
   if (finding || !booking.cleaner) {
-    return "We’re matching an available MaidLinx Pro. You’ll see their name here as soon as they accept — nothing is assigned yet.";
+    return "We’ll notify you when someone accepts.";
   }
   const arrival = formatArrivalEstimate(booking);
   if (arrival) return arrival;
-  return `${getBookingServiceLabel(booking.service_type)} is confirmed. We’ll update this screen when your Pro is on the way.`;
+  return `${getBookingServiceLabel(booking.service_type)} is confirmed.`;
 }
 
 export function LiveStatusCard({ booking, accessToken, className }: LiveStatusCardProps) {
@@ -100,33 +100,33 @@ export function LiveStatusCard({ booking, accessToken, className }: LiveStatusCa
   return (
     <section
       className={cn(
-        "overflow-hidden rounded-2xl border border-[var(--ml-book-border,#e2e8f0)] bg-white shadow-[var(--shadow-card)]",
+        "overflow-hidden rounded-2xl border border-[var(--ml-dark-border)] bg-[var(--ml-dark-surface,#102B49)] shadow-[var(--shadow-card)]",
         className,
       )}
     >
       <div className="space-y-2 px-4 pt-5 sm:px-5">
         <div className="flex justify-center">
           {finding ? (
-            <span className="relative flex size-16 items-center justify-center">
+            <span className="relative flex size-20 items-center justify-center">
               <span
-                className="absolute inset-0 animate-ping rounded-full bg-[var(--ml-book-primary,#04CED2)]/20"
+                className="absolute inset-0 animate-ping rounded-full bg-[var(--ml-dark-mint,#04CED2)]/20"
                 style={{ animationDuration: "1.8s" }}
                 aria-hidden
               />
-              <span className="relative flex size-14 items-center justify-center overflow-hidden rounded-full bg-white ring-2 ring-[var(--ml-book-selected,#E6FAFA)]">
+              <span className="relative flex size-16 items-center justify-center overflow-hidden rounded-full bg-[var(--ml-dark-bg,#01193D)] ring-2 ring-[var(--ml-dark-mint,#04CED2)]/40">
                 <Image
                   src="/brand/maidlinx-mark.png"
                   alt="MaidLinx"
-                  width={48}
-                  height={48}
-                  className="size-12 object-cover"
+                  width={56}
+                  height={56}
+                  className="size-14 object-cover"
                   priority
                 />
               </span>
             </span>
           ) : (
             <span
-              className="flex size-14 items-center justify-center rounded-full bg-[var(--ml-book-primary,#04CED2)] text-[var(--ml-book-ink,#01193D)]"
+              className="flex size-14 items-center justify-center rounded-full bg-[var(--ml-dark-mint,#04CED2)] text-[var(--ml-app-header-ink,#01193D)]"
               aria-hidden
             >
               <span className="text-2xl font-bold leading-none">✓</span>
@@ -135,18 +135,14 @@ export function LiveStatusCard({ booking, accessToken, className }: LiveStatusCa
         </div>
 
         <div className="text-center">
-          <p className="inline-flex items-center gap-1.5 rounded-full bg-[var(--ml-book-selected,#E6FAFA)] px-2.5 py-0.5 text-[11px] font-semibold tracking-wide text-[var(--ml-book-primary,#04CED2)] uppercase">
-            <span className="size-1.5 rounded-full bg-[var(--ml-book-primary,#04CED2)]" aria-hidden />
-            Live status
-          </p>
-          <h2 className="mt-2 text-xl font-semibold tracking-tight text-[var(--ml-book-ink,#01193D)] sm:text-[1.35rem]">
-            {headline}
+          <h2 className="mt-2 text-xl font-semibold tracking-tight text-white sm:text-[1.35rem]">
+            {finding ? "Finding your cleaner" : headline}
           </h2>
-          <p className="mt-2 text-[14px] leading-relaxed text-[var(--ml-book-ink-muted,#4a5568)]">
+          <p className="mt-2 text-[14px] leading-relaxed text-[var(--ml-dark-ink-muted)]">
             {nextStepCopy(booking, finding)}
           </p>
           {booking.scheduled_at && !finding ? (
-            <p className="mt-2 text-sm font-medium text-[var(--ml-book-ink,#01193D)]">
+            <p className="mt-2 text-sm font-medium text-white">
               {formatBookingDate(booking.scheduled_at)}
               {" · "}
               {formatBookingTimeRange(
@@ -182,10 +178,10 @@ export function LiveStatusCard({ booking, accessToken, className }: LiveStatusCa
 
       {finding ? (
         <div className="px-4 py-5 sm:px-5">
-          <div className="flex items-center gap-3 rounded-xl border border-[var(--ml-book-border,#e2e8f0)] bg-[var(--ml-book-selected,#E6FAFA)] px-4 py-3">
+          <div className="flex items-center gap-3 rounded-xl border border-[var(--ml-dark-border)] bg-[var(--ml-dark-surface-2)] px-4 py-3">
             <span className="relative flex size-10 items-center justify-center">
-              <span className="absolute inset-0 animate-ping rounded-full bg-[var(--ml-book-primary,#04CED2)]/25" />
-              <span className="relative flex size-8 items-center justify-center overflow-hidden rounded-full bg-white ring-1 ring-[var(--ml-book-border,#e2e8f0)]">
+              <span className="absolute inset-0 animate-ping rounded-full bg-[var(--ml-dark-mint,#04CED2)]/25" />
+              <span className="relative flex size-8 items-center justify-center overflow-hidden rounded-full bg-[var(--ml-dark-bg)] ring-1 ring-white/20">
                 <Image
                   src="/brand/maidlinx-mark.png"
                   alt=""
@@ -196,52 +192,46 @@ export function LiveStatusCard({ booking, accessToken, className }: LiveStatusCa
               </span>
             </span>
             <div>
-              <p className="text-sm font-semibold text-[var(--ml-book-ink,#01193D)]">
-                Finding your cleaner
-              </p>
-              <p className="text-sm text-[var(--ml-book-ink-muted,#4a5568)]">
-                Next step: a Pro accepts your job. We never invent an assignment.
+              <p className="text-sm font-semibold text-white">Finding your cleaner</p>
+              <p className="text-sm text-[var(--ml-dark-ink-muted)]">
+                Booking requested · payment method saved. Nothing assigned yet.
               </p>
             </div>
           </div>
         </div>
       ) : (
         <div className="flex items-center gap-3 px-4 py-4 sm:px-5">
-          <span className="flex size-12 shrink-0 items-center justify-center rounded-full bg-[var(--ml-book-selected,#E6FAFA)] text-sm font-bold text-[var(--ml-book-primary,#04CED2)]">
+          <span className="flex size-12 shrink-0 items-center justify-center rounded-full bg-[var(--ml-dark-mint,#04CED2)]/15 text-sm font-bold text-[var(--ml-dark-mint,#04CED2)]">
             {(cleanerName ?? "P").charAt(0).toUpperCase()}
           </span>
           <div className="min-w-0 flex-1">
-            <p className="truncate font-semibold text-[var(--ml-book-ink,#01193D)]">
+            <p className="truncate font-semibold text-white">
               {cleanerName ?? "Your MaidLinx Pro"}
             </p>
-            <p className="truncate text-sm text-[var(--ml-book-ink-muted,#4a5568)]">
+            <p className="truncate text-sm text-[var(--ml-dark-ink-muted)]">
               MaidLinx Pro
               {rating != null ? (
                 <>
                   {" · "}
-                  <span className="text-[var(--ml-book-primary,#04CED2)]">★</span>{" "}
-                  {rating.toFixed(1)}
+                  <span className="text-[var(--ml-dark-mint,#04CED2)]">★</span> {rating.toFixed(1)}
                 </>
               ) : null}
               {jobCount != null ? ` (${jobCount} jobs)` : null}
             </p>
-            <p className="mt-0.5 text-sm text-[var(--ml-book-ink-muted,#4a5568)]">
+            <p className="mt-0.5 text-sm text-[var(--ml-dark-ink-muted)]">
               {getBookingServiceLabel(booking.service_type)} confirmed
             </p>
           </div>
         </div>
       )}
 
-      <div className="border-t border-[var(--ml-book-border,#e2e8f0)] bg-[var(--ml-book-selected,#E6FAFA)]/40 px-3 py-4 sm:px-4">
+      <div className="border-t border-[var(--ml-dark-border)] px-3 py-4 sm:px-4">
         {!finding ? (
           <BookingStatusTimeline status={booking.status} variant="day_of" />
         ) : showLiveProgress ? (
           <BookingStatusTimeline status={booking.status} variant="live" />
         ) : (
-          <BookingStatusTimeline
-            status={booking.status}
-            assignedDetail={cleanerName}
-          />
+          <BookingStatusTimeline status={booking.status} assignedDetail={cleanerName} />
         )}
       </div>
     </section>

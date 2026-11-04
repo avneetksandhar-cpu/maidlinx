@@ -79,13 +79,11 @@ export function UpcomingBookingCard({
   return (
     <section className={cn("space-y-3", className)}>
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-[var(--ml-book-ink,#01193D)]">
-          Upcoming booking
-        </h2>
+        <h2 className="text-lg font-semibold text-white">Upcoming booking</h2>
         {showViewAll ? (
           <Link
             href={routes.dashboardBookings}
-            className="text-sm font-medium text-[var(--ml-book-primary,#04CED2)] hover:opacity-90"
+            className="text-sm font-medium text-[var(--ml-dark-mint,#04CED2)] hover:opacity-90"
           >
             View all ›
           </Link>
@@ -94,13 +92,13 @@ export function UpcomingBookingCard({
 
       <Link
         href={href}
-        className="flex items-start gap-3 rounded-2xl border border-[var(--ml-book-border,#e2e8f0)] bg-white p-4 shadow-[var(--shadow-soft)] transition-colors hover:border-[var(--ml-book-primary,#04CED2)]/50"
+        className="flex items-start gap-3 rounded-2xl border border-[var(--ml-dark-border)] bg-[var(--ml-dark-surface,#102B49)] p-4 shadow-[var(--shadow-soft)] transition-colors hover:border-[var(--ml-dark-mint,#04CED2)]/40"
       >
-        <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-[var(--ml-book-selected,#E6FAFA)] text-[var(--ml-book-primary,#04CED2)]">
+        <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-[var(--ml-dark-mint,#04CED2)]/15 text-[var(--ml-dark-mint,#04CED2)]">
           <CalendarDollarIcon />
         </span>
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-semibold text-[var(--ml-book-ink,#01193D)]">
+          <p className="text-sm font-semibold text-white">
             {formatRelativeDay(source.scheduledAt)} ·{" "}
             {formatBookingTimeRange(
               source.scheduledAt,
@@ -108,23 +106,23 @@ export function UpcomingBookingCard({
               source.arrivalWindowEnd,
             )}
           </p>
-          <p className="mt-0.5 text-sm text-[var(--ml-book-ink-muted,#4a5568)]">
+          <p className="mt-0.5 text-sm text-[var(--ml-dark-ink-muted)]">
             {getServiceLabel(source.serviceType)}
           </p>
-          <p className="mt-0.5 truncate text-sm text-[var(--ml-book-ink-subtle,#718096)]">
+          <p className="mt-0.5 truncate text-sm text-[var(--ml-dark-ink-subtle)]">
             {formatAddress(source.addressLine1, source.addressCity, source.addressState)}
           </p>
-          <p className="mt-1 text-xs font-semibold text-[var(--ml-book-primary,#04CED2)]">
+          <p className="mt-1 text-xs font-semibold text-[var(--ml-dark-mint,#04CED2)]">
             {getCustomerFriendlyStatusLabel(source.status)}
           </p>
         </div>
         <div className="shrink-0 text-right">
           {paid ? (
-            <span className="inline-flex rounded-full bg-[var(--ml-book-selected,#E6FAFA)] px-2.5 py-0.5 text-xs font-semibold text-[var(--ml-book-primary,#04CED2)]">
+            <span className="inline-flex rounded-full bg-[var(--ml-dark-mint,#04CED2)]/15 px-2.5 py-0.5 text-xs font-semibold text-[var(--ml-dark-mint,#04CED2)]">
               Paid
             </span>
           ) : null}
-          <p className="mt-1 text-sm font-semibold tabular-nums text-[var(--ml-book-ink,#01193D)]">
+          <p className="mt-1 text-sm font-semibold tabular-nums text-white">
             {isStoredBooking(booking)
               ? formatCurrency(source.totalCents, source.currency)
               : formatBookingTotal(source.totalCents, source.currency)}
