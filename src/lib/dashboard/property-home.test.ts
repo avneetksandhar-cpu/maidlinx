@@ -28,7 +28,9 @@ function booking(
 ): DashboardBooking {
   return {
     status: "confirmed",
+    paymentStatus: "pending",
     serviceType: "standard",
+    addressId: null,
     addressLine1: "100 Ocean Dr",
     addressLine2: null,
     addressCity: "Miami",
@@ -40,6 +42,7 @@ function booking(
     arrivalWindowStart: null,
     arrivalWindowEnd: null,
     professionalProfileId: null,
+    cleanerId: null,
     professionalName: null,
     invoiceNumber: null,
     stripeReceiptUrl: null,
@@ -52,6 +55,13 @@ function booking(
     squareFootage: 1200,
     extras: [],
     preferredCleanerId: null,
+    serviceOrderId: null,
+    isCommercial: false,
+    frequency: null,
+    billingCadence: null,
+    nextVisitAt: null,
+    dueNowCents: 0,
+    bookingAnswers: null,
     ...partial,
   };
 }

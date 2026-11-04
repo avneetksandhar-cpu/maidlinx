@@ -86,7 +86,11 @@ export function BusinessHome({
               {upcoming.slice(0, 5).map((b) => (
                 <li key={b.id}>
                   <Link
-                    href={routes.bookingDetail(b.id)}
+                    href={
+                      b.isCommercial || b.serviceOrderId
+                        ? routes.dashboardBookStatus(b.id)
+                        : routes.bookingDetail(b.id)
+                    }
                     className="flex items-start justify-between gap-3 rounded-2xl border border-[var(--ml-dark-border)] bg-[var(--ml-dark-surface)] px-4 py-3.5 shadow-[var(--shadow-soft)] transition-colors hover:border-[var(--ml-dark-mint)]/40"
                   >
                     <div className="min-w-0">

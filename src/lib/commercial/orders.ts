@@ -1,5 +1,6 @@
 import { checklistFromAreas, type CommercialProposal, type ServiceOrder } from "@/lib/commercial/types";
 import { assertBusinessMember } from "@/lib/commercial/acl";
+import { afterHoursArrivalWindow } from "@/lib/commercial/confirmation";
 import { createAdminClient, hasAdminEnv } from "@/lib/supabase/admin";
 import { openOpsCase } from "@/lib/commercial/ops";
 
@@ -182,6 +183,8 @@ export async function createVisitBookingForOrder(input: {
     completed: false,
   }));
 
+  const arrival = afterHoursArrivalWindow(input.scheduledAt);
+
   const { data: booking, error } = await supabase
     .from("bookings")
     .insert({
@@ -191,8 +194,9 @@ export async function createVisitBookingForOrder(input: {
       status: professionalProfileId ? "assigned" : "awaiting_assignment",
       payment_status: "pending",
       scheduled_at: input.scheduledAt,
-      arrival_window_start: "18:00",
-      arrival_window_end: "20:00",
+      arrival_window_start: arrival.start,
+      arrival_window_end: arrival.end,
+      // Generic only — private entry lives in booking_answers.entryInstructions (not receipts).
       notes: "Commercial service order visit",
       subtotal_cents: input.order.providerPayoutCents,
       platform_fee_cents: Math.max(

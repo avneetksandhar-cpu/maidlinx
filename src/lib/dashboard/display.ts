@@ -20,15 +20,20 @@ export function formatBookingTimeRange(
   start: string | null,
   end: string | null,
 ): string {
+  const fmt = new Intl.DateTimeFormat("en-US", { hour: "numeric", minute: "2-digit" });
   if (start && end) {
-    const fmt = new Intl.DateTimeFormat("en-US", { hour: "numeric", minute: "2-digit" });
-    return `${fmt.format(new Date(start))} – ${fmt.format(new Date(end))}`;
+    const startDate = new Date(start);
+    const endDate = new Date(end);
+    if (!Number.isNaN(startDate.getTime()) && !Number.isNaN(endDate.getTime())) {
+      return `${fmt.format(startDate)} – ${fmt.format(endDate)}`;
+    }
   }
 
-  return new Intl.DateTimeFormat("en-US", {
-    hour: "numeric",
-    minute: "2-digit",
-  }).format(new Date(scheduledAt));
+  const scheduled = new Date(scheduledAt);
+  if (!Number.isNaN(scheduled.getTime())) {
+    return fmt.format(scheduled);
+  }
+  return "Time TBD";
 }
 
 export function formatShortDate(iso: string): string {
