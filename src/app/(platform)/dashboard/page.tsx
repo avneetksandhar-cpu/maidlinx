@@ -42,10 +42,10 @@ async function DashboardOverview() {
       />
       <div className="flex flex-wrap gap-3">
         <Link
-          href={routes.dashboardSites}
+          href={routes.dashboardBook}
           className="inline-flex h-12 items-center justify-center rounded-2xl bg-[#04CED2] px-5 text-sm font-semibold text-[#01193D]"
         >
-          Clean a site
+          Book a commercial clean
         </Link>
         <Link
           href={routes.home}

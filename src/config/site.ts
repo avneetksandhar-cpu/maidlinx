@@ -62,9 +62,31 @@ export const routes = {
   dashboardSites: "/dashboard/sites",
   dashboardSiteScope: (id: string) => `/dashboard/sites/${id}/scope`,
   dashboardSiteQuotes: (id: string) => `/dashboard/sites/${id}/quotes`,
+  dashboardSiteProposal: (siteId: string, proposalId: string) =>
+    `/dashboard/sites/${siteId}/proposals/${proposalId}`,
+  /** Commercial book mockup path — Property → Service → Frequency → Teams → Review */
+  dashboardBook: "/dashboard/book",
+  dashboardBookProperty: "/dashboard/book/property",
+  dashboardBookService: "/dashboard/book/service",
+  dashboardBookFrequency: "/dashboard/book/frequency",
+  dashboardBookTeams: "/dashboard/book/teams",
+  dashboardBookChecklist: "/dashboard/book/checklist",
+  dashboardBookReview: "/dashboard/book/review",
+  dashboardBookStatus: (bookingId: string) =>
+    `/dashboard/book/status/${bookingId}`,
   dashboardJobs: "/dashboard/jobs",
   dashboardJob: (id: string) => `/dashboard/jobs/${id}`,
+  dashboardOrder: (id: string) => `/dashboard/orders/${id}`,
   dashboardBilling: "/dashboard/billing",
+  cleanerCommercialSetup: "/cleaner/commercial/setup",
+  cleanerCommercialOpportunities: "/cleaner/commercial/opportunities",
+  cleanerCommercialOpportunity: (siteId: string) =>
+    `/cleaner/commercial/opportunities/${siteId}`,
+  cleanerCommercialAssign: (orderId: string) =>
+    `/cleaner/commercial/orders/${orderId}/assign`,
+  cleanerCommercialVisit: (bookingId: string) =>
+    `/cleaner/commercial/visits/${bookingId}`,
+  adminOpsDesk: "/admin/ops-desk",
   /** Legacy aliases — residential secondary; prefer Sites / Jobs / Billing */
   dashboardBookings: "/dashboard/bookings",
   dashboardInvoices: "/dashboard/invoices",
