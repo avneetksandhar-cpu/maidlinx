@@ -68,9 +68,11 @@ export function WelcomeScreen() {
           <h1 className="mx-auto max-w-md text-[1.85rem] font-semibold leading-tight tracking-tight text-white sm:text-[2.15rem]">
             Come home to clean.
           </h1>
-          <p className="mx-auto mt-3 max-w-sm text-[15px] leading-relaxed text-[var(--ml-dark-ink-muted)]">
-            Book reliable home cleaning in your area, see your price upfront, and choose a time that
-            works.
+          <p className="mx-auto mt-2 text-[15px] font-semibold text-white/90">
+            South Florida home cleaning
+          </p>
+          <p className="mx-auto mt-2 max-w-sm text-[15px] leading-relaxed text-[var(--ml-dark-ink-muted)]">
+            Enter your address to see available cleanings and get your price.
           </p>
 
           <Button

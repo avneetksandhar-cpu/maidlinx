@@ -64,7 +64,7 @@ export function ManualAddressForm({
                 id="manual-city"
                 value={value.city ?? ""}
                 onChange={(e) => onChange({ city: e.target.value })}
-                placeholder="Toronto"
+                placeholder="Miami"
               />
             </div>
             <div>
@@ -73,7 +73,7 @@ export function ManualAddressForm({
                 id="manual-state"
                 value={value.state ?? ""}
                 onChange={(e) => onChange({ state: e.target.value.toUpperCase() })}
-                placeholder="ON"
+                placeholder="FL"
               />
             </div>
           </div>
@@ -84,7 +84,7 @@ export function ManualAddressForm({
                 id="manual-postal"
                 value={value.postalCode ?? ""}
                 onChange={(e) => onChange({ postalCode: e.target.value })}
-                placeholder="M5V 1A1"
+                placeholder="33139"
               />
             </div>
             <div>

@@ -193,9 +193,9 @@ export function getGuardRedirect(
     ) {
       return BOOKING_SCREEN_PATHS.date;
     }
-    // ASAP already has a window — skip time picker
+    // ASAP already has a window — skip time picker (access is optional → review)
     if (screenId === "time" && state.schedulePreset === "asap" && isTimeComplete(state)) {
-      return BOOKING_SCREEN_PATHS.access;
+      return BOOKING_SCREEN_PATHS.review;
     }
     return null;
   }
@@ -231,6 +231,10 @@ export function getPreviousScreen(
   if (prev === "time" && state.schedulePreset === "asap") {
     prev = "date";
   }
+  // Access is skipped in the forward path — back from review lands on time/date.
+  if (prev === "access") {
+    prev = state.schedulePreset === "asap" ? "date" : "time";
+  }
   return prev;
 }
 
@@ -249,8 +253,13 @@ export function getNextScreen(
   ) {
     next = "date";
   }
+  // ASAP skips the time picker; access notes are optional → go to review.
   if (next === "time" && state.schedulePreset === "asap") {
-    next = "access";
+    next = "review";
+  }
+  // Prefer Address → Details → Time → Review (access editable from review later).
+  if (next === "access") {
+    next = "review";
   }
   return next;
 }
@@ -276,7 +285,7 @@ export function getFurthestScreenPath(state: BookingState): string {
   if (!isExtrasComplete(state)) return BOOKING_SCREEN_PATHS.addons;
   if (!isDateComplete(state)) return BOOKING_SCREEN_PATHS.date;
   if (!isTimeComplete(state)) return BOOKING_SCREEN_PATHS.time;
-  if (!isAccessComplete()) return BOOKING_SCREEN_PATHS.access;
+  // Access notes optional — resume at review once schedule is complete.
   if (!isReviewReady(state)) return BOOKING_SCREEN_PATHS.review;
   return BOOKING_SCREEN_PATHS.payment;
 }

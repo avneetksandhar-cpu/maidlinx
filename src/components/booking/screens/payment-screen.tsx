@@ -16,6 +16,7 @@ import {
   step6CustomerSchema,
 } from "@/lib/bookings/booking-helpers";
 import { bookingStatusPath } from "@/lib/bookings/booking-routes";
+import { saveUsualClean } from "@/lib/bookings/usual-clean";
 import { useBookingPricing } from "@/hooks/use-booking-pricing";
 import {
   createBooking,
@@ -217,6 +218,7 @@ function PaymentScreenInner() {
       setAccessToken(result.accessToken);
       updateState({ bookingId: result.booking.id });
       await persistSavedAddress();
+      saveUsualClean(state);
       trackBookingEvent("booking_completed", {
         bookingId: result.booking.id,
         devTest: true,
@@ -240,6 +242,7 @@ function PaymentScreenInner() {
     try {
       const confirmed = await fetchBooking(booking.id, accessToken);
       setBooking(confirmed);
+      saveUsualClean(state);
       trackFunnelStep("completed", { bookingId: confirmed.id });
       resetState();
       router.push(bookingStatusPath(confirmed.id, accessToken));

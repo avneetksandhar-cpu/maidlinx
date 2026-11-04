@@ -51,7 +51,7 @@ export function DateScreen() {
     <BookingFlowChrome
       screenId="date"
       title="Choose a time"
-      subtitle="Pick a day that works — availability is checked for real windows only."
+      subtitle="Earliest available or schedule for later — we only confirm times a cleaner can fulfill."
       hideCta={!showContinue}
       ctaLabel="Continue"
       ctaDisabled={!isDateComplete(state)}

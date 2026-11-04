@@ -15,10 +15,20 @@ const PRESETS: Array<{
   description: string;
   icon: typeof Zap;
 }> = [
-  { id: "asap", label: "ASAP", description: "First available window", icon: Zap },
+  {
+    id: "asap",
+    label: "Earliest available",
+    description: "Soonest requested window",
+    icon: Zap,
+  },
   { id: "today", label: "Today", description: "Later today", icon: Sun },
   { id: "tomorrow", label: "Tomorrow", description: "Next day", icon: CalendarDays },
-  { id: "date", label: "Pick a date", description: "Choose your day", icon: CalendarRange },
+  {
+    id: "date",
+    label: "Schedule for later",
+    description: "Pick a day",
+    icon: CalendarRange,
+  },
 ];
 
 interface ScheduleWhenSelectorProps {
@@ -205,11 +215,18 @@ export function ScheduleWhenSelector({
 
       {(mode === "date" || mode === "all") && schedulePreset === "asap" && date ? (
         <p className="rounded-2xl border border-[var(--ml-dark-border)] bg-[var(--ml-dark-surface)] px-4 py-3.5 text-[15px] text-[var(--ml-dark-ink-muted)]">
-          We&apos;ll aim for the soonest available window
+          We&apos;ll request the soonest window
           {arrivalWindow
             ? ` (${ARRIVAL_WINDOWS.find((w) => w.id === arrivalWindow)?.label?.toLowerCase()})`
             : ""}
-          .
+          . Confirmed only when a real cleaner can fulfill it — we never invent open slots.
+        </p>
+      ) : null}
+
+      {showWindows ? (
+        <p className="text-sm leading-snug text-[var(--ml-dark-ink-muted)]">
+          These are requested arrival windows. Unavailable windows stay disabled when supply data
+          is available; otherwise your Pro is matched after payment.
         </p>
       ) : null}
 

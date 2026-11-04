@@ -109,8 +109,18 @@ export const MARKETS: MarketConfig[] = [
 export const LAUNCH_MARKET_IDS = ["TORONTO_GTA", "SOUTH_FLORIDA"] as const;
 export type LaunchMarketId = (typeof LAUNCH_MARKET_IDS)[number];
 
+/**
+ * Customer Home + booking first screens are South Florida only.
+ * TORONTO_GTA remains in LAUNCH_MARKET_IDS / DB flags for supply ops — do not promise GTA on Home.
+ */
+export const CUSTOMER_HOME_MARKET_ID = "SOUTH_FLORIDA" as const satisfies LaunchMarketId;
+
 export function isLaunchMarketId(id: string | null | undefined): id is LaunchMarketId {
   return Boolean(id && (LAUNCH_MARKET_IDS as readonly string[]).includes(id));
+}
+
+export function isCustomerHomeMarket(id: string | null | undefined): boolean {
+  return id === CUSTOMER_HOME_MARKET_ID;
 }
 
 export const SERVICE_ZONES: ServiceZoneConfig[] = [
