@@ -76,31 +76,36 @@ export function buildQuoteInput(
   if (options.requireAddress && !hasAddress) return null;
   if (!hasAddress && !options.allowPreview) return null;
 
+  const optionalString = (value: string | null | undefined) => {
+    const trimmed = value?.trim();
+    return trimmed ? trimmed : undefined;
+  };
+
   return {
     line1: state.line1?.trim() || "123 Preview St",
-    line2: state.line2,
+    line2: optionalString(state.line2),
     city: state.city?.trim() || "Preview",
     state: state.state?.trim() || "CA",
     postalCode: state.postalCode?.trim() || "00000",
     country: state.country ?? "US",
-    latitude: state.latitude,
-    longitude: state.longitude,
-    googlePlaceId: state.googlePlaceId,
-    formattedAddress: state.formattedAddress,
-    marketId: state.marketId,
-    zoneId: state.zoneId,
+    latitude: state.latitude ?? undefined,
+    longitude: state.longitude ?? undefined,
+    googlePlaceId: optionalString(state.googlePlaceId),
+    formattedAddress: optionalString(state.formattedAddress),
+    marketId: optionalString(state.marketId),
+    zoneId: optionalString(state.zoneId),
     serviceType: state.serviceType,
-    serviceSlug: state.serviceSlug,
+    serviceSlug: optionalString(state.serviceSlug),
     serviceAnswers: state.serviceAnswers,
     propertyType: state.propertyType,
     bedrooms: state.bedrooms ?? 0,
     bathrooms: state.bathrooms ?? 1,
     squareFootage: state.squareFootage ?? 1000,
     extras: state.extras ?? [],
-    notes: state.notes,
-    accessNotes: state.accessNotes,
+    notes: optionalString(state.notes),
+    accessNotes: optionalString(state.accessNotes),
     schedulePreset: state.schedulePreset,
-    promoCode: state.promoCode,
+    promoCode: optionalString(state.promoCode),
   };
 }
 

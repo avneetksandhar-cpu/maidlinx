@@ -266,7 +266,7 @@ function PaymentScreenInner() {
       <BookingFlowChrome
         screenId="payment"
         title="Confirm & pay"
-        subtitle="50% deposit · Stripe TEST · no account required."
+        subtitle="Deposit today · balance after the job · Stripe TEST."
         hideCta
       >
         <CheckoutStep
@@ -292,7 +292,7 @@ function PaymentScreenInner() {
     <BookingFlowChrome
       screenId="payment"
       title="Confirm your clean"
-      subtitle="Guest checkout is fine — no account needed."
+      subtitle="Stripe TEST · deposit today · balance after the job."
       ctaLabel={bookLabel}
       ctaDisabled={busy || !pricing || !isServerVerified}
       ctaLoading={submitting}
@@ -308,10 +308,12 @@ function PaymentScreenInner() {
           </p>
         ) : null}
 
-        <div className="rounded-2xl border border-[var(--ml-dark-border)] bg-[var(--ml-dark-surface)] px-4 py-3.5 text-[14px] leading-relaxed text-[var(--ml-dark-ink)]">
-          <p className="font-semibold text-[var(--ml-dark-ink)]">Secure checkout</p>
-          <p className="mt-1 text-[var(--ml-dark-ink-muted)]">
-            Stripe processes your card. Deposit now · remaining balance after the job.
+        <div className="rounded-2xl border border-[var(--ml-book-border,#e2e8f0)] bg-[var(--ml-book-selected,#E6FAFA)] px-4 py-3.5 text-[14px] leading-relaxed text-[var(--ml-book-ink,#01193D)]">
+          <p className="font-semibold">When you&apos;re charged</p>
+          <p className="mt-1 text-[var(--ml-book-ink-muted,#4a5568)]">
+            Stripe TEST checkout. We charge a deposit now to hold your booking; the remaining
+            balance is charged after the clean. Double-tap is safe — checkout is idempotent.
+            Your slot is rechecked before payment.
           </p>
         </div>
 

@@ -86,7 +86,7 @@ export function MatchingStep({ booking, accessToken, bookingState }: MatchingSte
         </Heading>
         <Text muted className="mt-2 text-[16px] md:text-[17px]">
           {finding
-            ? "Finding your MaidLinx Pro for this clean…"
+            ? "Finding your cleaner…"
             : "Your cleaner has been assigned. Check your email for details."}
         </Text>
         <p className="mt-3 inline-flex items-center rounded-full bg-accent-muted px-3.5 py-1.5 text-sm font-semibold tabular-nums text-accent">

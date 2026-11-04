@@ -124,7 +124,7 @@ export function LiveStatusCard({ booking, accessToken, className }: LiveStatusCa
               </span>
             </span>
             <div>
-              <p className="text-sm font-semibold text-white">Finding your MaidLinx Pro…</p>
+              <p className="text-sm font-semibold text-white">Finding your cleaner</p>
               <p className="text-sm text-[var(--ml-dark-ink-muted)]">
                 We’ll show your cleaner here as soon as they’re assigned.
               </p>

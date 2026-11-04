@@ -1,21 +1,102 @@
 "use client";
 
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import { Check, ChevronDown } from "lucide-react";
 import { BookingFlowChrome } from "@/components/booking/booking-flow-chrome";
-import { ServiceTierSelector } from "@/components/booking/service-tier-selector";
+import { BedroomSelector, BathroomSelector } from "@/components/booking/bedroom-selector";
+import { ExtrasSelector } from "@/components/booking/extras-selector";
+import { RecurringFrequencyPicker } from "@/components/booking/recurring-frequency-picker";
 import { useBooking } from "@/components/booking/booking-provider";
 import { useBookingGuard } from "@/components/booking/use-booking-guard";
-import { BOOKING_SCREEN_PATHS, getNextScreen } from "@/lib/bookings/booking-routes";
+import { useReturnToReview } from "@/components/booking/use-return-to-review";
+import {
+  BOOKING_SCREEN_PATHS,
+  getNextScreen,
+  isCleanPanelComplete,
+} from "@/lib/bookings/booking-routes";
 import { getServiceBySlug } from "@/config/services";
-import type { ServiceTier } from "@/config/service-tiers";
+import {
+  getServiceTiersForProperty,
+  type ServiceTier,
+} from "@/config/service-tiers";
 import { resolveServiceAreaCurrency } from "@/lib/bookings/market-currency";
+import { buildQuoteInput } from "@/lib/bookings/booking-helpers";
+import { useBookingPricing } from "@/hooks/use-booking-pricing";
 import { trackBookingEvent } from "@/lib/analytics/booking";
+import { formatCurrency, cn } from "@/lib/utils";
+import type { RecurringFrequencyId } from "@/lib/recurring/frequencies";
+
+const STANDARD_INCLUDED = [
+  "Kitchen surfaces, sink, and appliance exteriors",
+  "Bathrooms — sinks, toilets, showers/tubs, mirrors",
+  "Living areas and bedrooms — dust, floors, tidy surfaces",
+  "Extras (fridge, oven, laundry, windows) priced separately",
+] as const;
+
+const TIER_BLURBS: Record<string, string> = {
+  standard: "Routine upkeep for your home.",
+  deep: "A more detailed, top-to-bottom clean.",
+};
 
 export function ServiceScreen() {
   const router = useRouter();
   const { updateState } = useBooking();
   const { state, hydrated, blocked } = useBookingGuard("service");
+  const { fromReview, continuePath, reviewPath } = useReturnToReview();
+  const [includedOpen, setIncludedOpen] = useState(false);
   const currency = resolveServiceAreaCurrency(state) ?? "USD";
+
+  const propertyType = state.propertyType ?? "house";
+
+  // Seed residential defaults + Standard clean so the panel is immediately bookable.
+  useEffect(() => {
+    if (!hydrated || blocked) return;
+    const patch: Record<string, unknown> = {};
+    if (!state.propertyType) {
+      patch.propertyType = "house";
+      patch.serviceAnswers = {
+        ...(state.serviceAnswers ?? {}),
+        propertyType: "house",
+        bookingCategory: "home",
+      };
+    }
+    if (state.bedrooms == null) patch.bedrooms = 2;
+    if (state.bathrooms == null) patch.bathrooms = 1;
+    if (state.squareFootage == null) patch.squareFootage = 1500;
+    if (state.extras == null) patch.extras = [];
+    if (!state.serviceType) {
+      patch.serviceTierId = "standard";
+      patch.serviceType = "standard";
+      patch.serviceSlug = "residential";
+      patch.serviceTile = "home";
+    }
+    if (Object.keys(patch).length > 0) updateState(patch);
+  }, [hydrated, blocked]); // eslint-disable-line react-hooks/exhaustive-deps -- seed once
+
+  const tiers = useMemo(() => {
+    const all = getServiceTiersForProperty(propertyType);
+    // Home clean panel: Standard + Deep first (match design); keep others if present.
+    const preferred = ["standard", "deep"];
+    const sorted = [...all].sort((a, b) => {
+      const ai = preferred.indexOf(a.id);
+      const bi = preferred.indexOf(b.id);
+      if (ai === -1 && bi === -1) return 0;
+      if (ai === -1) return 1;
+      if (bi === -1) return -1;
+      return ai - bi;
+    });
+    return sorted.filter((t) => t.id === "standard" || t.id === "deep" || sorted.length <= 2);
+  }, [propertyType]);
+
+  const quoteInput = useMemo(
+    () => buildQuoteInput(state, { requireAddress: true, allowPreview: true }),
+    [state],
+  );
+  const { pricing, loading: priceLoading } = useBookingPricing({
+    quoteInput,
+    enabled: Boolean(quoteInput && state.serviceType),
+  });
 
   const selectTier = (tier: ServiceTier) => {
     const service = getServiceBySlug(tier.serviceSlug);
@@ -23,86 +104,206 @@ export function ServiceScreen() {
       tierId: tier.id,
       serviceType: tier.serviceType,
     });
-    const next = {
+    updateState({
+      propertyType,
       serviceTierId: tier.id,
       serviceType: tier.serviceType,
       serviceSlug: service?.slug ?? tier.serviceSlug,
-      serviceTile: (tier.serviceType === "office"
-        ? "office"
-        : tier.serviceType === "airbnb_turnover"
-          ? "airbnb"
-          : tier.serviceType.startsWith("move")
-            ? "move"
-            : tier.serviceType === "post_construction"
-              ? "construction"
-              : "home") as NonNullable<typeof state.serviceTile>,
+      serviceTile: "home",
+      bedrooms: state.bedrooms ?? 2,
+      bathrooms: state.bathrooms ?? 2,
+      squareFootage: state.squareFootage ?? 1500,
+      extras: state.extras ?? [],
+      serviceAnswers: {
+        ...(state.serviceAnswers ?? {}),
+        propertyType,
+        bookingCategory: "home",
+      },
       step: 3,
+    });
+  };
+
+  const handleContinue = () => {
+    // Ensure residential defaults before leaving the Clean panel.
+    if (!state.propertyType) {
+      updateState({
+        propertyType: "house",
+        bedrooms: state.bedrooms ?? 2,
+        bathrooms: state.bathrooms ?? 2,
+        squareFootage: state.squareFootage ?? 1500,
+        extras: state.extras ?? [],
+      });
+    }
+    if (!state.serviceType) return;
+    if (state.extras == null) updateState({ extras: [] });
+
+    const merged = {
+      ...state,
+      propertyType: state.propertyType ?? ("house" as const),
+      bedrooms: state.bedrooms ?? 2,
+      bathrooms: state.bathrooms ?? 2,
+      squareFootage: state.squareFootage ?? 1500,
+      extras: state.extras ?? [],
     };
-    updateState(next);
-    const merged = { ...state, ...next };
-    router.push(BOOKING_SCREEN_PATHS[getNextScreen("service", merged)]);
+
+    if (!isCleanPanelComplete(merged)) return;
+
+    router.push(
+      continuePath(BOOKING_SCREEN_PATHS[getNextScreen("service", merged)]),
+    );
   };
 
   if (!hydrated || blocked) {
     return (
       <div
-        data-theme="ml-dark"
-        className="flex min-h-[40dvh] items-center justify-center bg-[var(--ml-dark-bg)] text-sm text-[var(--ml-dark-ink-muted)]"
+        data-theme="ml-book"
+        className="flex min-h-[40dvh] items-center justify-center bg-white text-sm text-[var(--ml-book-ink-muted)]"
       >
         Loading…
       </div>
     );
   }
 
-  const addressLine = [state.line1, state.city].filter(Boolean).join(", ");
+  const totalLabel =
+    pricing && !pricing.quoteOnly
+      ? formatCurrency(pricing.totalCents, pricing.currency)
+      : null;
+
+  const canContinue = Boolean(
+    state.serviceType &&
+      (state.bedrooms != null || state.bedrooms === 0) &&
+      state.bathrooms != null &&
+      (state.squareFootage ?? 1500) >= 200,
+  );
 
   return (
     <BookingFlowChrome
       screenId="service"
-      title="New booking"
-      subtitle="Choose a clean — final price confirmed before pay."
-      hideCta
-      locationSlot={
-        addressLine ? (
-          <div className="flex items-center gap-3 rounded-2xl border border-[var(--ml-dark-border)] bg-[var(--ml-dark-surface)] p-3">
-            <span
-              className="flex size-12 shrink-0 items-center justify-center rounded-xl text-[var(--color-accent-foreground)]"
-              style={{
-                background:
-                  "linear-gradient(145deg, rgb(8 224 212 / 0.35) 0%, #08e0d4 70%, #003474 160%)",
-              }}
-              aria-hidden
-            >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                <path
-                  d="M4 10.5 12 4l8 6.5V20a1 1 0 0 1-1 1h-5v-6H10v6H5a1 1 0 0 1-1-1v-9.5Z"
-                  stroke="currentColor"
-                  strokeWidth="1.75"
-                  strokeLinejoin="round"
-                />
-              </svg>
+      title="Choose your clean"
+      subtitle="Pick a service, home size, and any extras."
+      ctaLabel="Choose a time"
+      ctaDisabled={!canContinue}
+      backHref={fromReview ? reviewPath : BOOKING_SCREEN_PATHS.address}
+      footerHint={
+        totalLabel ? (
+          <div className="flex items-center justify-between gap-3 text-[15px]">
+            <span className="text-[var(--ml-book-ink-muted)]">Estimated total</span>
+            <span className="font-bold tabular-nums text-[var(--ml-book-ink,#01193D)]">
+              {priceLoading ? "Updating…" : totalLabel}
             </span>
-            <div className="min-w-0">
-              <p className="truncate text-sm font-semibold text-white">
-                {state.line1 || "Property"}
-              </p>
-              <p className="truncate text-xs text-[var(--ml-dark-ink-muted)]">
-                {[state.city, state.state, state.postalCode].filter(Boolean).join(", ")}
-              </p>
-            </div>
           </div>
         ) : null
       }
+      onContinue={handleContinue}
     >
-      <ServiceTierSelector
-        propertyType={state.propertyType}
-        value={state.serviceTierId}
-        bedrooms={state.bedrooms}
-        bathrooms={state.bathrooms}
-        squareFootage={state.squareFootage}
-        currency={currency}
-        onChange={selectTier}
-      />
+      <div className="space-y-6">
+        <fieldset>
+          <legend className="sr-only">Service</legend>
+          <div className="grid gap-2.5">
+            {tiers.map((tier) => {
+              const selected = state.serviceTierId === tier.id || state.serviceType === tier.serviceType;
+              return (
+                <button
+                  key={tier.id}
+                  type="button"
+                  onClick={() => selectTier(tier)}
+                  aria-pressed={selected}
+                  data-selected={selected}
+                  className={cn(
+                    "flex w-full items-start gap-3 rounded-2xl border px-4 py-4 text-left transition-all",
+                    selected
+                      ? "border-[var(--ml-book-primary,#04CED2)] bg-[var(--ml-book-selected,#E6FAFA)]"
+                      : "border-[var(--ml-book-border)] bg-white hover:border-[var(--ml-book-border-strong)]",
+                  )}
+                >
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-base font-bold text-[var(--ml-book-ink,#01193D)]">
+                      {tier.label}
+                    </span>
+                    <span className="mt-0.5 block text-sm text-[var(--ml-book-ink-muted)]">
+                      {TIER_BLURBS[tier.id] ?? tier.description}
+                    </span>
+                  </span>
+                  <span
+                    className={cn(
+                      "mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full border-2 transition-colors",
+                      selected
+                        ? "border-[var(--ml-book-primary,#04CED2)] bg-[var(--ml-book-primary,#04CED2)] text-[var(--ml-book-ink,#01193D)]"
+                        : "border-[var(--ml-book-border-strong)] bg-white",
+                    )}
+                    aria-hidden
+                  >
+                    {selected ? <Check className="size-3.5" strokeWidth={3} /> : null}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </fieldset>
+
+        <button
+          type="button"
+          onClick={() => setIncludedOpen((o) => !o)}
+          aria-expanded={includedOpen}
+          className="inline-flex items-center gap-1 text-sm font-semibold text-[var(--ml-book-primary,#04CED2)]"
+        >
+          What&apos;s included?
+          <ChevronDown
+            className={cn("size-4 transition-transform", includedOpen && "rotate-180")}
+            aria-hidden
+          />
+        </button>
+        {includedOpen ? (
+          <ul className="space-y-2 rounded-2xl border border-[var(--ml-book-border)] bg-[var(--ml-book-selected,#E6FAFA)]/40 px-4 py-3 text-sm text-[var(--ml-book-ink,#01193D)]">
+            {STANDARD_INCLUDED.map((item) => (
+              <li key={item} className="flex gap-2">
+                <Check className="mt-0.5 size-4 shrink-0 text-[var(--ml-book-primary,#04CED2)]" aria-hidden />
+                <span>{item}</span>
+              </li>
+            ))}
+          </ul>
+        ) : null}
+
+        <div>
+          <p className="mb-3 text-sm font-semibold text-[var(--ml-book-ink,#01193D)]">
+            Home details
+          </p>
+          <div className="grid grid-cols-2 gap-3">
+            <BedroomSelector
+              value={state.bedrooms ?? 2}
+              onChange={(bedrooms) => updateState({ bedrooms })}
+              compact
+            />
+            <BathroomSelector
+              value={state.bathrooms ?? 1}
+              onChange={(bathrooms) => updateState({ bathrooms })}
+              compact
+            />
+          </div>
+          <p className="mt-2 text-xs text-[var(--ml-book-ink-subtle)]">
+            Used for live pricing · {currency}
+          </p>
+        </div>
+
+        <div>
+          <p className="mb-3 text-sm font-semibold text-[var(--ml-book-ink,#01193D)]">Extras</p>
+          <ExtrasSelector
+            hideLegend
+            value={state.extras ?? []}
+            onChange={(extras) => {
+              const added = extras.find((id) => !(state.extras ?? []).includes(id));
+              if (added) trackBookingEvent("addon_selected", { addon: added });
+              updateState({ extras });
+            }}
+          />
+        </div>
+
+        <RecurringFrequencyPicker
+          variant="toggle"
+          value={(state.recurringFrequency as RecurringFrequencyId) ?? "one_time"}
+          onChange={(recurringFrequency) => updateState({ recurringFrequency })}
+        />
+      </div>
     </BookingFlowChrome>
   );
 }

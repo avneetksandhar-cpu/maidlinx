@@ -143,7 +143,7 @@ export function BookingStatusScreen({
         <div className="mx-auto flex min-h-[50dvh] max-w-lg flex-col items-center justify-center px-4 text-center">
           <SiteLogo variant="mark" tone="brand" href={routes.home} className="mb-6 scale-110" />
           <h1 className="text-2xl font-semibold tracking-tight text-white">
-            Finding your MaidLinx Pro…
+            Finding your cleaner
           </h1>
           <p className="mt-2 text-sm text-[var(--ml-dark-ink-muted)]">
             {error ?? "Loading your booking…"}

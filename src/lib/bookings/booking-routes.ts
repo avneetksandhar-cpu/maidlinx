@@ -2,9 +2,9 @@ import type { BookingState } from "@/lib/bookings/booking-state";
 import { isQuoteOnlyService } from "@/config/services";
 
 /**
- * Multi-screen booking funnel — address-first (founder UX):
- * Welcome → Address → Category → Service → Details → …
- * Paths are App Router destinations under /book/*.
+ * Multi-screen booking funnel — 4 customer panels (founder UX):
+ * 1 Address → 2 Clean (service+details+extras) → 3 When (date+time+access) → 4 Review → Pay
+ * Legacy sub-routes redirect into the consolidated panels.
  */
 export const BOOKING_SCREENS = [
   { id: "welcome", path: "/book/welcome", label: "Welcome", shortLabel: "Start" },
@@ -13,7 +13,7 @@ export const BOOKING_SCREENS = [
   { id: "service", path: "/book/service", label: "Service", shortLabel: "Clean" },
   { id: "details", path: "/book/details", label: "Details", shortLabel: "Details" },
   { id: "addons", path: "/book/addons", label: "Add-ons", shortLabel: "Extras" },
-  { id: "date", path: "/book/date", label: "Date", shortLabel: "Date" },
+  { id: "date", path: "/book/date", label: "Date", shortLabel: "When" },
   { id: "time", path: "/book/time", label: "Time", shortLabel: "Time" },
   { id: "access", path: "/book/access", label: "Access", shortLabel: "Access" },
   { id: "review", path: "/book/review", label: "Review", shortLabel: "Review" },
@@ -125,53 +125,43 @@ export function isScheduleComplete(state: BookingState): boolean {
   return isDateComplete(state) && isTimeComplete(state);
 }
 
-export function isReviewReady(state: BookingState): boolean {
+/** Clean panel (step 2) ready — service + home details + extras array. */
+export function isCleanPanelComplete(state: BookingState): boolean {
   return (
-    isAddressComplete(state) &&
     isPropertyComplete(state) &&
     isServiceComplete(state) &&
     isDetailsComplete(state) &&
-    isExtrasComplete(state) &&
+    isExtrasComplete(state)
+  );
+}
+
+export function isReviewReady(state: BookingState): boolean {
+  return (
+    isAddressComplete(state) &&
+    isCleanPanelComplete(state) &&
     isScheduleComplete(state)
   );
 }
 
 /**
  * Guard: prerequisites that must be true before entering a screen.
- * Welcome + address have no category prerequisites (address-first).
+ * 4-panel path: address → service → date → review → payment.
+ * Legacy mid-screens redirect into the consolidated panel.
  */
 const COMPLETION: Record<BookingScreenId, (state: BookingState) => boolean> = {
   welcome: () => true,
   address: () => true,
   property: isAddressComplete,
-  service: (s) => isAddressComplete(s) && isPropertyComplete(s),
-  details: (s) =>
-    isAddressComplete(s) && isPropertyComplete(s) && isServiceComplete(s),
+  service: isAddressComplete,
+  details: (s) => isAddressComplete(s) && isPropertyComplete(s) && isServiceComplete(s),
   addons: (s) =>
     isAddressComplete(s) &&
     isPropertyComplete(s) &&
     isServiceComplete(s) &&
     isDetailsComplete(s),
-  date: (s) =>
-    isAddressComplete(s) &&
-    isPropertyComplete(s) &&
-    isServiceComplete(s) &&
-    isDetailsComplete(s) &&
-    isExtrasComplete(s),
-  time: (s) =>
-    isAddressComplete(s) &&
-    isPropertyComplete(s) &&
-    isServiceComplete(s) &&
-    isDetailsComplete(s) &&
-    isExtrasComplete(s) &&
-    isDateComplete(s),
-  access: (s) =>
-    isAddressComplete(s) &&
-    isPropertyComplete(s) &&
-    isServiceComplete(s) &&
-    isDetailsComplete(s) &&
-    isExtrasComplete(s) &&
-    isScheduleComplete(s),
+  date: (s) => isAddressComplete(s) && isCleanPanelComplete(s),
+  time: (s) => isAddressComplete(s) && isCleanPanelComplete(s) && isDateComplete(s),
+  access: (s) => isAddressComplete(s) && isCleanPanelComplete(s) && isScheduleComplete(s),
   review: isReviewReady,
   payment: isReviewReady,
 };
@@ -184,84 +174,81 @@ export function getGuardRedirect(
   screenId: BookingScreenId,
   state: BookingState,
 ): string | null {
+  // Collapse legacy screens into the 4 customer panels.
+  if (screenId === "property" || screenId === "details" || screenId === "addons") {
+    if (!isAddressComplete(state)) return BOOKING_SCREEN_PATHS.address;
+    return BOOKING_SCREEN_PATHS.service;
+  }
+  if (screenId === "time" || screenId === "access") {
+    if (!isAddressComplete(state)) return BOOKING_SCREEN_PATHS.address;
+    if (!isCleanPanelComplete(state)) return BOOKING_SCREEN_PATHS.service;
+    return BOOKING_SCREEN_PATHS.date;
+  }
+
   if (COMPLETION[screenId](state)) {
-    // Skip add-ons for quote-only services
-    if (
-      screenId === "addons" &&
-      state.serviceType &&
-      isQuoteOnlyService(state.serviceType)
-    ) {
-      return BOOKING_SCREEN_PATHS.date;
-    }
-    // ASAP already has a window — skip time picker (access is optional → review)
-    if (screenId === "time" && state.schedulePreset === "asap" && isTimeComplete(state)) {
-      return BOOKING_SCREEN_PATHS.review;
-    }
     return null;
   }
 
   if (!isAddressComplete(state)) return BOOKING_SCREEN_PATHS.address;
-  if (!isPropertyComplete(state)) return BOOKING_SCREEN_PATHS.property;
-  if (!isServiceComplete(state)) return BOOKING_SCREEN_PATHS.service;
-  if (!isDetailsComplete(state)) return BOOKING_SCREEN_PATHS.details;
-  if (!isExtrasComplete(state)) return BOOKING_SCREEN_PATHS.addons;
-  if (!isDateComplete(state)) return BOOKING_SCREEN_PATHS.date;
-  if (!isTimeComplete(state)) return BOOKING_SCREEN_PATHS.time;
-  return BOOKING_SCREEN_PATHS.access;
+  if (!isCleanPanelComplete(state)) return BOOKING_SCREEN_PATHS.service;
+  if (!isScheduleComplete(state)) return BOOKING_SCREEN_PATHS.date;
+  return BOOKING_SCREEN_PATHS.review;
 }
 
 export function getPreviousScreen(
   screenId: BookingScreenId,
   state: BookingState,
 ): BookingScreenId | null {
-  const index = getBookingScreenIndex(screenId);
-  if (index <= 0) return null;
-
-  let prev = BOOKING_SCREENS[index - 1]!.id;
-  if (prev === "welcome") {
-    return "welcome";
+  void state;
+  switch (screenId) {
+    case "welcome":
+      return null;
+    case "address":
+      return "welcome";
+    case "property":
+    case "service":
+    case "details":
+    case "addons":
+      return "address";
+    case "date":
+    case "time":
+    case "access":
+      return "service";
+    case "review":
+      return "date";
+    case "payment":
+      return "review";
+    default:
+      return "address";
   }
-  if (
-    prev === "addons" &&
-    state.serviceType &&
-    isQuoteOnlyService(state.serviceType)
-  ) {
-    prev = "details";
-  }
-  if (prev === "time" && state.schedulePreset === "asap") {
-    prev = "date";
-  }
-  // Access is skipped in the forward path — back from review lands on time/date.
-  if (prev === "access") {
-    prev = state.schedulePreset === "asap" ? "date" : "time";
-  }
-  return prev;
 }
 
 export function getNextScreen(
   screenId: BookingScreenId,
   state: BookingState,
 ): BookingScreenId {
-  const index = getBookingScreenIndex(screenId);
-  if (index >= BOOKING_SCREENS.length - 1) return "payment";
-
-  let next = BOOKING_SCREENS[index + 1]!.id;
-  if (
-    next === "addons" &&
-    state.serviceType &&
-    isQuoteOnlyService(state.serviceType)
-  ) {
-    next = "date";
+  void state;
+  switch (screenId) {
+    case "welcome":
+      return "address";
+    case "address":
+    case "property":
+      return "service";
+    case "service":
+    case "details":
+    case "addons":
+      return "date";
+    case "date":
+    case "time":
+    case "access":
+      return "review";
+    case "review":
+      return "payment";
+    case "payment":
+      return "payment";
+    default:
+      return "address";
   }
-  // ASAP skips the time picker; access notes are optional → go to review.
-  if (next === "time" && state.schedulePreset === "asap") {
-    next = "review";
-  }
-  // Prefer Address → Details → Time → Review (access editable from review later).
-  if (next === "access") {
-    next = "review";
-  }
-  return next;
 }
 
 /** Resolve entry for /book — address-first (skip welcome splash). */
@@ -279,13 +266,8 @@ export function getBookingEntryPath(options?: {
  */
 export function getFurthestScreenPath(state: BookingState): string {
   if (!isAddressComplete(state)) return BOOKING_SCREEN_PATHS.address;
-  if (!isPropertyComplete(state)) return BOOKING_SCREEN_PATHS.property;
-  if (!isServiceComplete(state)) return BOOKING_SCREEN_PATHS.service;
-  if (!isDetailsComplete(state)) return BOOKING_SCREEN_PATHS.details;
-  if (!isExtrasComplete(state)) return BOOKING_SCREEN_PATHS.addons;
-  if (!isDateComplete(state)) return BOOKING_SCREEN_PATHS.date;
-  if (!isTimeComplete(state)) return BOOKING_SCREEN_PATHS.time;
-  // Access notes optional — resume at review once schedule is complete.
+  if (!isCleanPanelComplete(state)) return BOOKING_SCREEN_PATHS.service;
+  if (!isScheduleComplete(state)) return BOOKING_SCREEN_PATHS.date;
   if (!isReviewReady(state)) return BOOKING_SCREEN_PATHS.review;
   return BOOKING_SCREEN_PATHS.payment;
 }
@@ -293,4 +275,14 @@ export function getFurthestScreenPath(state: BookingState): string {
 export function isBookingFlowPathname(pathname: string): boolean {
   // Post-booking `/bookings/*` uses the customer shell — not the question funnel.
   return pathname === "/book" || pathname.startsWith("/book/");
+}
+
+/** Edit links from review — return to review after continue when state stays valid. */
+export function bookingEditPath(
+  screenId: BookingScreenId,
+  options?: { fromReview?: boolean },
+): string {
+  const base = BOOKING_SCREEN_PATHS[screenId];
+  if (options?.fromReview) return `${base}?from=review`;
+  return base;
 }

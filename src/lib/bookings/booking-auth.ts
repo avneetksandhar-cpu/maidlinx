@@ -1,19 +1,15 @@
 import { routes } from "@/config/site";
 import { BOOKING_SCREEN_PATHS, type BookingScreenId } from "@/lib/bookings/booking-routes";
 
-/** After address is saved, continue here (category / what needs cleaning). */
-export const BOOKING_RESUME_AFTER_AUTH = BOOKING_SCREEN_PATHS.property;
+/** After guest builds a quote, resume here once signed in (review → pay). */
+export const BOOKING_RESUME_AFTER_AUTH = BOOKING_SCREEN_PATHS.review;
 
-/** Screens that require a signed-in customer (gate fires after address). */
+/**
+ * Auth gate: address check + quote + schedule work as guest.
+ * Sign-in required at review/payment (Stripe TEST checkout).
+ */
 export const BOOKING_AUTH_REQUIRED_SCREENS: ReadonlySet<BookingScreenId> = new Set([
-  "property",
-  "service",
-  "details",
-  "addons",
-  "date",
-  "time",
-  "access",
-  "review",
+  // Review is readable as guest (quote check); Stripe checkout still requires auth.
   "payment",
 ]);
 
@@ -23,7 +19,7 @@ export function isBookingAuthRequired(screenId: BookingScreenId): boolean {
 
 /**
  * Frictionless customer auth entry — preserves booking draft via sessionStorage
- * and resumes at `next` (default: property after address).
+ * and resumes at `next` (default: review after quote + schedule).
  */
 export function bookingSignInHref(next: string = BOOKING_RESUME_AFTER_AUTH): string {
   const params = new URLSearchParams();

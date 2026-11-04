@@ -82,10 +82,10 @@ export function getCustomerStatusHeadline(status: string): string {
     case "confirmed":
     case "awaiting_assignment":
     case "offered":
-      return "Finding your MaidLinx Pro…";
+      return "Finding your cleaner";
     case "assigned":
     case "accepted":
-      return "Your Pro is confirmed";
+      return "Confirmed";
     case "on_the_way":
       return "Your Pro is on the way";
     case "arrived":

@@ -74,7 +74,7 @@ export function PostBookingDashboard({
         style={{ fontFamily: "var(--ml-font-ios)" }}
       >
         <SiteLogo variant="mark" tone="brand" href={routes.home} className="mb-4 animate-pulse" />
-        <p className="text-xl font-semibold text-white">Finding your MaidLinx Pro…</p>
+        <p className="text-xl font-semibold text-white">Finding your cleaner</p>
         <p className="mt-2 text-sm text-[var(--ml-dark-ink-muted)]">
           {error ?? "Loading your booking…"}
         </p>
