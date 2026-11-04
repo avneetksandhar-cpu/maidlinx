@@ -55,45 +55,44 @@ describe("booking route guards (4-panel address-first)", () => {
     expect(getGuardRedirect("welcome", DEFAULT_BOOKING_STATE)).toBeNull();
   });
 
-  it("collapses property into clean panel when address is set", () => {
+  it("collapses property into choose-clean when address is set", () => {
     expect(getGuardRedirect("property", baseAddress())).toBe(BOOKING_SCREEN_PATHS.service);
   });
 
-  it("requires address before clean panel", () => {
+  it("requires address before choose-clean", () => {
     expect(getGuardRedirect("service", DEFAULT_BOOKING_STATE)).toBe(
       BOOKING_SCREEN_PATHS.address,
     );
   });
 
-  it("allows clean panel when address is complete", () => {
+  it("allows choose-clean when address is complete", () => {
     expect(getGuardRedirect("service", baseAddress())).toBeNull();
   });
 
-  it("advances address → service (clean)", () => {
+  it("advances address → service → details → date → review", () => {
     expect(getNextScreen("address", baseAddress())).toBe("service");
     expect(getPreviousScreen("service", baseAddress())).toBe("address");
-  });
-
-  it("advances service → date (when)", () => {
-    expect(getNextScreen("service", cleanReady())).toBe("date");
-    expect(getPreviousScreen("date", cleanReady())).toBe("service");
-  });
-
-  it("advances date → review", () => {
+    expect(getNextScreen("service", cleanReady())).toBe("details");
+    expect(getPreviousScreen("details", cleanReady())).toBe("service");
+    expect(getNextScreen("details", cleanReady())).toBe("date");
+    expect(getPreviousScreen("date", cleanReady())).toBe("details");
     expect(getNextScreen("date", cleanReady())).toBe("review");
     expect(getPreviousScreen("review", cleanReady())).toBe("date");
   });
 
-  it("collapses time/access into when panel", () => {
+  it("collapses time/access into arrival panel", () => {
     expect(getGuardRedirect("time", cleanReady())).toBe(BOOKING_SCREEN_PATHS.date);
-    expect(getGuardRedirect("access", cleanReady({ date: "2026-11-12", arrivalWindow: "afternoon", schedulePreset: "asap" }))).toBe(
-      BOOKING_SCREEN_PATHS.date,
-    );
+    expect(
+      getGuardRedirect(
+        "access",
+        cleanReady({ date: "2026-11-12", arrivalWindow: "afternoon", schedulePreset: "asap" }),
+      ),
+    ).toBe(BOOKING_SCREEN_PATHS.date);
   });
 
-  it("skips addons/details screens into clean panel", () => {
-    expect(getGuardRedirect("details", cleanReady())).toBe(BOOKING_SCREEN_PATHS.service);
-    expect(getGuardRedirect("addons", cleanReady())).toBe(BOOKING_SCREEN_PATHS.service);
+  it("allows make-it-yours (details) when service selected; collapses addons there", () => {
+    expect(getGuardRedirect("details", cleanReady())).toBeNull();
+    expect(getGuardRedirect("addons", cleanReady())).toBe(BOOKING_SCREEN_PATHS.details);
   });
 
   it("blocks payment until schedule is complete", () => {

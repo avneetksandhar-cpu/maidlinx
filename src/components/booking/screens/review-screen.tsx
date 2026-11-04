@@ -147,7 +147,7 @@ export function ReviewScreen() {
       : null;
   const depositPct = getDepositPercent();
 
-  const edit = (screen: "address" | "date" | "service") =>
+  const edit = (screen: "address" | "date" | "service" | "details") =>
     bookingEditPath(screen, { fromReview: true });
 
   return (
@@ -198,9 +198,9 @@ export function ReviewScreen() {
 
         <div className="rounded-2xl border border-[var(--ml-book-border)] bg-[var(--ml-book-surface,#102B49)] px-4">
           <Row label="Address" value={homeValue} href={edit("address")} />
+          <Row label="Scope" value={serviceValue} href={edit("details")} />
           <Row label="Arrival" value={arrivalValue || "—"} href={edit("date")} />
-          <Row label="Service" value={serviceValue} href={edit("service")} />
-          <Row label="Total" value={totalLabel ?? "—"} href={edit("service")} />
+          <Row label="Total" value={totalLabel ?? "—"} href={edit("details")} />
         </div>
 
         {state.accessNotes?.trim() ? (

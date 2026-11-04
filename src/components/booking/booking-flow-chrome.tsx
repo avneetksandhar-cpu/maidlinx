@@ -38,9 +38,9 @@ interface BookingFlowChromeProps {
   hideDefaultTotal?: boolean;
 }
 
-/** Founder 4 panels: Choose clean → Make it yours → Arrival → Review */
+/** Founder 4 panels (after Home): Choose clean → Make it yours → Arrival → Review */
 const BOOKING_PHASES: BookingScreenId[][] = [
-  ["welcome", "address", "property", "service"],
+  ["service", "property", "welcome", "address"],
   ["details", "addons"],
   ["date", "time", "access"],
   ["review", "payment"],

@@ -1,73 +1,58 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { Check, ChevronRight, Plus } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import { BookingFlowChrome } from "@/components/booking/booking-flow-chrome";
 import { DateStrip } from "@/components/booking/date-strip";
 import { useBooking } from "@/components/booking/booking-provider";
 import { useBookingGuard } from "@/components/booking/use-booking-guard";
 import { useReturnToReview } from "@/components/booking/use-return-to-review";
-import {
-  BOOKING_SCREEN_PATHS,
-  getNextScreen,
-  isScheduleComplete,
-} from "@/lib/bookings/booking-routes";
-import {
-  formatArrivesWindowLabel,
-  formatBookingDateLabel,
-  formatWindowRangeShort,
-} from "@/lib/bookings/arrival-labels";
+import { BOOKING_SCREEN_PATHS } from "@/lib/bookings/booking-routes";
+import { formatWindowRangeShort } from "@/lib/bookings/arrival-labels";
 import { ARRIVAL_WINDOWS, type ArrivalWindowId } from "@/lib/bookings/constants";
 import { resolveSchedulePreset, formatDurationLabel } from "@/lib/bookings/schedule-presets";
 import { suggestArrivalWindows } from "@/lib/availability/windows";
 import { buildQuoteInput } from "@/lib/bookings/booking-helpers";
 import { useBookingPricing } from "@/hooks/use-booking-pricing";
 import { trackBookingEvent } from "@/lib/analytics/booking";
-import { formatCurrency, cn } from "@/lib/utils";
-import { Textarea } from "@/components/ui";
 
-function aboutDurationCopy(minutes: number): string | null {
+function aboutHours(minutes: number): string | null {
   if (!Number.isFinite(minutes) || minutes < 60) return null;
-  const roundedHours = Math.round(minutes / 30) / 2; // nearest half hour
-  if (roundedHours < 1) return null;
-  const label =
-    roundedHours === Math.floor(roundedHours)
-      ? `${roundedHours} hour${roundedHours === 1 ? "" : "s"}`
-      : `${roundedHours} hours`;
-  return `Cleaning takes about ${label}`;
+  const hours = Math.round(minutes / 30) / 2;
+  if (hours < 1) return null;
+  return hours === Math.floor(hours)
+    ? `${hours} hour${hours === 1 ? "" : "s"}`
+    : `${hours} hours`;
 }
 
+/**
+ * Panel 4 — Choose an arrival. Date strip + windows; tap window → Review.
+ */
 export function DateScreen() {
   const router = useRouter();
   const { updateState } = useBooking();
   const { state, hydrated, blocked } = useBookingGuard("date");
   const { fromReview, continuePath, reviewPath } = useReturnToReview();
-  const [pickAnotherDay, setPickAnotherDay] = useState(false);
-  const [showInstructions, setShowInstructions] = useState(
-    Boolean(state.accessNotes?.trim()),
-  );
 
   const quoteInput = useMemo(
     () => buildQuoteInput(state, { requireAddress: true }),
     [state],
   );
-  const { pricing, loading: priceLoading } = useBookingPricing({
+  const { pricing } = useBookingPricing({
     quoteInput,
     enabled: Boolean(quoteInput),
   });
 
   const durationMinutes =
-    pricing && !pricing.quoteOnly
-      ? (pricing.estimatedDurationMinutes ?? 0)
-      : 0;
+    pricing && !pricing.quoteOnly ? (pricing.estimatedDurationMinutes ?? 0) : 0;
   const durationReliable =
     pricing && !pricing.quoteOnly && Boolean(pricing.estimatedDurationMinutes);
-  const durationLine = durationReliable ? aboutDurationCopy(durationMinutes) : null;
+  const durationHours = durationReliable ? aboutHours(durationMinutes) : null;
 
   useEffect(() => {
     if (!hydrated || blocked) return;
-    if (state.date && state.arrivalWindow && state.schedulePreset) return;
+    if (state.date && state.schedulePreset) return;
     const resolved = resolveSchedulePreset(state.schedulePreset ?? "asap", {
       date: state.date,
       arrivalWindow: state.arrivalWindow as ArrivalWindowId | undefined,
@@ -75,9 +60,10 @@ export function DateScreen() {
     updateState({
       schedulePreset: state.schedulePreset ?? "asap",
       date: resolved.date,
-      arrivalWindow: resolved.arrivalWindow,
+      // Don't auto-select window — customer taps one to advance.
+      arrivalWindow: state.arrivalWindow,
     });
-  }, [hydrated, blocked]); // eslint-disable-line react-hooks/exhaustive-deps -- seed once
+  }, [hydrated, blocked]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const windows = useMemo(() => {
     if (!state.date) return [];
@@ -89,31 +75,28 @@ export function DateScreen() {
   }, [state.date, state.marketId, durationMinutes]);
 
   const availableWindows = windows.filter((w) => w.available);
-  const noOpenings = state.date != null && availableWindows.length === 0;
+  const list =
+    availableWindows.length > 0
+      ? availableWindows
+      : ARRIVAL_WINDOWS.map((w) => ({
+          id: w.id as ArrivalWindowId,
+          available: true,
+        }));
 
   const minDate = useMemo(() => new Date().toISOString().slice(0, 10), []);
 
-  const totalLabel =
-    pricing && !pricing.quoteOnly
-      ? formatCurrency(pricing.totalCents, pricing.currency)
-      : null;
-
-  const selectedHint =
-    state.arrivalWindow && durationLine
-      ? `${formatArrivesWindowLabel(state.arrivalWindow)} · ${durationLine}`
-      : state.arrivalWindow
-        ? formatArrivesWindowLabel(state.arrivalWindow)
-        : null;
-
-  const handleContinue = () => {
-    if (!isScheduleComplete(state) || noOpenings) return;
-    trackBookingEvent("date_selected", {
-      preset: state.schedulePreset,
-      date: state.date,
-      window: state.arrivalWindow,
+  const selectWindow = (id: ArrivalWindowId) => {
+    updateState({
+      arrivalWindow: id,
+      schedulePreset: state.schedulePreset ?? "asap",
+      step: 7,
     });
-    updateState({ step: 7 });
-    router.push(continuePath(BOOKING_SCREEN_PATHS[getNextScreen("date", state)]));
+    trackBookingEvent("date_selected", {
+      preset: state.schedulePreset ?? "asap",
+      date: state.date,
+      window: id,
+    });
+    router.push(continuePath(BOOKING_SCREEN_PATHS.review));
   };
 
   if (!hydrated || blocked) {
@@ -130,185 +113,73 @@ export function DateScreen() {
   return (
     <BookingFlowChrome
       screenId="date"
-      title="Choose a time"
-      subtitle="Earliest available window first — we never invent openings."
-      ctaLabel="Review booking"
-      ctaDisabled={!isScheduleComplete(state) || noOpenings}
-      backHref={fromReview ? reviewPath : BOOKING_SCREEN_PATHS.service}
+      title="Choose an arrival"
+      hideCta
       hideDefaultTotal
-      footerHint={
-        <div className="space-y-1">
-          {selectedHint ? (
-            <p className="text-[14px] text-[var(--ml-book-ink-muted)]">{selectedHint}</p>
-          ) : null}
-          <div className="flex items-center justify-between gap-3 text-[16px]">
-            <span className="text-[var(--ml-book-ink-muted)]">Estimated total</span>
-            <span className="font-bold tabular-nums text-white">
-              {priceLoading ? "Updating…" : totalLabel ?? "—"}
-            </span>
-          </div>
-        </div>
-      }
-      onContinue={handleContinue}
+      backHref={fromReview ? reviewPath : BOOKING_SCREEN_PATHS.details}
     >
-      <div className="space-y-5">
-        <div>
-          <p className="text-[14px] font-semibold text-[var(--ml-book-ink-muted)]">
-            Earliest available
-          </p>
-          <p className="mt-1 text-[20px] font-bold text-white">
-            {formatBookingDateLabel(state.date)}
-          </p>
-        </div>
+      <div className="space-y-6">
+        <DateStrip
+          value={state.date}
+          minDate={minDate}
+          days={14}
+          onChange={(date) =>
+            updateState({
+              date,
+              schedulePreset: "date",
+              arrivalWindow: undefined,
+            })
+          }
+        />
 
-        {noOpenings ? (
+        {list.length === 0 ? (
           <div
             className="rounded-2xl border border-amber-400/40 bg-amber-500/10 px-4 py-3.5 text-[15px] text-amber-100"
             role="status"
           >
             <p className="font-semibold">No openings on this day</p>
             <p className="mt-1 text-amber-100/85">
-              Your quote is saved. Choose another day below — we never invent available slots.
+              Pick another day above — we never invent available slots.
             </p>
           </div>
         ) : (
-          <fieldset>
-            <legend className="sr-only">Arrival window</legend>
-            <div className="grid gap-2.5">
-              {(availableWindows.length > 0
-                ? availableWindows
-                : ARRIVAL_WINDOWS.map((w) => ({
-                    id: w.id as ArrivalWindowId,
-                    available: true,
-                  }))
-              ).map((window) => {
-                const id = window.id as ArrivalWindowId;
-                const selected = state.arrivalWindow === id;
-                const range = formatWindowRangeShort(id);
-                return (
-                  <button
-                    key={id}
-                    type="button"
-                    onClick={() =>
-                      updateState({
-                        arrivalWindow: id,
-                        schedulePreset:
-                          state.schedulePreset === "date"
-                            ? "date"
-                            : (state.schedulePreset ?? "asap"),
-                      })
-                    }
-                    aria-pressed={selected}
-                    data-selected={selected}
-                    className={cn(
-                      "flex w-full items-center gap-3 rounded-2xl border px-4 py-4 text-left transition-all",
-                      selected
-                        ? "border-[var(--ml-book-primary,#04CED2)] bg-[var(--ml-book-selected,#163556)]"
-                        : "border-[var(--ml-book-border-strong)] bg-[var(--ml-book-surface,#102B49)]",
-                    )}
-                  >
-                    <span className="min-w-0 flex-1">
-                      <span className="block text-[16px] font-semibold text-white">
-                        Arrives {range}
+          <div className="divide-y divide-white/15">
+            {list.map((window, index) => {
+              const id = window.id as ArrivalWindowId;
+              const range = formatWindowRangeShort(id);
+              const earliest = index === 0;
+              return (
+                <button
+                  key={id}
+                  type="button"
+                  onClick={() => selectWindow(id)}
+                  className="flex w-full items-center gap-3 py-4 text-left"
+                >
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-[17px] font-semibold text-white">{range}</span>
+                    {earliest ? (
+                      <span className="mt-0.5 block text-[14px] font-medium text-[#04CED2]">
+                        Earliest available
                       </span>
-                      {selected && durationLine ? (
-                        <span className="mt-0.5 block text-[14px] text-[var(--ml-book-ink-muted)]">
-                          {durationLine}
-                        </span>
-                      ) : null}
-                    </span>
-                    <span
-                      className={cn(
-                        "flex size-6 shrink-0 items-center justify-center rounded-full border-2",
-                        selected
-                          ? "border-[var(--ml-book-primary,#04CED2)] bg-[var(--ml-book-primary,#04CED2)] text-[#01193D]"
-                          : "border-[var(--ml-book-border-strong)]",
-                      )}
-                      aria-hidden
-                    >
-                      {selected ? <Check className="size-3.5" strokeWidth={3} /> : null}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-          </fieldset>
-        )}
-
-        {!pickAnotherDay ? (
-          <button
-            type="button"
-            onClick={() => {
-              setPickAnotherDay(true);
-              updateState({ schedulePreset: "date" });
-            }}
-            className="text-[15px] font-semibold text-[var(--ml-book-primary,#04CED2)]"
-          >
-            Choose another day
-          </button>
-        ) : (
-          <div>
-            <p className="mb-3 text-[15px] font-semibold text-white">Choose another day</p>
-            <DateStrip
-              value={state.date}
-              minDate={minDate}
-              onChange={(date) =>
-                updateState({
-                  date,
-                  schedulePreset: "date",
-                  arrivalWindow: state.arrivalWindow,
-                })
-              }
-            />
+                    ) : null}
+                  </span>
+                  <ChevronRight className="size-5 shrink-0 text-[#04CED2]" aria-hidden />
+                </button>
+              );
+            })}
           </div>
         )}
 
-        {durationReliable && !state.arrivalWindow ? (
-          <p className="text-[14px] text-[var(--ml-book-ink-muted)]">
-            Estimated cleaning time: {formatDurationLabel(durationMinutes).replace(/^~/, "")}
+        <p className="text-[15px] text-white/65">Tap a window to review your booking.</p>
+
+        {durationHours ? (
+          <p className="border-t border-white/15 pt-4 text-[14px] text-white/55">
+            Estimated cleaning time · {durationHours}
+            {durationMinutes
+              ? ` (${formatDurationLabel(durationMinutes).replace(/^~/, "")})`
+              : ""}
           </p>
         ) : null}
-
-        {!showInstructions ? (
-          <button
-            type="button"
-            onClick={() => setShowInstructions(true)}
-            className="flex w-full items-center gap-3 rounded-2xl border border-[var(--ml-book-border-strong)] bg-[var(--ml-book-surface,#102B49)] px-4 py-3.5 text-left"
-          >
-            <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white/10 text-[var(--ml-book-primary,#04CED2)]">
-              <Plus className="size-4" strokeWidth={2.5} aria-hidden />
-            </span>
-            <span className="min-w-0 flex-1">
-              <span className="block text-[15px] font-semibold text-white">
-                Add arrival instructions
-              </span>
-              <span className="mt-0.5 block text-[14px] text-[var(--ml-book-ink-muted)]">
-                Front desk, gate or parking
-              </span>
-            </span>
-            <ChevronRight
-              className="size-5 shrink-0 text-[var(--ml-book-ink-subtle)]"
-              aria-hidden
-            />
-          </button>
-        ) : (
-          <div>
-            <label
-              htmlFor="arrival-instructions"
-              className="mb-2 block text-[15px] font-semibold text-white"
-            >
-              Arrival instructions
-            </label>
-            <Textarea
-              id="arrival-instructions"
-              value={state.accessNotes ?? ""}
-              onChange={(e) => updateState({ accessNotes: e.target.value.slice(0, 500) })}
-              placeholder="Front desk, gate code, parking…"
-              rows={3}
-              className="rounded-xl border-[var(--ml-book-border-strong)] bg-[var(--ml-book-surface,#102B49)] text-white"
-            />
-          </div>
-        )}
       </div>
     </BookingFlowChrome>
   );

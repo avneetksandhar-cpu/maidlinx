@@ -4,11 +4,13 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronDown, ChevronRight, Plus, UserRound } from "lucide-react";
+import { ChevronRight, UserRound } from "lucide-react";
 import { CustomerBottomNav } from "@/components/customer/customer-bottom-nav";
 import { AddressAutocomplete } from "@/components/booking/address-autocomplete";
 import { GoogleMapsProvider } from "@/components/booking/google-maps-provider";
 import { WaitlistSignup } from "@/components/waitlist/waitlist-signup";
+import { FloorPlanArt } from "@/components/home/floor-plan-art";
+import { HomeUsualCleanCard } from "@/components/home/home-usual-clean-card";
 import { useBookingState } from "@/hooks/use-booking-state";
 import { buildAddressStatePatch } from "@/lib/bookings/booking-helpers";
 import {
@@ -28,17 +30,16 @@ import { routes } from "@/config/site";
 import { trackBookingEvent } from "@/lib/analytics/booking";
 import type { BookingState } from "@/lib/bookings/booking-state";
 import type { DashboardBooking } from "@/lib/dashboard/bookings";
-import { HomeUsualCleanCard } from "@/components/home/home-usual-clean-card";
 import { getCustomerFriendlyStatusLabel } from "@/lib/bookings/status-timeline";
+import { normalizeBookingStatus } from "@/lib/bookings/status";
 
 const STANDARD_CLEAN_CHECKLIST = [
   "Kitchen surfaces, sink, and appliance exteriors",
   "Bathrooms — sinks, toilets, showers/tubs, mirrors",
   "Living areas and bedrooms — dust, floors, tidy surfaces",
-  "Extras (fridge, oven, laundry, windows) priced separately at checkout",
+  "Extras (fridge, oven, laundry, windows) priced separately",
 ] as const;
 
-/** US ZIP or Canadian postal — used when the single field is postal-only. */
 function looksLikePostalOrZip(raw: string): boolean {
   const t = raw.trim().toUpperCase().replace(/[\s-]/g, "");
   if (!t) return false;
@@ -74,10 +75,23 @@ function formatUpcomingWhen(booking: DashboardBooking): { dateLabel: string; win
   return { dateLabel, windowLabel };
 }
 
-/**
- * App-open home — premium navy South Florida launch screen.
- * Booking draft persists into the same /book funnel (logic unchanged).
- */
+function isCleanerOnTheWay(status: string): boolean {
+  const n = normalizeBookingStatus(status);
+  return n === "on_the_way" || n === "arrived" || n === "in_progress";
+}
+
+function isLiveUpcoming(status: string): boolean {
+  const n = normalizeBookingStatus(status);
+  return (
+    n === "confirmed" ||
+    n === "awaiting_assignment" ||
+    n === "offered" ||
+    n === "assigned" ||
+    n === "accepted" ||
+    isCleanerOnTheWay(n)
+  );
+}
+
 export function AppOpenHome() {
   return (
     <GoogleMapsProvider>
@@ -92,12 +106,13 @@ function AppOpenHomeInner() {
   const authStatus = useAuthSession();
   const [hint, setHint] = useState<string | null>(null);
   const [includedOpen, setIncludedOpen] = useState(false);
-  const [showUnit, setShowUnit] = useState(false);
   const [upcoming, setUpcoming] = useState<DashboardBooking | null>(null);
+  const [lastCompleted, setLastCompleted] = useState(false);
 
   useEffect(() => {
     if (authStatus !== "authenticated") {
       setUpcoming(null);
+      setLastCompleted(false);
       return;
     }
     let cancelled = false;
@@ -105,17 +120,31 @@ function AppOpenHomeInner() {
       .then(async (res) => {
         if (!res.ok) return null;
         const json = (await res.json()) as {
-          data?: { upcoming?: DashboardBooking[] };
+          data?: { upcoming?: DashboardBooking[]; past?: DashboardBooking[] };
           upcoming?: DashboardBooking[];
+          past?: DashboardBooking[];
         };
-        return json.data?.upcoming ?? json.upcoming ?? null;
+        return {
+          upcoming: json.data?.upcoming ?? json.upcoming ?? [],
+          past: json.data?.past ?? json.past ?? [],
+        };
       })
-      .then((list) => {
-        if (cancelled) return;
-        setUpcoming(Array.isArray(list) && list.length > 0 ? list[0]! : null);
+      .then((payload) => {
+        if (cancelled || !payload) return;
+        const live = (payload.upcoming ?? []).find((b) => isLiveUpcoming(b.status));
+        setUpcoming(live ?? null);
+        setLastCompleted(
+          !live &&
+            (payload.past ?? []).some(
+              (b) => normalizeBookingStatus(b.status) === "completed",
+            ),
+        );
       })
       .catch(() => {
-        if (!cancelled) setUpcoming(null);
+        if (!cancelled) {
+          setUpcoming(null);
+          setLastCompleted(false);
+        }
       });
     return () => {
       cancelled = true;
@@ -158,7 +187,6 @@ function AppOpenHomeInner() {
     setHint(null);
   };
 
-  /** Returns true when the postal resolves inside customer Home market (South Florida). */
   const applyPostalCoverage = (raw: string): boolean => {
     const postal = normalizePostalDraft(raw);
     const area = resolveServiceArea({ postalCode: postal });
@@ -190,15 +218,10 @@ function AppOpenHomeInner() {
       inServiceArea: state.inServiceArea,
       marketId: state.marketId,
     });
-    if (isAddressComplete(state) && flOk) {
-      // Address check before sign-in — continue into 4-step funnel (Clean panel).
-      return BOOKING_SCREEN_PATHS.service;
-    }
-    if (state.postalCode && flOk) {
-      return getBookingEntryPath({ prefillAddress: true });
-    }
+    if (isAddressComplete(state) && flOk) return BOOKING_SCREEN_PATHS.service;
+    if (state.postalCode && flOk) return getBookingEntryPath({ prefillAddress: true });
     return getBookingEntryPath();
-  }, [state, authStatus]);
+  }, [state]);
 
   const continueIntoBooking = () => {
     trackBookingEvent("booking_started", { entry: "app_open_check_availability" });
@@ -252,43 +275,42 @@ function AppOpenHomeInner() {
 
   const accountHref =
     authStatus === "authenticated" ? routes.dashboardProfile : routes.signIn;
-
   const upcomingWhen = upcoming ? formatUpcomingWhen(upcoming) : null;
-
-  // Seed unit field open when draft already has one.
-  useEffect(() => {
-    if (hydrated && state.line2?.trim()) setShowUnit(true);
-  }, [hydrated, state.line2]);
+  const trackFirst = upcoming && isCleanerOnTheWay(upcoming.status);
+  const showUsual = !upcoming && (lastCompleted || authStatus !== "authenticated");
 
   return (
     <div
       className="relative flex min-h-dvh flex-col overflow-x-hidden bg-[#01193D] text-white"
       style={{ fontFamily: "var(--ml-font-ios)" }}
     >
-      {/* Top bar — compact 48px mark */}
       <header className="relative z-10 flex items-center justify-between px-5 pt-[max(0.65rem,env(safe-area-inset-top))] pb-1">
-        <Link href={routes.home} aria-label="MaidLinx home" className="inline-flex">
-          <Image
-            src="/brand/maidlinx-mark.png"
-            alt="MaidLinx"
-            width={48}
-            height={48}
-            className="size-12 rounded-full object-cover"
-            priority
-          />
-        </Link>
+        <div className="flex items-center gap-3">
+          <Link href={routes.home} aria-label="MaidLinx home" className="inline-flex">
+            <Image
+              src="/brand/maidlinx-mark.png"
+              alt="MaidLinx"
+              width={48}
+              height={48}
+              className="size-12 rounded-full object-cover"
+              priority
+            />
+          </Link>
+          <span className="h-6 w-px bg-white/30" aria-hidden />
+          <span className="text-[15px] font-medium text-white">South Florida</span>
+        </div>
         <Link
           href={accountHref}
           aria-label={authStatus === "authenticated" ? "Account" : "Sign in"}
-          className="inline-flex size-10 items-center justify-center rounded-full border border-white/25 bg-white/10 text-white transition-colors hover:bg-white/15"
+          className="inline-flex size-10 items-center justify-center rounded-full border border-white/25 bg-white/10 text-white"
         >
           <UserRound className="size-5" strokeWidth={1.85} aria-hidden />
         </Link>
       </header>
 
-      <main className="relative z-10 flex flex-1 flex-col px-5 pb-[calc(5.25rem+env(safe-area-inset-bottom))] pt-3">
+      <main className="relative z-10 flex flex-1 flex-col px-5 pb-[calc(5.25rem+env(safe-area-inset-bottom))] pt-2">
         <div className="mx-auto flex w-full max-w-md flex-1 flex-col">
-          {/* Upcoming clean → View my booking first; else usual clean */}
+          {/* Returning: Track my clean first when cleaner on the way */}
           {upcoming && upcomingWhen ? (
             <Link
               href={routes.bookingDetail(upcoming.id)}
@@ -296,7 +318,7 @@ function AppOpenHomeInner() {
             >
               <div className="min-w-0">
                 <p className="text-[11px] font-semibold tracking-[0.14em] text-[#04CED2] uppercase">
-                  Upcoming clean
+                  {trackFirst ? "Cleaner on the way" : "Upcoming clean"}
                 </p>
                 <p className="mt-0.5 truncate text-[16px] font-semibold text-white">
                   {upcomingWhen.dateLabel}
@@ -307,136 +329,101 @@ function AppOpenHomeInner() {
                 </p>
               </div>
               <span className="inline-flex shrink-0 items-center gap-0.5 text-sm font-semibold text-[#04CED2]">
-                View my booking
+                {trackFirst ? "Track my clean" : "View my booking"}
                 <ChevronRight className="size-4" aria-hidden />
               </span>
             </Link>
-          ) : (
+          ) : showUsual ? (
             <HomeUsualCleanCard className="mb-3" />
-          )}
+          ) : null}
 
-          <h1 className="booking-step-title max-w-[16ch] text-white">Come home to clean.</h1>
-          <p className="mt-1.5 text-[16px] font-medium text-white/65">
-            South Florida home cleaning
-          </p>
+          {/* Floor plan — shrinks on short phones so address+CTA stay visible */}
+          <div className="mx-auto w-full max-w-[280px] py-1 max-[390px]:max-w-[220px] max-[700px]:max-h-[22vh] max-[700px]:overflow-hidden">
+            <FloorPlanArt className="h-auto w-full max-h-[22vh] min-[701px]:max-h-none" />
+          </div>
 
-          {/* Address near top — lighter surface only for the field */}
-          <section className="mt-4">
-            <p className="text-[16px] font-semibold text-white">Where are we cleaning?</p>
+          <h1 className="mt-1 text-[1.375rem] font-semibold tracking-tight text-white">
+            Where are we cleaning?
+          </h1>
 
-            <div className="mt-2.5 rounded-xl bg-[#102B49] p-1">
-              <AddressAutocomplete
-                value={state}
-                onChange={(value) => {
-                  applyAddress(value);
-                  if (value.line2?.trim()) setShowUnit(true);
-                }}
-                onAddressSelected={(value) => {
-                  applyAddress(value);
-                  if (value.line2?.trim()) setShowUnit(true);
-                  trackBookingEvent("address_selected", {
-                    marketId: value.marketId ?? state.marketId,
-                    placeId: value.googlePlaceId,
-                    entry: "app_open",
-                  });
-                  const patched = buildAddressStatePatch(state, value);
-                  const marketId = patched.marketId ?? state.marketId;
-                  if (
-                    isCustomerHomeBookableArea({
-                      inServiceArea: patched.inServiceArea,
-                      marketId,
-                    }) &&
-                    isMarketBookingOpen(marketId) &&
-                    patched.line1 &&
-                    patched.city &&
-                    patched.postalCode
-                  ) {
-                    router.push(BOOKING_SCREEN_PATHS.service);
-                  }
-                }}
-                variant="hero"
-                hideLocate
-                locationBiasMarket="SOUTH_FLORIDA"
-                label="Address or ZIP"
-                placeholder="South Florida address or ZIP"
-                className="[&_label]:sr-only [&_input]:h-12 [&_input]:rounded-xl [&_input]:border-transparent [&_input]:bg-[#102B49] [&_input]:pl-11 [&_input]:text-[16px] [&_input]:text-white [&_input]:placeholder:text-white/40 [&_[data-hero-pin]]:text-white/55"
+          <div className="mt-3 rounded-xl border border-white/70 bg-transparent px-1 py-1">
+            <AddressAutocomplete
+              value={state}
+              onChange={(value) => applyAddress(value)}
+              onAddressSelected={(value) => {
+                applyAddress(value);
+                trackBookingEvent("address_selected", {
+                  marketId: value.marketId ?? state.marketId,
+                  placeId: value.googlePlaceId,
+                  entry: "app_open",
+                });
+                const patched = buildAddressStatePatch(state, value);
+                const marketId = patched.marketId ?? state.marketId;
+                if (
+                  isCustomerHomeBookableArea({
+                    inServiceArea: patched.inServiceArea,
+                    marketId,
+                  }) &&
+                  isMarketBookingOpen(marketId) &&
+                  patched.line1 &&
+                  patched.city &&
+                  patched.postalCode
+                ) {
+                  router.push(BOOKING_SCREEN_PATHS.service);
+                }
+              }}
+              variant="hero"
+              hideLocate
+              locationBiasMarket="SOUTH_FLORIDA"
+              label="Address or ZIP"
+              placeholder="South Florida address or ZIP"
+              className="[&_label]:sr-only [&_input]:h-12 [&_input]:rounded-xl [&_input]:border-0 [&_input]:bg-transparent [&_input]:pl-11 [&_input]:text-[16px] [&_input]:text-white [&_input]:placeholder:text-white/40 [&_[data-hero-pin]]:text-[#04CED2]"
+            />
+          </div>
+
+          {hint ||
+          (hydrated &&
+            Boolean(state.postalCode?.trim() || state.line1?.trim()) &&
+            !isCustomerHomeBookableArea({
+              inServiceArea: state.inServiceArea,
+              marketId: state.marketId,
+            })) ? (
+            <p className="mt-2 text-[15px] leading-snug text-white/70" role="status">
+              {hint ?? outsideFloridaHint}
+            </p>
+          ) : null}
+
+          {waitlistReason ? (
+            <div className="mt-2">
+              <WaitlistSignup
+                reason={waitlistReason}
+                marketId={state.marketId}
+                marketName={state.marketName}
+                source="app_open_home"
+                page="/"
+                variant="compact"
               />
             </div>
+          ) : null}
 
-            {!showUnit ? (
-              <button
-                type="button"
-                onClick={() => setShowUnit(true)}
-                className="mt-2 inline-flex items-center gap-1.5 text-[15px] font-semibold text-[#04CED2]"
-              >
-                <Plus className="size-4" aria-hidden />
-                Add apartment or unit
-              </button>
-            ) : (
-              <div className="mt-2">
-                <label
-                  htmlFor="home-unit"
-                  className="mb-1.5 block text-sm font-medium text-white/80"
-                >
-                  Apartment or unit
-                </label>
-                <input
-                  id="home-unit"
-                  value={state.line2 ?? ""}
-                  onChange={(e) => updateState({ line2: e.target.value })}
-                  placeholder="Apt, suite, floor…"
-                  autoComplete="address-line2"
-                  className="h-12 w-full rounded-xl border border-white/25 bg-[#102B49] px-3.5 text-[16px] text-white placeholder:text-white/40 focus:border-[#04CED2] focus:outline-none"
-                />
-              </div>
-            )}
+          <button
+            type="button"
+            onClick={onCheckAvailability}
+            className="mt-3 inline-flex h-12 w-full items-center justify-center rounded-xl bg-[#04CED2] text-[16px] font-semibold text-[#01193D]"
+          >
+            Check availability
+          </button>
 
-            {hint ||
-            (hydrated &&
-              Boolean(state.postalCode?.trim() || state.line1?.trim()) &&
-              !isCustomerHomeBookableArea({
-                inServiceArea: state.inServiceArea,
-                marketId: state.marketId,
-              })) ? (
-              <p className="mt-2 text-[15px] leading-snug text-white/70" role="status">
-                {hint ?? outsideFloridaHint}
-              </p>
-            ) : null}
-
-            {waitlistReason ? (
-              <div className="mt-2">
-                <WaitlistSignup
-                  reason={waitlistReason}
-                  marketId={state.marketId}
-                  marketName={state.marketName}
-                  source="app_open_home"
-                  page="/"
-                  variant="compact"
-                />
-              </div>
-            ) : null}
-
-            <button
-              type="button"
-              onClick={onCheckAvailability}
-              className="mt-3 inline-flex h-12 w-full items-center justify-center rounded-xl bg-[#04CED2] text-[16px] font-semibold text-[#01193D] transition-opacity hover:opacity-95 active:opacity-90"
-            >
-              Check availability
-            </button>
-          </section>
-
-          <section className="mt-3">
+          <section className="mt-2" id="whats-included">
             <button
               type="button"
               className="flex w-full items-center justify-between gap-3 py-3 text-left"
               aria-expanded={includedOpen}
               onClick={() => setIncludedOpen((v) => !v)}
             >
-              <span className="text-[15px] font-medium text-white/85">
-                What&apos;s included in a standard clean?
-              </span>
-              <ChevronDown
-                className={`size-4 shrink-0 text-white/55 transition-transform ${includedOpen ? "rotate-180" : ""}`}
+              <span className="text-[15px] font-semibold text-[#04CED2]">What&apos;s included?</span>
+              <ChevronRight
+                className={`size-4 shrink-0 text-[#04CED2] transition-transform ${includedOpen ? "rotate-90" : ""}`}
                 aria-hidden
               />
             </button>
@@ -450,15 +437,6 @@ function AppOpenHomeInner() {
               </ul>
             ) : null}
           </section>
-
-          <div className="mt-auto flex flex-wrap gap-x-4 gap-y-2 pt-6 text-[15px] text-white/55">
-            <Link href={routes.forBusiness} className="hover:text-white/80">
-              Business cleaning
-            </Link>
-            <Link href={routes.becomeCleaner} className="hover:text-white/80">
-              Become a cleaner
-            </Link>
-          </div>
         </div>
       </main>
 

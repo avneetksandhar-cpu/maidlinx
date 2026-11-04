@@ -1,45 +1,40 @@
-# Agent report — Founder Ava booking polish (Save your booking)
+# Agent report — Founder 4-panel booking (authoritative visual)
 
 **Date:** 2026-11-04  
 **Branch:** `feature/founder-booking-polish`  
-**PR:** https://github.com/avneetksandhar-cpu/maidlinx/pull/28  
 **Stripe LIVE:** OFF  
-**Coord:** Pay-after kept on `feature/pay-after-cleaning` — not in this PR.  
-**Preview:** http://127.0.0.1:3013 · shots in `docs/screenshots/founder-polish-2026-11-04/`
+**Compose:** Lands independently of pay-after [#27](https://github.com/avneetksandhar-cpu/maidlinx/pull/27) and recurring [#26](https://github.com/avneetksandhar-cpu/maidlinx/pull/26) — merge order: recurring → pay-after → this polish (or rebase after those land).
+
+## ROUTES
+
+| Panel | Route |
+|-------|-------|
+| Home | `/` |
+| Choose your clean | `/book/service` |
+| Make it yours | `/book/details` |
+| Choose an arrival | `/book/date` |
+| Review | `/book/review` |
+| Save your booking | `/sign-in?from=booking&next=/book/review` |
 
 ## SCREEN_STATUS
 
-| Screen | Status | Notes |
-|--------|--------|-------|
-| Home | DONE | Midnight `#01193D`, 48px mark, “Where are we cleaning?”, unit on tap, upcoming → **View my booking** first, usual clean = home + prefs + current price + next opening |
-| Choose your clean | DONE | One-line blurbs; What’s included? checklist; full-tap extras with price beside name; total above **Choose a time** |
-| Choose a time | DONE | Earliest available first; Choose another day under; `Arrives … · Cleaning takes about N hours` when duration reliable |
-| Sign in (Save your booking) | DONE | `/sign-in?from=booking` → compact mark, single-line visit reminder, OAuth only if `NEXT_PUBLIC_OAUTH_*_ENABLED=true`, else email magic link; Check your email + resend; resumes **Review**; never charges |
-| Review | DONE | Address / Arrival / Service / Total + Edit each; payment timing directly above **Request clean**; change banner after Edit |
-| Returning | DONE | Book my usual clean card with saved home, prefs, live price, next opening |
+| Screen | Status |
+|--------|--------|
+| Home | DONE — logo + South Florida, floor-plan art (scales down), Where are we cleaning?, Check availability, What’s included?, bottom nav |
+| Choose your clean | DONE — Standard / Deep / Move-out rows + chevron; Compare services |
+| Make it yours | DONE — selected service + Edit; beds/baths; extras with prices; sticky total + Choose a time |
+| Choose an arrival | DONE — date strip; windows with Earliest available; tap → Review; duration note |
+| Review | DONE — address, scope, arrival, total + Edit; payment timing above Request clean |
+| Save your booking | DONE — compact gate; email magic link (OAuth only if env flags true) |
 
-## Layout system
+## RETURNING_PATHS
 
-- 48px logo · 20px side margins · body 16–17px · one heading style  
-- Navy BG; `#102B49` surfaces for fields / selected details  
-- Solid turquoise only on primary CTA; selections = check + outline  
-- Sticky footer + `--ml-keyboard-inset` so keyboard never covers inputs/errors  
-
-## Auth / preserve
-
-- Auth required at **review** (+ payment)  
-- Draft stays in `sessionStorage` (`maidlinx_booking_state`) across Back / Edit / magic-link new tab  
-- Signing in alone never creates booking or charges card  
-
-## Env
-
-```
-NEXT_PUBLIC_OAUTH_GOOGLE_ENABLED=false
-NEXT_PUBLIC_OAUTH_APPLE_ENABLED=false
-```
-
-Flip to `true` only after Supabase provider works (see `docs/OAUTH_SETUP.md`).
+| Condition | Home CTA |
+|-----------|----------|
+| Cleaner on the way / arrived / in progress | **Track my clean** → `/bookings/[id]` |
+| Other live upcoming | **View my booking** |
+| No live booking + usual clean saved (or past completed) | **Book my usual clean** |
 
 ## STRIPE_LIVE
 
-**OFF** — no LIVE keys introduced; payment path untouched in this PR.
+**OFF**
