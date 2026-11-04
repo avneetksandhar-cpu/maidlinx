@@ -24,7 +24,7 @@ const faqs = [
   {
     question: "How does payment work?",
     answer:
-      "You pay a deposit to confirm your booking. The remaining balance is charged after your clean is complete.",
+      "You save your card when you request a clean. We charge the agreed total after your clean is complete (Stripe TEST).",
   },
   {
     question: "Can I reschedule?",

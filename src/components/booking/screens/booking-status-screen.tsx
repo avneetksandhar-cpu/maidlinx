@@ -17,7 +17,7 @@ import { getBookingStatusLabel, isLiveLocationStatus, normalizeBookingStatus } f
 import { getCustomerStatusHeadline, getCustomerTimelineState } from "@/lib/bookings/status-timeline";
 import { Button } from "@/components/ui";
 import { formatCurrency } from "@/lib/utils";
-import { calculateDepositCents } from "@/lib/payments/deposit";
+import { getDueLaterCents, getDueNowCents, isPayAfterCleaningEnabled } from "@/lib/payments/pay-after";
 import { routes } from "@/config/site";
 import { trackFunnelStep } from "@/lib/analytics/booking-funnel";
 import { useBooking } from "@/components/booking/booking-provider";
@@ -342,9 +342,16 @@ export function BookingStatusScreen({
             </dd>
           </div>
           <div className="flex justify-between gap-4">
-            <dt className="text-[var(--ml-dark-ink-muted)]">Deposit paid</dt>
+            <dt className="text-[var(--ml-dark-ink-muted)]">
+              {isPayAfterCleaningEnabled() ? "Charged after clean" : "Deposit paid"}
+            </dt>
             <dd className="font-medium text-white">
-              {formatCurrency(calculateDepositCents(booking.total_cents), booking.currency)}
+              {formatCurrency(
+                isPayAfterCleaningEnabled()
+                  ? getDueLaterCents(booking.total_cents)
+                  : getDueNowCents(booking.total_cents),
+                booking.currency,
+              )}
             </dd>
           </div>
           <div className="flex justify-between gap-4">

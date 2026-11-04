@@ -39,6 +39,7 @@ export interface StoredBookingCleaner {
   lastName: string | null;
   ratingAverage: number | null;
   ratingCount: number | null;
+  avatarUrl?: string | null;
   latitude?: number | null;
   longitude?: number | null;
 }
@@ -46,6 +47,7 @@ export interface StoredBookingCleaner {
 export interface StoredBooking {
   id: string;
   status: string;
+  payment_status: string;
   customer_id: string | null;
   professional_profile_id: string | null;
   service_type: string;
@@ -74,6 +76,12 @@ export interface StoredBooking {
   address_longitude: number | null;
   google_place_id: string | null;
   stripe_payment_intent_id: string | null;
+  stripe_customer_id: string | null;
+  stripe_setup_intent_id: string | null;
+  stripe_payment_method_id: string | null;
+  stripe_receipt_url: string | null;
+  card_brand: string | null;
+  card_last4: string | null;
   notes: string | null;
   pricing_snapshot: PriceBreakdown | null;
   market_id: string | null;
@@ -93,6 +101,7 @@ function mapRow(
   return {
     id: String(row.id),
     status: String(row.status),
+    payment_status: row.payment_status ? String(row.payment_status) : "pending",
     customer_id: row.customer_id ? String(row.customer_id) : null,
     professional_profile_id: row.professional_profile_id
       ? String(row.professional_profile_id)
@@ -127,6 +136,16 @@ function mapRow(
     stripe_payment_intent_id: row.stripe_payment_intent_id
       ? String(row.stripe_payment_intent_id)
       : null,
+    stripe_customer_id: row.stripe_customer_id ? String(row.stripe_customer_id) : null,
+    stripe_setup_intent_id: row.stripe_setup_intent_id
+      ? String(row.stripe_setup_intent_id)
+      : null,
+    stripe_payment_method_id: row.stripe_payment_method_id
+      ? String(row.stripe_payment_method_id)
+      : null,
+    stripe_receipt_url: row.stripe_receipt_url ? String(row.stripe_receipt_url) : null,
+    card_brand: row.card_brand ? String(row.card_brand) : null,
+    card_last4: row.card_last4 ? String(row.card_last4) : null,
     notes: row.notes ? String(row.notes) : null,
     pricing_snapshot: row.pricing_snapshot as PriceBreakdown | null,
     market_id: row.market_id ? String(row.market_id) : null,
@@ -178,7 +197,7 @@ async function loadCleanerForBooking(
   const supabase = createAdminClient();
   const { data: profile } = await supabase
     .from("profiles")
-    .select("id, first_name, last_name")
+    .select("id, first_name, last_name, avatar_url")
     .eq("id", professionalProfileId)
     .maybeSingle();
 
@@ -207,6 +226,7 @@ async function loadCleanerForBooking(
     id: String(profileRow.id),
     firstName: profileRow.first_name ? String(profileRow.first_name) : null,
     lastName: profileRow.last_name ? String(profileRow.last_name) : null,
+    avatarUrl: profileRow.avatar_url ? String(profileRow.avatar_url) : null,
     ratingAverage:
       cleanerRow.rating_average !== undefined && cleanerRow.rating_average !== null
         ? Number(cleanerRow.rating_average)
@@ -474,6 +494,102 @@ export async function attachPaymentIntent(
   if (error) {
     throw new Error(error.message);
   }
+}
+
+export async function attachSetupIntent(
+  bookingId: string,
+  params: {
+    setupIntentId: string;
+    stripeCustomerId: string;
+  },
+): Promise<void> {
+  const supabase = createAdminClient();
+  const { error } = await supabase
+    .from("bookings")
+    .update({
+      stripe_setup_intent_id: params.setupIntentId,
+      stripe_customer_id: params.stripeCustomerId,
+    } as never)
+    .eq("id", bookingId);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+}
+
+export interface ConfirmPaymentMethodParams {
+  bookingId: string;
+  setupIntentId: string;
+  stripeCustomerId: string;
+  paymentMethodId: string;
+  cardBrand?: string | null;
+  cardLast4?: string | null;
+}
+
+/**
+ * Card saved via SetupIntent — booking can match. No money captured yet (pay-after).
+ * Idempotent when already past pending_payment.
+ */
+export async function confirmBookingPaymentMethod(
+  params: ConfirmPaymentMethodParams,
+): Promise<StoredBooking | null> {
+  const supabase = createAdminClient();
+  const booking = await getBookingById(params.bookingId);
+  if (!booking) return null;
+
+  const { data: updated, error } = await supabase
+    .from("bookings")
+    .update({
+      status: "awaiting_assignment",
+      payment_status: "pending",
+      stripe_setup_intent_id: params.setupIntentId,
+      stripe_customer_id: params.stripeCustomerId,
+      stripe_payment_method_id: params.paymentMethodId,
+      card_brand: params.cardBrand ?? null,
+      card_last4: params.cardLast4 ?? null,
+    } as never)
+    .eq("id", params.bookingId)
+    .eq("status", "pending_payment")
+    .select("id")
+    .maybeSingle();
+
+  if (error) throw new Error(error.message);
+
+  if (!updated) {
+    const current = await getBookingById(params.bookingId);
+    if (current && current.status !== "pending_payment") {
+      // Ensure PM fields are persisted even if status already advanced.
+      if (!current.stripe_payment_method_id && params.paymentMethodId) {
+        await supabase
+          .from("bookings")
+          .update({
+            stripe_setup_intent_id: params.setupIntentId,
+            stripe_customer_id: params.stripeCustomerId,
+            stripe_payment_method_id: params.paymentMethodId,
+            card_brand: params.cardBrand ?? null,
+            card_last4: params.cardLast4 ?? null,
+          } as never)
+          .eq("id", params.bookingId);
+        return getBookingById(params.bookingId);
+      }
+      return current;
+    }
+    throw new Error("Booking payment method could not be confirmed.");
+  }
+
+  await emitBookingEvent({
+    bookingId: params.bookingId,
+    type: "payment_method_saved",
+    actor: { role: "system" },
+    metadata: {
+      setupIntentId: params.setupIntentId,
+      paymentMethodId: params.paymentMethodId,
+      cardBrand: params.cardBrand ?? null,
+      cardLast4: params.cardLast4 ?? null,
+    },
+  });
+
+  return getBookingById(params.bookingId);
 }
 
 /** Persist checkout legal consent (idempotent for same policy version). */

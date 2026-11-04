@@ -644,6 +644,19 @@ export async function transitionJobStatus(
   }
 
   if (normalizedTo === "completed") {
+    // Pay-after (Stripe TEST): charge agreed total once. Idempotent under double-complete.
+    try {
+      const { chargeBookingAfterClean } = await import(
+        "@/lib/payments/charge-on-complete"
+      );
+      const chargeResult = await chargeBookingAfterClean(jobId);
+      if (chargeResult.status === "failed") {
+        console.error("[jobs] completion charge failed:", chargeResult.error);
+      }
+    } catch (chargeError) {
+      console.error("[jobs] completion charge error:", chargeError);
+    }
+
     try {
       const { recordPendingPayoutForCompletedBooking } = await import(
         "@/lib/payments/payouts"

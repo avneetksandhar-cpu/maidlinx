@@ -2,12 +2,17 @@
 
 Format: date · decision · owner · rationale · status
 
-## 2026-11-04 — STRIPE_MODEL_FLAG: keep deposit-upfront until founder RED approve after-clean
+## 2026-11-04 — Pay-after-cleaning ON for Stripe TEST (founder RED approved)
 
-- **Decision:** Current checkout **charges a deposit upfront** (default 50% PaymentIntent, automatic capture) at request. Founder intended model is **charge agreed total after clean completes**. **Do not change production payment capture timing** without explicit founder RED approval. Document gap; keep Stripe LIVE OFF; customer UI must show due now vs due after clean honestly for the current deposit model.
+- **Decision:** Implement **pay-after-cleaning** in Stripe **TEST**: SetupIntent saves card at request ($0 due now); charge **agreed total once** when cleaner marks complete (`paymentType=completion`, Stripe + DB idempotency). Forced **OFF** if `sk_live` present. Stripe LIVE remains OFF. Customer UI must show due-now $0 / charged-after-clean honestly. Evidence: `company/AGENT_REPORTS/2026-11-04-pay-after-cleaning.md`.
 - **Owner:** Founder / Lead Engineer
-- **Rationale:** Changing auth/capture mid-flight risks double-charge, incomplete refunds, and Launch Gate integrity. Evidence in `company/AGENT_REPORTS/2026-11-04-stripe-model-flag.md`.
-- **Status:** Flagged — awaiting founder decision
+- **Rationale:** Founder directed post-booking UX + pay-after model; TEST-only flip is reversible and LIVE-gated.
+- **Status:** Accepted (TEST); LIVE still blocked
+
+## 2026-11-04 — STRIPE_MODEL_FLAG (superseded same day)
+
+- **Decision:** Originally keep deposit-upfront until founder RED approve after-clean. **Superseded** by pay-after-cleaning TEST decision above after founder approval.
+- **Status:** Superseded
 
 ## 2026-10-19 — Native iOS = Capacitor shell; www stays app-open dark web
 
