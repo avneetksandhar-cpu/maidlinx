@@ -15,6 +15,11 @@ import {
   squareFootageAdjustment,
 } from "@/lib/pricing/config";
 import { getServiceBaseCentsForMarket } from "@/lib/pricing/market-prices";
+import {
+  isRecurringDiscountCadence,
+  recurringDiscountCents,
+  RECURRING_DISCOUNT_LABEL,
+} from "@/lib/pricing/recurring-discount";
 import type { PriceBreakdown } from "@/lib/pricing/types";
 
 export type { PriceBreakdown };
@@ -74,7 +79,10 @@ export function calculateBookingPrice(input: BookingQuoteInput): PriceBreakdown 
   const subtotalCents = baseCents + bedroomCents + bathroomCents + squareFootageCents + extrasCents;
   const platformFeeCents = Math.round(subtotalCents * (PLATFORM_FEE_PERCENT / 100));
   const taxCents = 0;
-  const discountCents = 0;
+  // Client/legacy preview: same recurring cut as engine defaults (server still authoritative).
+  const discountCents = isRecurringDiscountCadence(input.recurringFrequency)
+    ? recurringDiscountCents(subtotalCents, input.recurringFrequency)
+    : 0;
   const totalCents = subtotalCents + platformFeeCents + taxCents - discountCents;
 
   return {
@@ -88,6 +96,16 @@ export function calculateBookingPrice(input: BookingQuoteInput): PriceBreakdown 
     feesCents: platformFeeCents,
     taxCents,
     discountCents,
+    discountLines:
+      discountCents > 0
+        ? [
+            {
+              type: "recurring",
+              label: RECURRING_DISCOUNT_LABEL,
+              amountCents: discountCents,
+            },
+          ]
+        : [],
     totalCents,
     currency,
     quoteOnly: false,

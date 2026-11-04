@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { BookingFlowChrome } from "@/components/booking/booking-flow-chrome";
 import { PromoCodeField } from "@/components/booking/promo-code-field";
+import { PriceSummary } from "@/components/booking/price-summary";
 import { useBookingGuard } from "@/components/booking/use-booking-guard";
 import { bookingEditPath, BOOKING_SCREEN_PATHS } from "@/lib/bookings/booking-routes";
 import {
@@ -13,7 +14,7 @@ import {
 } from "@/lib/bookings/arrival-labels";
 import { buildQuoteInput } from "@/lib/bookings/booking-helpers";
 import { useBookingPricing } from "@/hooks/use-booking-pricing";
-import { getBookingServiceLabel } from "@/lib/bookings/constants";
+import { getBookingServiceLabel, BOOKING_EXTRAS } from "@/lib/bookings/constants";
 import { calculateDepositCents, getDepositPercent } from "@/lib/payments/deposit";
 import { formatCurrency } from "@/lib/utils";
 import { useBooking } from "@/components/booking/booking-provider";
@@ -136,6 +137,17 @@ export function ReviewScreen() {
     .filter((x) => x && x !== "—")
     .join(" · ");
 
+  const extrasLines =
+    (state.extras?.length ?? 0) === 0
+      ? []
+      : (state.extras ?? []).map((id) => {
+          const extra = BOOKING_EXTRAS.find((e) => e.id === id);
+          return {
+            label: extra?.label ?? id,
+            cents: extra?.priceCents ?? 0,
+          };
+        });
+
   const totalLabel =
     pricing && !pricing.quoteOnly
       ? formatCurrency(pricing.totalCents, pricing.currency)
@@ -214,6 +226,87 @@ export function ReviewScreen() {
             />
           </div>
         ) : null}
+
+        <div className="rounded-2xl border border-[var(--ml-book-border)] bg-[var(--ml-book-surface,#102B49)] px-4 py-3">
+          <p className="text-[12px] font-semibold tracking-wide text-[var(--ml-book-ink-muted)] uppercase">
+            Cost breakdown
+          </p>
+          {pricing && !pricing.quoteOnly ? (
+            <ul className="mt-3 space-y-2 text-[15px] text-white">
+              <li className="flex justify-between gap-3">
+                <span>
+                  {pricing.serviceLabel ??
+                    (state.serviceType ? getBookingServiceLabel(state.serviceType) : "Clean")}
+                </span>
+                <span className="tabular-nums">
+                  {formatCurrency(
+                    pricing.baseCents +
+                      pricing.bedroomCents +
+                      pricing.bathroomCents +
+                      pricing.squareFootageCents,
+                    pricing.currency,
+                  )}
+                </span>
+              </li>
+              {extrasLines.map((extra) => (
+                <li key={extra.label} className="flex justify-between gap-3">
+                  <span>{extra.label}</span>
+                  <span className="tabular-nums">
+                    {formatCurrency(extra.cents, pricing.currency)}
+                  </span>
+                </li>
+              ))}
+              {(pricing.feesCents ?? pricing.platformFeeCents) > 0 ? (
+                <li className="flex justify-between gap-3 text-[var(--ml-book-ink-muted)]">
+                  <span>Service fee</span>
+                  <span className="tabular-nums">
+                    {formatCurrency(
+                      pricing.feesCents ?? pricing.platformFeeCents,
+                      pricing.currency,
+                    )}
+                  </span>
+                </li>
+              ) : null}
+              {(pricing.discountLines && pricing.discountLines.length > 0
+                ? pricing.discountLines.filter((line) => line.amountCents > 0)
+                : (pricing.discountCents ?? 0) > 0
+                  ? [
+                      {
+                        label:
+                          state.recurringFrequency &&
+                          state.recurringFrequency !== "one_time"
+                            ? "Recurring discount"
+                            : "Discount",
+                        amountCents: pricing.discountCents ?? 0,
+                      },
+                    ]
+                  : []
+              ).map((line) => (
+                <li
+                  key={`${line.label}-${line.amountCents}`}
+                  className="flex justify-between gap-3 text-[var(--ml-book-ink-muted)]"
+                >
+                  <span>{line.label}</span>
+                  <span className="tabular-nums">
+                    −{formatCurrency(line.amountCents, pricing.currency)}
+                  </span>
+                </li>
+              ))}
+              <li className="flex justify-between gap-3 border-t border-[var(--ml-book-border)] pt-2 text-base font-bold">
+                <span>Total USD</span>
+                <span className="tabular-nums">{totalLabel}</span>
+              </li>
+            </ul>
+          ) : (
+            <PriceSummary
+              pricing={pricing}
+              loading={loading}
+              isServerVerified={isServerVerified}
+              showDeposit
+              variant="embedded"
+            />
+          )}
+        </div>
 
         <PromoCodeField />
 
