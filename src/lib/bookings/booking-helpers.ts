@@ -106,6 +106,7 @@ export function buildQuoteInput(
     accessNotes: optionalString(state.accessNotes),
     schedulePreset: state.schedulePreset,
     promoCode: optionalString(state.promoCode),
+    recurringFrequency: state.recurringFrequency ?? "one_time",
   };
 }
 

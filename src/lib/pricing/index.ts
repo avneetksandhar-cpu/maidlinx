@@ -31,4 +31,10 @@ export {
   enforceMinContributionMargin,
   stackDiscounts,
 } from "@/lib/pricing/engine";
+export {
+  RECURRING_DISCOUNT_LABEL,
+  recurringDiscountCents,
+  recurringDiscountOffPercent,
+  recurringMultiplier,
+} from "@/lib/pricing/recurring-discount";
 

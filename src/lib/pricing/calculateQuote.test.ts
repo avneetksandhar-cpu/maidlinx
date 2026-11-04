@@ -81,6 +81,18 @@ describe("calculateBookingPrice", () => {
   it("never trusts a mismatched browser total", () => {
     expect(() => assertPriceMatch(100, 29325)).toThrow("Price mismatch");
   });
+
+  it("applies weekly recurring discount vs one-time", () => {
+    const oneTime = calculateBookingPrice(baseInput);
+    const weekly = calculateBookingPrice({
+      ...baseInput,
+      recurringFrequency: "weekly",
+    });
+    expect(oneTime.discountCents).toBe(0);
+    expect(weekly.discountCents).toBe(Math.round(oneTime.subtotalCents * 0.1));
+    expect(weekly.totalCents).toBe(oneTime.totalCents - weekly.discountCents!);
+    expect(weekly.discountLines?.[0]?.type).toBe("recurring");
+  });
 });
 
 describe("assertPriceMatch", () => {

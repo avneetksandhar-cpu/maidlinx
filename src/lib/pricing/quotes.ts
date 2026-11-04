@@ -139,14 +139,17 @@ export async function createAuthoritativeQuote(
   const expiresAt = new Date(Date.now() + QUOTE_TTL_MINUTES * 60_000).toISOString();
   const quoteToken = newQuoteToken();
 
+  const withLines: AuthoritativeQuote = {
+    ...pricing,
+    discountLines: resolved.engine.discountStack,
+    quoteId: quoteToken,
+    quoteToken,
+    expiresAt,
+    couponCode: resolved.appliedPromo?.code ?? pricing.couponCode ?? null,
+  };
+
   if (!hasAdminEnv()) {
-    return {
-      ...pricing,
-      quoteId: quoteToken,
-      quoteToken,
-      expiresAt,
-      couponCode: resolved.appliedPromo?.code ?? pricing.couponCode ?? null,
-    };
+    return withLines;
   }
 
   const supabase = createAdminClient();
@@ -192,7 +195,7 @@ export async function createAuthoritativeQuote(
         expiresAt,
       });
       return {
-        ...pricing,
+        ...withLines,
         quoteId: quoteToken,
         quoteToken,
         expiresAt,
@@ -225,7 +228,7 @@ export async function createAuthoritativeQuote(
   });
 
   return {
-    ...pricing,
+    ...withLines,
     quoteId: bookingQuoteId,
     quoteToken: String(data.quote_token),
     expiresAt: String(data.expires_at),

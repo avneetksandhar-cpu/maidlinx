@@ -134,11 +134,16 @@ export async function resolveServerPricing(
   // Launch-safe path: when engine would not change commercial terms, prefer legacy
   // calculateBookingPrice (+ promo) so booking create stays bit-identical.
   if (!needsEnginePath) {
+    const legacyPublic = {
+      ...legacyBase,
+      discountCents: legacyBase.discountCents ?? 0,
+      discountLines: legacyBase.discountLines ?? [],
+    };
     return {
-      pricing: { ...legacyBase, discountCents: legacyBase.discountCents ?? 0 },
+      pricing: legacyPublic,
       engine: {
         ...engine,
-        public: { ...legacyBase, discountCents: legacyBase.discountCents ?? 0 },
+        public: legacyPublic,
       },
       appliedPromo: null,
       marketId,
@@ -186,6 +191,7 @@ export async function resolveServerPricing(
   return {
     pricing: {
       ...engine.public,
+      discountLines: engine.discountStack,
       couponCode: appliedPromo?.code ?? engine.public.couponCode ?? null,
     },
     engine,

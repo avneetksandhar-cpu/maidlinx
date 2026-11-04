@@ -31,6 +31,12 @@ function BreakdownRows({ pricing }: { pricing: PriceBreakdown }) {
   const feesCents = pricing.feesCents ?? pricing.platformFeeCents;
   const taxCents = pricing.taxCents ?? 0;
   const discountCents = pricing.discountCents ?? 0;
+  const discountLines =
+    pricing.discountLines && pricing.discountLines.length > 0
+      ? pricing.discountLines.filter((line) => line.amountCents > 0)
+      : discountCents > 0
+        ? [{ label: "Discount", amountCents: discountCents }]
+        : [];
   const currency = pricing.currency;
 
   if (pricing.quoteOnly) {
@@ -93,14 +99,14 @@ function BreakdownRows({ pricing }: { pricing: PriceBreakdown }) {
           <span className="font-medium tabular-nums">{formatCurrency(taxCents, currency)}</span>
         </div>
       ) : null}
-      {discountCents > 0 ? (
-        <div className="flex justify-between gap-4">
-          <span className="text-ink-muted">Discount</span>
+      {discountLines.map((line) => (
+        <div key={`${line.label}-${line.amountCents}`} className="flex justify-between gap-4">
+          <span className="text-ink-muted">{line.label}</span>
           <span className="font-medium tabular-nums">
-            −{formatCurrency(discountCents, currency)}
+            −{formatCurrency(line.amountCents, currency)}
           </span>
         </div>
-      ) : null}
+      ))}
     </div>
   );
 }

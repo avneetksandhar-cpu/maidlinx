@@ -98,6 +98,8 @@ function buildQuoteInput(
     notes: state.notes,
     accessNotes: state.accessNotes,
     schedulePreset: state.schedulePreset,
+    promoCode: state.promoCode ?? undefined,
+    recurringFrequency: state.recurringFrequency ?? "one_time",
   };
 }
 
