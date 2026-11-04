@@ -69,7 +69,9 @@ export const MARKETS: MarketConfig[] = [
     currency: "USD",
     timezone: "America/New_York",
     active: true,
-    bookingEnabled: false,
+    // Founder 2026-11-04: FL covered addresses must be bookable (pending match OK if BOOKABLE=0).
+    // launchEnabled stays OFF — no ads open. Non-FL remains waitlist/out-of-area.
+    bookingEnabled: true,
     launchEnabled: false,
     center: { latitude: 26.1224, longitude: -80.1373 },
     regions: ["FL"],
