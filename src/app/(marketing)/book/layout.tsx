@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { GoogleMapsProvider } from "@/components/booking/google-maps-provider";
 import { BookingProvider } from "@/components/booking/booking-provider";
 
@@ -19,7 +20,9 @@ export default function BookLayout({
     <GoogleMapsProvider>
       <BookingProvider>
         <div data-theme="ml-book" className="min-h-dvh bg-white text-[var(--ml-book-ink,#01193D)]">
-          {children}
+          <Suspense fallback={<div className="min-h-dvh bg-white" aria-hidden />}>
+            {children}
+          </Suspense>
         </div>
       </BookingProvider>
     </GoogleMapsProvider>
