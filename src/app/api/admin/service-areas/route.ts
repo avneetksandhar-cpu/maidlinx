@@ -1,4 +1,4 @@
-import { jsonError, jsonSuccess } from "@/lib/api/response";
+import { adminCatchStatus, jsonError, jsonSuccess } from "@/lib/api/response";
 import { createServiceArea, listServiceAreas, toggleServiceArea } from "@/lib/admin/service-areas";
 import { requireAdminApiPermission } from "@/lib/admin/session";
 import { createServiceAreaSchema } from "@/lib/validations/admin";
@@ -9,7 +9,7 @@ export async function GET() {
     const areas = await listServiceAreas();
     return jsonSuccess({ areas });
   } catch (error) {
-    return jsonError(error instanceof Error ? error.message : "Unable to load areas.", 403);
+    return jsonError(error instanceof Error ? error.message : "Unable to load areas.", adminCatchStatus(error));
   }
 }
 

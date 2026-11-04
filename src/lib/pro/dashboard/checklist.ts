@@ -132,3 +132,9 @@ export function checklistProgress(items: ChecklistItem[]): number {
   if (items.length === 0) return 0;
   return Math.round((items.filter((item) => item.completed).length / items.length) * 100);
 }
+
+export function checklistCounts(items: ChecklistItem[]): { done: number; total: number } {
+  const total = items.length;
+  const done = items.filter((item) => item.completed).length;
+  return { done, total };
+}

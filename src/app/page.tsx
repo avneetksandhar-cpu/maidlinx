@@ -1,17 +1,13 @@
-import { GoogleMapsProvider } from "@/components/booking/google-maps-provider";
-import { BookingPage } from "@/components/booking/booking-page";
-import { SiteHeader } from "@/components/layout/site-header";
-import { AuthControls } from "@/components/layout/auth-controls";
+import type { Metadata } from "next";
+import { AppOpenHome } from "@/components/home/app-open-home";
 
+export const metadata: Metadata = {
+  alternates: {
+    canonical: "/",
+  },
+};
+
+/** App-open home — Uber-style request surface, not a marketing scroll page. */
 export default function HomePage() {
-  return (
-    <>
-      <SiteHeader authControls={<AuthControls />} />
-      <main id="main-content">
-        <GoogleMapsProvider>
-          <BookingPage showHero showMarketingSections />
-        </GoogleMapsProvider>
-      </main>
-    </>
-  );
+  return <AppOpenHome />;
 }

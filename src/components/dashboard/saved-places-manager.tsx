@@ -136,26 +136,33 @@ export function SavedPlacesManager({ initialAddresses }: SavedPlacesManagerProps
   return (
     <div className="space-y-4">
       {error ? (
-        <p className="rounded-xl bg-red-50 px-4 py-3 text-sm text-error">{error}</p>
+        <p className="rounded-xl border border-error/40 bg-error/10 px-4 py-3 text-sm text-error">
+          {error}
+        </p>
       ) : null}
 
       {addresses.map((address) => {
         const unitValue = unitEdits[address.id] ?? address.unit ?? "";
         const labelValue = labelEdits[address.id] ?? address.label;
         return (
-          <Card key={address.id}>
+          <Card
+            key={address.id}
+            className="border-[var(--ml-dark-border)] bg-[var(--ml-dark-surface)] shadow-[var(--shadow-card)]"
+          >
             <CardContent className="space-y-4">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
-                  <p className="font-medium text-ink">
+                  <p className="font-medium text-[var(--ml-dark-ink)]">
                     {address.label}
                     {address.isDefault ? (
-                      <span className="ml-2 rounded-full bg-accent-muted px-2 py-0.5 text-xs font-medium text-accent">
+                      <span className="ml-2 rounded-full bg-[var(--ml-dark-mint)]/15 px-2 py-0.5 text-xs font-medium text-[var(--ml-dark-mint)]">
                         Default
                       </span>
                     ) : null}
                   </p>
-                  <p className="mt-1 text-sm text-ink-muted">{formatAddressSummary(address)}</p>
+                  <p className="mt-1 text-sm text-[var(--ml-dark-ink-muted)]">
+                    {formatAddressSummary(address)}
+                  </p>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {!address.isDefault ? (
@@ -219,18 +226,18 @@ export function SavedPlacesManager({ initialAddresses }: SavedPlacesManagerProps
       })}
 
       {adding ? (
-        <Card>
+        <Card className="border-[var(--ml-dark-border)] bg-[var(--ml-dark-surface)] shadow-[var(--shadow-card)]">
           <CardContent className="space-y-4">
-            <p className="font-medium text-ink">Add a saved place</p>
+            <p className="font-medium text-[var(--ml-dark-ink)]">Add a property</p>
             <div className="flex flex-wrap gap-2">
               {ADDRESS_LABEL_PRESETS.map((preset) => (
                 <button
                   key={preset}
                   type="button"
-                  className={`rounded-full px-3 py-1.5 text-sm ${
+                  className={`min-h-11 rounded-full px-4 text-sm font-medium ${
                     label === preset
-                      ? "bg-ink text-white"
-                      : "bg-surface-muted text-ink-muted hover:text-ink"
+                      ? "bg-[var(--ml-dark-mint)] text-[var(--ml-app-header-ink)]"
+                      : "bg-[var(--ml-dark-surface-2)] text-[var(--ml-dark-ink-muted)] ring-1 ring-[var(--ml-dark-border)] hover:text-[var(--ml-dark-ink)]"
                   }`}
                   onClick={() => setLabel(preset)}
                 >
@@ -268,8 +275,13 @@ export function SavedPlacesManager({ initialAddresses }: SavedPlacesManagerProps
           </CardContent>
         </Card>
       ) : (
-        <Button type="button" onClick={() => setAdding(true)}>
-          Add saved place
+        <Button
+          type="button"
+          variant="accent"
+          className="h-12 w-full rounded-2xl font-semibold sm:w-auto"
+          onClick={() => setAdding(true)}
+        >
+          Add property
         </Button>
       )}
     </div>

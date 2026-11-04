@@ -1,4 +1,4 @@
-import { jsonError, jsonSuccess } from "@/lib/api/response";
+import { adminCatchStatus, jsonError, jsonSuccess } from "@/lib/api/response";
 import { listPricingRules, updatePricingRule } from "@/lib/admin/pricing";
 import { requireAdminApiPermission } from "@/lib/admin/session";
 import { updatePricingSchema } from "@/lib/validations/admin";
@@ -9,7 +9,7 @@ export async function GET() {
     const rules = await listPricingRules();
     return jsonSuccess({ rules });
   } catch (error) {
-    return jsonError(error instanceof Error ? error.message : "Unable to load pricing.", 403);
+    return jsonError(error instanceof Error ? error.message : "Unable to load pricing.", adminCatchStatus(error));
   }
 }
 

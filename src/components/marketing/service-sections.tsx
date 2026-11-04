@@ -61,15 +61,20 @@ export function CleanerCTA() {
   return (
     <section id="for-professionals" className="py-14 lg:py-16">
       <Container>
-        <div className="rounded-xl border border-border bg-ink px-8 py-10 text-white lg:px-12 lg:py-12">
+        <div className="rounded-xl border border-accent/25 bg-accent px-8 py-10 text-white lg:px-12 lg:py-12">
           <Heading as="h2" className="text-2xl text-white sm:text-3xl">
             Become a Pro
           </Heading>
-          <p className="mt-3 max-w-lg text-white/75">
-            Steady bookings, flexible schedules, and reliable payouts.
+          <p className="mt-3 max-w-lg text-white/90">
+            Insured individual cleaners and cleaning companies — steady bookings, flexible
+            schedules, reliable payouts.
           </p>
           <Link href={routes.becomeCleaner} className="mt-6 inline-block">
-            <Button variant="secondary" size="md" className="rounded-lg border-0 bg-white text-ink hover:bg-white/90">
+            <Button
+              variant="secondary"
+              size="md"
+              className="rounded-lg border-0 bg-white text-accent hover:bg-white/90"
+            >
               Apply now
             </Button>
           </Link>

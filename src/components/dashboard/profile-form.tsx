@@ -1,9 +1,11 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Button, Card, CardContent, Input, Label } from "@/components/ui";
 import type { CustomerProfile } from "@/lib/profiles/repository";
+import { routes } from "@/config/site";
 
 interface ProfileFormProps {
   profile: CustomerProfile;
@@ -95,6 +97,18 @@ export function ProfileForm({ profile }: ProfileFormProps) {
             {loading ? "Saving..." : "Save changes"}
           </Button>
         </form>
+        <div className="mt-8 border-t border-border pt-6">
+          <p className="text-sm font-medium text-ink">Account controls</p>
+          <p className="mt-1 text-sm text-ink-muted">
+            Delete your account and anonymize personal data (App Store requirement).
+          </p>
+          <Link
+            href={routes.dashboardAccountDelete}
+            className="mt-3 inline-flex text-sm font-medium text-error underline-offset-2 hover:underline"
+          >
+            Delete account
+          </Link>
+        </div>
       </CardContent>
     </Card>
   );

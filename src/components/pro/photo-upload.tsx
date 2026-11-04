@@ -3,8 +3,10 @@
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
-import { Button, Card, CardContent } from "@/components/ui";
+import { Camera } from "lucide-react";
 import type { JobPhoto } from "@/lib/pro/dashboard/jobs";
+import { JOB_PHOTO_SLOT_CAP } from "@/lib/pro/dashboard/display";
+import { cn } from "@/lib/utils";
 
 interface PhotoUploadProps {
   jobId: string;
@@ -20,6 +22,7 @@ export function PhotoUpload({ jobId, photoType, photos, disabled = false }: Phot
   const [error, setError] = useState<string | null>(null);
 
   const label = photoType === "before" ? "Before photos" : "After photos";
+  const atCap = photos.length >= JOB_PHOTO_SLOT_CAP;
 
   async function handleUpload(file: File) {
     setUploading(true);
@@ -47,62 +50,67 @@ export function PhotoUpload({ jobId, photoType, photos, disabled = false }: Phot
   }
 
   return (
-    <Card>
-      <CardContent className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h3 className="font-display text-lg font-semibold text-ink">{label}</h3>
-          <span className="text-sm text-ink-muted">{photos.length} uploaded</span>
-        </div>
+    <section className="space-y-3">
+      <div className="flex items-center justify-between">
+        <h3 className="text-base font-semibold text-[var(--ml-dark-ink)]">{label}</h3>
+        <span className="text-sm tabular-nums text-[var(--ml-dark-ink-muted)]">
+          {photos.length}/{JOB_PHOTO_SLOT_CAP}
+        </span>
+      </div>
 
-        {photos.length > 0 && (
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-            {photos.map((photo) => (
-              <a
-                key={photo.id}
-                href={photo.publicUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="group relative aspect-square overflow-hidden rounded-lg border border-border bg-surface-muted"
-              >
-                <Image
-                  src={photo.publicUrl}
-                  alt={`${photoType} photo`}
-                  fill
-                  className="object-cover transition-transform group-hover:scale-105"
-                  unoptimized
-                />
-              </a>
-            ))}
-          </div>
-        )}
+      <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
+        {photos.map((photo) => (
+          <a
+            key={photo.id}
+            href={photo.publicUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="relative size-20 shrink-0 overflow-hidden rounded-xl border border-[var(--ml-dark-border)] bg-[var(--ml-dark-surface-2)]"
+          >
+            <Image
+              src={photo.publicUrl}
+              alt={`${photoType} photo`}
+              fill
+              className="object-cover"
+              unoptimized
+            />
+          </a>
+        ))}
 
-        <input
-          ref={inputRef}
-          type="file"
-          accept="image/*"
-          capture="environment"
-          className="hidden"
-          disabled={disabled || uploading}
-          onChange={(e) => {
-            const file = e.target.files?.[0];
-            if (file) handleUpload(file);
-            e.target.value = "";
-          }}
-        />
-
-        {!disabled && (
-          <Button
-            variant="secondary"
-            size="sm"
+        {!disabled && !atCap ? (
+          <button
+            type="button"
             disabled={uploading}
             onClick={() => inputRef.current?.click()}
+            className={cn(
+              "flex size-20 shrink-0 flex-col items-center justify-center gap-1 rounded-xl border border-dashed border-[var(--ml-dark-border-strong)]",
+              "bg-[var(--ml-dark-surface-2)] text-[var(--ml-dark-ink-muted)] active:bg-[var(--ml-dark-surface)]",
+              "disabled:opacity-60",
+            )}
           >
-            {uploading ? "Uploading..." : `Upload ${photoType} photo`}
-          </Button>
-        )}
+            <Camera className="size-5" strokeWidth={1.75} aria-hidden />
+            <span className="text-[10px] font-medium">
+              {uploading ? "…" : "Add photo"}
+            </span>
+          </button>
+        ) : null}
+      </div>
 
-        {error && <p className="text-sm text-error">{error}</p>}
-      </CardContent>
-    </Card>
+      <input
+        ref={inputRef}
+        type="file"
+        accept="image/*"
+        capture="environment"
+        className="hidden"
+        disabled={disabled || uploading || atCap}
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (file) void handleUpload(file);
+          e.target.value = "";
+        }}
+      />
+
+      {error ? <p className="text-sm text-error">{error}</p> : null}
+    </section>
   );
 }

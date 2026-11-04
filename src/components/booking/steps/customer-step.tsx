@@ -25,9 +25,17 @@ function SaveAddressLabelFields({
   value: string;
   onChange: (value: string) => void;
 }) {
-  const isNamedPreset = value === "Home" || value === "Work";
-  const selectedPreset = isNamedPreset ? value : "Other";
-  const customValue = isNamedPreset || value === "Other" ? "" : value;
+  const isNamedPreset =
+    value === "Home" || value === "Office" || value === "Rental" || value === "Work";
+  const selectedPreset = isNamedPreset
+    ? value === "Work"
+      ? "Office"
+      : value
+    : "Other";
+  const customValue =
+    isNamedPreset || value === "Other" || value === "Office" || value === "Rental"
+      ? ""
+      : value;
 
   return (
     <div className="space-y-2">

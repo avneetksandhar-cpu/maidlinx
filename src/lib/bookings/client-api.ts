@@ -30,6 +30,12 @@ function bookingAccessHeaders(accessToken?: string | null): HeadersInit {
 async function parseJson<T>(response: Response): Promise<T> {
   const payload = await response.json();
   if (!response.ok) {
+    if (payload.code === "BOOKING_DISABLED") {
+      throw new Error(
+        payload.error ??
+          "Booking isn’t open in this market yet. Join the waitlist to get notified.",
+      );
+    }
     throw new Error(payload.error ?? "Request failed.");
   }
   return payload.data as T;
@@ -69,6 +75,10 @@ export async function createBooking(
 export async function startBookingCheckout(
   bookingId: string,
   accessToken?: string | null,
+  consent?: {
+    legalConsentAccepted: boolean;
+    legalConsentPolicyVersion: string;
+  },
 ): Promise<{
   clientSecret: string;
   paymentIntentId: string;
@@ -78,12 +88,17 @@ export async function startBookingCheckout(
   depositPercent: number;
   paymentType: string;
   reused?: boolean;
+  legalConsentPolicyVersion?: string;
 }> {
   const token = accessToken ?? getStoredBookingAccessToken(bookingId);
   const response = await fetch(`/api/bookings/${bookingId}/checkout`, {
     method: "POST",
     headers: bookingAccessHeaders(token),
-    body: JSON.stringify({ accessToken: token }),
+    body: JSON.stringify({
+      accessToken: token,
+      legalConsentAccepted: consent?.legalConsentAccepted === true,
+      legalConsentPolicyVersion: consent?.legalConsentPolicyVersion,
+    }),
   });
 
   return parseJson<{
@@ -95,6 +110,7 @@ export async function startBookingCheckout(
     depositPercent: number;
     paymentType: string;
     reused?: boolean;
+    legalConsentPolicyVersion?: string;
   }>(response);
 }
 

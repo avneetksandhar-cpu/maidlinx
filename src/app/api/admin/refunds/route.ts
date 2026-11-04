@@ -1,4 +1,4 @@
-import { jsonError, jsonSuccess } from "@/lib/api/response";
+import { adminCatchStatus, jsonError, jsonSuccess } from "@/lib/api/response";
 import { createRefund, listRefunds, processRefund } from "@/lib/admin/refunds";
 import { requireAdminApiPermission } from "@/lib/admin/session";
 import { createRefundSchema } from "@/lib/validations/admin";
@@ -10,7 +10,7 @@ export async function GET(request: Request) {
     const refunds = await listRefunds(status ?? undefined);
     return jsonSuccess({ refunds });
   } catch (error) {
-    return jsonError(error instanceof Error ? error.message : "Unable to load refunds.", 403);
+    return jsonError(error instanceof Error ? error.message : "Unable to load refunds.", adminCatchStatus(error));
   }
 }
 

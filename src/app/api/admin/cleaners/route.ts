@@ -1,4 +1,4 @@
-import { jsonError, jsonSuccess } from "@/lib/api/response";
+import { adminCatchStatus, jsonError, jsonSuccess } from "@/lib/api/response";
 import {
   approveOrRejectCleaner,
   bulkUpdateCleaners,
@@ -23,7 +23,10 @@ export async function GET(request: Request) {
       : await listCleaners(search);
     return jsonSuccess({ cleaners });
   } catch (error) {
-    return jsonError(error instanceof Error ? error.message : "Unable to load cleaners.", 403);
+    return jsonError(
+      error instanceof Error ? error.message : "Unable to load cleaners.",
+      adminCatchStatus(error),
+    );
   }
 }
 

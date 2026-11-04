@@ -16,6 +16,8 @@ export function structuredToBookingAddress(
     longitude: address.longitude,
     googlePlaceId: address.placeId,
     formattedAddress: address.formattedAddress,
+    streetNumber: address.streetNumber,
+    route: address.route,
   };
 }
 
@@ -42,6 +44,8 @@ export function bookingToStructuredAddress(
     latitude: value.latitude,
     longitude: value.longitude,
     placeId: value.googlePlaceId,
+    streetNumber: value.streetNumber?.trim() || undefined,
+    route: value.route?.trim() || undefined,
   };
 }
 

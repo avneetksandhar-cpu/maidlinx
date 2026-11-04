@@ -99,42 +99,50 @@ export async function ensureProfessionalProfile(input: {
       throw new Error("Cleaner account required. Sign up at /earn to become a cleaner.");
     }
 
-    const { data: professional, error: proError } = await supabase
-      .from("professionals")
+    // Canonical cleaners table (professionals view may omit platform columns).
+    const { data: cleaner, error: cleanerError } = await supabase
+      .from("cleaners")
       .select("*")
-      .eq("profile_id", existingProfile.id)
+      .eq("user_id", existingProfile.id)
       .maybeSingle();
 
-    if (proError) throw new Error(proError.message);
+    if (cleanerError) throw new Error(cleanerError.message);
 
-    if (professional) {
+    if (cleaner) {
       return mapProfessional(
         { ...existingProfile, role: "cleaner" },
-        professional as Record<string, unknown>,
+        {
+          ...(cleaner as Record<string, unknown>),
+          profile_id: existingProfile.id,
+        },
         input.email,
       );
     }
 
-    const { data: createdPro, error: createProError } = await supabase
-      .from("professionals")
+    const { data: createdCleaner, error: createCleanerError } = await supabase
+      .from("cleaners")
       .insert({
-        profile_id: existingProfile.id,
+        user_id: existingProfile.id,
         is_active: false,
         is_verified: false,
         onboarding_status: "NOT_STARTED",
         is_online: false,
         stripe_connect_status: "NOT_STARTED",
-      })
+        platform_stage: "APPLICANT",
+      } as never)
       .select("*")
       .single();
 
-    if (createProError || !createdPro) {
-      throw new Error(createProError?.message ?? "Failed to create professional record.");
+    if (createCleanerError || !createdCleaner) {
+      throw new Error(createCleanerError?.message ?? "Failed to create professional record.");
     }
 
     return mapProfessional(
       { ...existingProfile, role: "cleaner" },
-      createdPro as Record<string, unknown>,
+      {
+        ...(createdCleaner as Record<string, unknown>),
+        profile_id: existingProfile.id,
+      },
       input.email,
     );
   }
@@ -159,26 +167,34 @@ export async function ensureProfessionalProfile(input: {
     throw new Error(profileError?.message ?? "Failed to create profile.");
   }
 
-  const { data: professional, error: proError } = await supabase
-    .from("professionals")
+  const { data: cleaner, error: cleanerError } = await supabase
+    .from("cleaners")
     .insert({
-      profile_id: profile.id,
+      user_id: profile.id,
       is_active: false,
       is_verified: false,
       onboarding_status: "NOT_STARTED",
       is_online: false,
       stripe_connect_status: "NOT_STARTED",
-    })
+      platform_stage: "APPLICANT",
+    } as never)
     .select("*")
     .single();
 
-  if (proError || !professional) {
-    throw new Error(proError?.message ?? "Failed to create professional record.");
+  if (cleanerError || !cleaner) {
+    throw new Error(cleanerError?.message ?? "Failed to create professional record.");
   }
 
   await supabase.from("notification_preferences").insert({ profile_id: profile.id });
 
-  return mapProfessional(profile as Record<string, unknown>, professional as Record<string, unknown>, input.email);
+  return mapProfessional(
+    profile as Record<string, unknown>,
+    {
+      ...(cleaner as Record<string, unknown>),
+      profile_id: profile.id,
+    },
+    input.email,
+  );
 }
 
 export async function updateProfessionalProfile(

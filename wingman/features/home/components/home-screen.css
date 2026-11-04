@@ -1,0 +1,74 @@
+.home-concierge {
+  --home-navy: #07090f;
+  --home-navy-deep: #05060a;
+  --home-ivory: #f2eee6;
+  --home-ivory-soft: #d8d1c6;
+  --home-ivory-mute: #9a9388;
+  --home-cobalt: #3e5f8a;
+  --home-hairline: rgba(242, 238, 230, 0.1);
+  --home-serif: var(--font-home-serif), "Times New Roman", ui-serif, Georgia, serif;
+  background: var(--home-navy);
+  color: var(--home-ivory);
+}
+
+.home-concierge .home-header {
+  background: transparent;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.home-concierge a:focus-visible,
+.home-concierge button:focus-visible {
+  outline: 1px solid var(--home-cobalt);
+  outline-offset: 3px;
+}
+
+.home-serif {
+  font-family: var(--home-serif);
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  line-height: 1.12;
+}
+
+.home-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 3.25rem;
+  padding: 0.85rem 1.5rem;
+  border: 1px solid rgba(242, 238, 230, 0.28);
+  background: var(--home-ivory);
+  color: var(--home-navy);
+  font-size: 0.9375rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.home-cta:hover {
+  background: #fffaf2;
+}
+
+.home-cta:active {
+  transform: scale(0.99);
+}
+
+.home-cta-quiet {
+  display: inline-flex;
+  align-items: center;
+  color: var(--home-ivory-soft);
+  font-size: 0.9375rem;
+  letter-spacing: 0.01em;
+  text-underline-offset: 0.28em;
+}
+
+.home-cta-quiet:hover {
+  color: var(--home-ivory);
+  text-decoration: underline;
+}
+
+.home-rule {
+  height: 1px;
+  background: var(--home-hairline);
+  border: 0;
+}

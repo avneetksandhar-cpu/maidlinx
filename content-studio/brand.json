@@ -1,0 +1,23 @@
+{
+  "name": "MaidLinx",
+  "tagline": "Your Clean Connection.",
+  "url": "maidlinx.com",
+  "colors": {
+    "ink": "#111827",
+    "background": "#FAFAFA",
+    "accent": "#0D9488",
+    "accentHover": "#0F766E",
+    "surface": "#FFFFFF",
+    "muted": "#6B7280"
+  },
+  "logoLight": "public/brand/maidlinx-logo-light.png",
+  "logoDark": "public/brand/maidlinx-logo.png",
+  "mark": "public/brand/maidlinx-mark.png",
+  "endCardSeconds": 1.5,
+  "safeZones": {
+    "topPx": 140,
+    "bottomPx": 220,
+    "sidePx": 64
+  },
+  "disclaimer": "Original scripted fiction. Not customer testimonials."
+}

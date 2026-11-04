@@ -1,38 +1,66 @@
 import { normalizeBookingStatus, type BookingStatus } from "@/lib/bookings/status";
 
-/** Customer-facing timeline milestones derived from real booking status. */
+/**
+ * Customer-facing timeline (design-spec screen 4):
+ * Booked → Cleaner assigned → On the way → Complete
+ * Never invents assignment — "Cleaner assigned" only completes when a real Pro is assigned.
+ */
 export const CUSTOMER_TIMELINE_STEPS = [
-  { key: "confirmed", label: "Confirmed" },
-  { key: "assigned", label: "Cleaner Assigned" },
-  { key: "on_the_way", label: "On the Way" },
+  { key: "booked", label: "Booked" },
+  { key: "cleaner_assigned", label: "Cleaner assigned" },
+  { key: "on_the_way", label: "On the way" },
+  { key: "complete", label: "Complete" },
+] as const;
+
+/**
+ * Live job progress (design-spec screens 8–10):
+ * On the way → Arrived → Cleaning → Completed
+ */
+export const LIVE_JOB_TIMELINE_STEPS = [
+  { key: "on_the_way", label: "On the way" },
   { key: "arrived", label: "Arrived" },
-  { key: "in_progress", label: "Cleaning" },
+  { key: "cleaning", label: "Cleaning" },
   { key: "completed", label: "Completed" },
 ] as const;
 
+/**
+ * Day-of service timeline (founder matrix):
+ * Confirmed → On the way → Arrived → Cleaning → Complete
+ * Only advances from real cleaner actions — never invents progress.
+ */
+export const DAY_OF_TIMELINE_STEPS = [
+  { key: "confirmed", label: "Confirmed" },
+  { key: "on_the_way", label: "On the way" },
+  { key: "arrived", label: "Arrived" },
+  { key: "cleaning", label: "Cleaning" },
+  { key: "complete", label: "Complete" },
+] as const;
+
 export type CustomerTimelineKey = (typeof CUSTOMER_TIMELINE_STEPS)[number]["key"];
+export type LiveJobTimelineKey = (typeof LIVE_JOB_TIMELINE_STEPS)[number]["key"];
+export type DayOfTimelineKey = (typeof DAY_OF_TIMELINE_STEPS)[number]["key"];
 
 function timelineIndexForStatus(status: string): number {
   const normalized = normalizeBookingStatus(status);
 
   switch (normalized as BookingStatus) {
     case "pending_payment":
-      return -1;
+    case "draft":
+      return 0;
     case "confirmed":
     case "awaiting_assignment":
     case "offered":
-      return 0;
+      // Booked is complete; Cleaner assigned is current while we find a real Pro.
+      return 1;
     case "assigned":
     case "accepted":
       return 1;
     case "on_the_way":
-      return 2;
     case "arrived":
-      return 3;
     case "in_progress":
-      return 4;
+      return 2;
     case "completed":
-      return 5;
+      return 3;
     case "cancelled":
       return -1;
     default:
@@ -40,8 +68,59 @@ function timelineIndexForStatus(status: string): number {
   }
 }
 
+function liveJobIndexForStatus(status: string): number {
+  const normalized = normalizeBookingStatus(status);
+
+  switch (normalized as BookingStatus) {
+    case "on_the_way":
+      return 0;
+    case "arrived":
+      return 1;
+    case "in_progress":
+      return 2;
+    case "completed":
+      return 3;
+    default:
+      // Pre-en-route statuses: nothing current on the live bar yet.
+      return -1;
+  }
+}
+
+/** Customer-facing status headline copy derived from backend status. */
+export function getCustomerStatusHeadline(status: string): string {
+  const normalized = normalizeBookingStatus(status);
+
+  switch (normalized as BookingStatus) {
+    case "pending_payment":
+      return "Confirming your payment";
+    case "confirmed":
+    case "awaiting_assignment":
+    case "offered":
+      return "Finding your cleaner";
+    case "assigned":
+    case "accepted":
+      return "Confirmed";
+    case "on_the_way":
+      return "Your Pro is on the way";
+    case "arrived":
+      return "Your Pro has arrived";
+    case "in_progress":
+      return "Cleaning in progress";
+    case "completed":
+      return "Cleaning complete";
+    case "cancelled":
+      return "Booking cancelled";
+    default:
+      return "Booking update";
+  }
+}
+
 export function getCustomerTimelineState(status: string): {
-  steps: Array<{ key: CustomerTimelineKey; label: string; state: "complete" | "current" | "upcoming" }>;
+  steps: Array<{
+    key: CustomerTimelineKey;
+    label: string;
+    state: "complete" | "current" | "upcoming";
+  }>;
   currentIndex: number;
   findingProfessional: boolean;
   showCleaner: boolean;
@@ -58,7 +137,41 @@ export function getCustomerTimelineState(status: string): {
       String(normalized),
     );
 
-  const steps = CUSTOMER_TIMELINE_STEPS.map((step, index) => ({
+  // When a Pro is already assigned (but not en route), both Booked + Cleaner assigned
+  // read as complete checks — matching the design reference (no fake "on the way").
+  const assignedWaiting =
+    normalized === "assigned" || normalized === "accepted";
+
+  const steps = CUSTOMER_TIMELINE_STEPS.map((step, index) => {
+    if (currentIndex < 0) {
+      return { key: step.key, label: step.label, state: "upcoming" as const };
+    }
+    if (index < currentIndex) {
+      return { key: step.key, label: step.label, state: "complete" as const };
+    }
+    if (index === currentIndex) {
+      if (assignedWaiting) {
+        return { key: step.key, label: step.label, state: "complete" as const };
+      }
+      return { key: step.key, label: step.label, state: "current" as const };
+    }
+    return { key: step.key, label: step.label, state: "upcoming" as const };
+  });
+
+  return { steps, currentIndex, findingProfessional, showCleaner };
+}
+
+/** Live job stepper: On the way → Arrived → Cleaning → Completed. */
+export function getLiveJobTimelineState(status: string): {
+  steps: Array<{
+    key: LiveJobTimelineKey;
+    label: string;
+    state: "complete" | "current" | "upcoming";
+  }>;
+  currentIndex: number;
+} {
+  const currentIndex = liveJobIndexForStatus(status);
+  const steps = LIVE_JOB_TIMELINE_STEPS.map((step, index) => ({
     key: step.key,
     label: step.label,
     state:
@@ -71,5 +184,57 @@ export function getCustomerTimelineState(status: string): {
             : ("upcoming" as const),
   }));
 
-  return { steps, currentIndex, findingProfessional, showCleaner };
+  return { steps, currentIndex };
+}
+
+function dayOfIndexForStatus(status: string): number {
+  const normalized = normalizeBookingStatus(status);
+
+  switch (normalized as BookingStatus) {
+    case "assigned":
+    case "accepted":
+      return 0;
+    case "on_the_way":
+      return 1;
+    case "arrived":
+      return 2;
+    case "in_progress":
+      return 3;
+    case "completed":
+      return 4;
+    default:
+      // Pre-confirm (still finding) — not on day-of bar yet.
+      return -1;
+  }
+}
+
+/** Day-of stepper: Confirmed → On the way → Arrived → Cleaning → Complete. */
+export function getDayOfTimelineState(status: string): {
+  steps: Array<{
+    key: DayOfTimelineKey;
+    label: string;
+    state: "complete" | "current" | "upcoming";
+  }>;
+  currentIndex: number;
+} {
+  const currentIndex = dayOfIndexForStatus(status);
+  const steps = DAY_OF_TIMELINE_STEPS.map((step, index) => ({
+    key: step.key,
+    label: step.label,
+    state:
+      currentIndex < 0
+        ? ("upcoming" as const)
+        : index < currentIndex
+          ? ("complete" as const)
+          : index === currentIndex
+            ? ("current" as const)
+            : ("upcoming" as const),
+  }));
+
+  return { steps, currentIndex };
+}
+
+/** Human home/upcoming status — never invents assignment. */
+export function getCustomerFriendlyStatusLabel(status: string): string {
+  return getCustomerStatusHeadline(status);
 }

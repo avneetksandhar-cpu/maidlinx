@@ -10,6 +10,8 @@ export interface AdminMarket {
   currency: string;
   timezone: string;
   active: boolean;
+  bookingEnabled: boolean;
+  launchEnabled: boolean;
   zoneCount: number;
 }
 
@@ -44,6 +46,8 @@ export async function listAdminMarkets(): Promise<AdminMarket[]> {
       currency: m.currency,
       timezone: m.timezone,
       active: m.active,
+      bookingEnabled: m.bookingEnabled,
+      launchEnabled: m.launchEnabled,
       zoneCount: getZonesForMarket(m.id).length,
     }));
   }
@@ -61,6 +65,8 @@ export async function listAdminMarkets(): Promise<AdminMarket[]> {
         currency: m.currency,
         timezone: m.timezone,
         active: m.active,
+        bookingEnabled: m.bookingEnabled,
+        launchEnabled: m.launchEnabled,
         zoneCount: getZonesForMarket(m.id).length,
       }));
     }
@@ -77,6 +83,7 @@ export async function listAdminMarkets(): Promise<AdminMarket[]> {
   return (data ?? []).map((row) => {
     const r = row as Record<string, unknown>;
     const id = String(r.id);
+    const cfg = MARKETS.find((m) => m.id === id);
     return {
       id,
       slug: String(r.slug),
@@ -85,6 +92,14 @@ export async function listAdminMarkets(): Promise<AdminMarket[]> {
       currency: String(r.currency),
       timezone: String(r.timezone),
       active: Boolean(r.active),
+      bookingEnabled:
+        typeof r.booking_enabled === "boolean"
+          ? Boolean(r.booking_enabled)
+          : Boolean(cfg?.bookingEnabled),
+      launchEnabled:
+        typeof r.launch_enabled === "boolean"
+          ? Boolean(r.launch_enabled)
+          : Boolean(cfg?.launchEnabled),
       zoneCount: zoneCounts.get(id) ?? 0,
     };
   });

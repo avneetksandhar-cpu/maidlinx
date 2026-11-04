@@ -13,7 +13,7 @@ import { cn } from "@/lib/utils";
 import { trackBookingEvent } from "@/lib/analytics/booking";
 
 export type SavedPlaceChipSelection = Partial<Step1Address> & {
-  source: "home" | "work" | "saved" | "recent" | "guest_recent";
+  source: "home" | "office" | "rental" | "work" | "saved" | "recent" | "guest_recent";
 };
 
 interface SavedPlaceChipsProps {
@@ -53,7 +53,7 @@ type Chip = {
 };
 
 /**
- * Uber-style quick picks: Home / Work / Recent above the address field.
+ * Uber-style quick picks: Home / Office / Rental / Recent above the address field.
  * Uses signed-in saved places when available, else guest recent addresses.
  */
 export function SavedPlaceChips({
@@ -83,7 +83,10 @@ export function SavedPlaceChips({
 
     const next: Chip[] = [];
     const home = saved.find((a) => normalizeLabel(a.label) === "home");
-    const work = saved.find((a) => normalizeLabel(a.label) === "work");
+    const office = saved.find(
+      (a) => normalizeLabel(a.label) === "office" || normalizeLabel(a.label) === "work",
+    );
+    const rental = saved.find((a) => normalizeLabel(a.label) === "rental");
 
     if (home) {
       next.push({
@@ -95,20 +98,30 @@ export function SavedPlaceChips({
         source: "home",
       });
     }
-    if (work) {
+    if (office) {
       next.push({
-        key: `work-${work.id}`,
-        label: "Work",
-        hint: work.addressLine1,
+        key: `office-${office.id}`,
+        label: "Office",
+        hint: office.addressLine1,
         icon: Briefcase,
-        address: work,
-        source: "work",
+        address: office,
+        source: "office",
+      });
+    }
+    if (rental) {
+      next.push({
+        key: `rental-${rental.id}`,
+        label: "Rental",
+        hint: rental.addressLine1,
+        icon: MapPin,
+        address: rental,
+        source: "rental",
       });
     }
 
-    // Other saved (non Home/Work), capped so the row stays scannable.
+    // Other saved (non Home/Office/Rental), capped so the row stays scannable.
     for (const place of saved) {
-      if (place.id === home?.id || place.id === work?.id) continue;
+      if (place.id === home?.id || place.id === office?.id || place.id === rental?.id) continue;
       if (next.length >= 4) break;
       next.push({
         key: `saved-${place.id}`,
@@ -140,11 +153,27 @@ export function SavedPlaceChips({
 
     if (next.length === 0 && guestRecent[0]) {
       const first = guestRecent[0];
+      const named =
+        first.label === "Home" ||
+        first.label === "Office" ||
+        first.label === "Work" ||
+        first.label === "Rental"
+          ? first.label === "Work"
+            ? "Office"
+            : first.label
+          : "Recent";
       next.push({
         key: `guest-${first.line1}-${first.postalCode}`,
-        label: first.label === "Home" || first.label === "Work" ? first.label : "Recent",
+        label: named,
         hint: first.line1,
-        icon: first.label === "Home" ? Home : first.label === "Work" ? Briefcase : Clock,
+        icon:
+          named === "Home"
+            ? Home
+            : named === "Office"
+              ? Briefcase
+              : named === "Rental"
+                ? MapPin
+                : Clock,
         address: guestToStructured(first),
         source: "guest_recent",
       });
@@ -191,12 +220,12 @@ export function SavedPlaceChips({
       <p
         className={cn(
           "text-xs font-medium uppercase tracking-wide",
-          isHero ? "text-teal-100/80" : "text-ink-muted",
+          isHero ? "text-teal-100/80" : "text-[var(--color-ink-muted)]",
         )}
       >
-        Saved & recent
+        Saved properties
       </p>
-      <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
+      <div className="grid gap-2">
         {chips.map((chip) => {
           const Icon = chip.icon;
           return (
@@ -212,25 +241,27 @@ export function SavedPlaceChips({
                 onSelect({ ...address, source: chip.source });
               }}
               className={cn(
-                "flex min-h-12 min-w-[7.5rem] shrink-0 items-center gap-2.5 rounded-xl px-3 py-2 text-left transition-transform active:scale-[0.98]",
+                "flex min-h-14 w-full items-center gap-3 rounded-2xl px-4 py-3 text-left transition-transform active:scale-[0.99]",
                 isHero
                   ? "bg-white/12 ring-1 ring-white/20 hover:bg-white/18"
-                  : "border border-border bg-surface hover:border-border-strong",
+                  : "border border-[var(--color-border)] bg-[var(--color-surface)] hover:border-[var(--color-accent)]/50",
               )}
             >
               <span
                 className={cn(
-                  "flex size-9 shrink-0 items-center justify-center rounded-lg",
-                  isHero ? "bg-white/15 text-white" : "bg-surface-muted text-navy",
+                  "flex size-10 shrink-0 items-center justify-center rounded-xl",
+                  isHero
+                    ? "bg-white/15 text-white"
+                    : "bg-[var(--color-accent-muted)] text-[var(--color-accent)]",
                 )}
               >
                 <Icon className="size-4" strokeWidth={2} aria-hidden />
               </span>
-              <span className="min-w-0">
+              <span className="min-w-0 flex-1">
                 <span
                   className={cn(
                     "block text-sm font-semibold",
-                    isHero ? "text-white" : "text-ink",
+                    isHero ? "text-white" : "text-[var(--color-ink)]",
                   )}
                 >
                   {chip.label}
@@ -238,7 +269,7 @@ export function SavedPlaceChips({
                 <span
                   className={cn(
                     "block truncate text-xs",
-                    isHero ? "text-white/65" : "text-ink-muted",
+                    isHero ? "text-white/65" : "text-[var(--color-ink-muted)]",
                   )}
                 >
                   {chip.hint}

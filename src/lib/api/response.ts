@@ -8,3 +8,16 @@ export function jsonSuccess<T>(data: T, status = 200): NextResponse<ApiSuccessRe
 export function jsonError(error: string, status = 400, code?: string): NextResponse<ApiErrorResponse> {
   return NextResponse.json({ error, code }, { status });
 }
+
+/** Map admin/owner API failures: auth/permission → 403, otherwise 500. */
+export function adminCatchStatus(error: unknown): number {
+  const message = error instanceof Error ? error.message : "";
+  if (
+    /denied|insufficient|unauthorized|authentication required|forbidden/i.test(
+      message,
+    )
+  ) {
+    return 403;
+  }
+  return 500;
+}

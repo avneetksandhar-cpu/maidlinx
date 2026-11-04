@@ -34,6 +34,17 @@ function readStoredState(): BookingState {
   }
 }
 
+/** Drop undefined so URL prefill cannot wipe defaults / stored draft fields. */
+export function definedBookingPatch<T extends Record<string, unknown>>(patch: T): Partial<T> {
+  const out: Partial<T> = {};
+  for (const [key, value] of Object.entries(patch)) {
+    if (value !== undefined) {
+      (out as Record<string, unknown>)[key] = value;
+    }
+  }
+  return out;
+}
+
 function readPrefillFromUrl(): Partial<BookingState> | null {
   if (typeof window === "undefined") return null;
   const params = new URLSearchParams(window.location.search);
@@ -51,8 +62,19 @@ function readPrefillFromUrl(): Partial<BookingState> | null {
     : undefined;
 
   const q = params.get("q")?.trim();
+  const isRebook = params.get("rebook") === "1";
+  const bedrooms = params.get("bedrooms");
+  const bathrooms = params.get("bathrooms");
+  const squareFootage = params.get("squareFootage");
+  const extrasRaw = params.get("extras");
+  const extras = extrasRaw
+    ? extrasRaw.split(",").map((e) => e.trim()).filter(Boolean)
+    : undefined;
 
-  return {
+  // Only include keys that are actually present — `undefined` in a spread wipes
+  // DEFAULT / session values (bedrooms, bathrooms, squareFootage) and traps
+  // users on Details (step 3): validate uses ?? defaults, guard uses raw state.
+  return definedBookingPatch({
     line1: params.get("line1") ?? (q || undefined),
     line2: params.get("line2") ?? undefined,
     city: params.get("city") ?? undefined,
@@ -61,7 +83,27 @@ function readPrefillFromUrl(): Partial<BookingState> | null {
     country: params.get("country") ?? undefined,
     serviceType,
     propertyType,
-    step: 1,
+    bedrooms: bedrooms != null ? Number(bedrooms) : undefined,
+    bathrooms: bathrooms != null ? Number(bathrooms) : undefined,
+    squareFootage: squareFootage != null ? Number(squareFootage) : undefined,
+    extras: extras as BookingState["extras"] | undefined,
+    preferredCleanerId: params.get("preferredCleanerId") ?? undefined,
+    preferredCleanerName: params.get("preferredCleanerName") ?? undefined,
+    rebookSourceBookingId: params.get("sourceBookingId") ?? undefined,
+    step: isRebook ? 6 : 1,
+  });
+}
+
+function applyUrlPrefill(stored: BookingState, prefill: Partial<BookingState>): BookingState {
+  return {
+    ...stored,
+    ...prefill,
+    // Always create a NEW booking — clear schedule + prior booking id.
+    date: undefined,
+    arrivalWindow: undefined,
+    schedulePreset: undefined,
+    bookingId: undefined,
+    quote: null,
   };
 }
 
@@ -74,7 +116,7 @@ export function useBookingState() {
     const stored = readStoredState();
     const prefill = readPrefillFromUrl();
     startTransition(() => {
-      const next = prefill ? { ...stored, ...prefill } : stored;
+      const next = prefill ? applyUrlPrefill(stored, prefill) : stored;
       setState(next);
       persistBookingState(next);
       setHydrated(true);

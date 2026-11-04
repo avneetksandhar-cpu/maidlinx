@@ -24,7 +24,7 @@ interface BookingCardProps {
 }
 
 function buildRebookHref(booking: DashboardBooking): string {
-  const params = new URLSearchParams({ rebook: "1" });
+  const params = new URLSearchParams({ rebook: "1", sourceBookingId: booking.id });
   if (booking.serviceType) params.set("serviceType", booking.serviceType);
   if (booking.addressLine1) params.set("line1", booking.addressLine1);
   if (booking.addressLine2) params.set("line2", booking.addressLine2);
@@ -32,7 +32,19 @@ function buildRebookHref(booking: DashboardBooking): string {
   if (booking.addressState) params.set("state", booking.addressState);
   if (booking.addressPostalCode) params.set("postalCode", booking.addressPostalCode);
   if (booking.addressCountry) params.set("country", booking.addressCountry);
-  return `${routes.book}?${params.toString()}`;
+  if (booking.propertyType) params.set("propertyType", booking.propertyType);
+  if (booking.bedrooms != null) params.set("bedrooms", String(booking.bedrooms));
+  if (booking.bathrooms != null) params.set("bathrooms", String(booking.bathrooms));
+  if (booking.squareFootage != null) params.set("squareFootage", String(booking.squareFootage));
+  if (booking.extras.length > 0) params.set("extras", booking.extras.join(","));
+  if (booking.professionalProfileId) {
+    params.set("preferredCleanerId", booking.professionalProfileId);
+  }
+  if (booking.professionalName) {
+    params.set("preferredCleanerName", booking.professionalName);
+  }
+  // Jump to date so customer only picks new schedule after prefill.
+  return `${routes.bookDate}?${params.toString()}`;
 }
 
 export function BookingCard({ booking, showActions = true }: BookingCardProps) {
@@ -43,6 +55,7 @@ export function BookingCard({ booking, showActions = true }: BookingCardProps) {
   const [favorited, setFavorited] = useState(false);
   const actionable = showActions && canCancelOrReschedule(booking.status, booking.scheduledAt);
   const completed = booking.status === "completed";
+  const showBookAgain = completed;
 
   async function handleFavorite() {
     if (!booking.professionalProfileId) return;
@@ -64,14 +77,17 @@ export function BookingCard({ booking, showActions = true }: BookingCardProps) {
 
   return (
     <>
-      <Card>
+      <Card className="border-[var(--ml-dark-border)] bg-[var(--ml-dark-surface)] shadow-[var(--shadow-soft)]">
         <CardContent className="space-y-4">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <p className="font-display text-base font-semibold text-ink">
+              <Link
+                href={routes.bookingDetail(booking.id)}
+                className="font-display text-base font-semibold text-white hover:underline"
+              >
                 {getServiceLabel(booking.serviceType)}
-              </p>
-              <p className="mt-1 text-sm text-ink-muted">
+              </Link>
+              <p className="mt-1 text-sm text-[var(--ml-dark-ink-muted)]">
                 {formatBookingDate(booking.scheduledAt)} ·{" "}
                 {formatBookingTimeRange(
                   booking.scheduledAt,
@@ -85,40 +101,42 @@ export function BookingCard({ booking, showActions = true }: BookingCardProps) {
 
           <div className="grid gap-2 text-sm sm:grid-cols-2">
             <div>
-              <p className="text-ink-subtle">Address</p>
-              <p className="text-ink">
+              <p className="text-[var(--ml-dark-ink-subtle)]">Address</p>
+              <p className="text-white">
                 {formatAddress(booking.addressLine1, booking.addressCity, booking.addressState)}
               </p>
             </div>
             <div>
-              <p className="text-ink-subtle">Total</p>
-              <p className="font-medium text-ink">
+              <p className="text-[var(--ml-dark-ink-subtle)]">Total</p>
+              <p className="font-medium text-white">
                 {formatBookingTotal(booking.totalCents, booking.currency)}
               </p>
             </div>
             {booking.professionalName && (
               <div>
-                <p className="text-ink-subtle">Cleaner</p>
-                <p className="text-ink">{booking.professionalName}</p>
+                <p className="text-[var(--ml-dark-ink-subtle)]">Cleaner</p>
+                <p className="text-white">{booking.professionalName}</p>
               </div>
             )}
             {booking.invoiceNumber && (
               <div>
-                <p className="text-ink-subtle">Invoice</p>
-                <p className="font-mono text-sm text-ink">{booking.invoiceNumber}</p>
+                <p className="text-[var(--ml-dark-ink-subtle)]">Invoice</p>
+                <p className="font-mono text-sm text-white">{booking.invoiceNumber}</p>
               </div>
             )}
           </div>
 
-          {(actionable || booking.professionalProfileId || (showActions && completed)) && (
-            <div className="flex flex-wrap gap-2 border-t border-border pt-4">
-              {booking.professionalProfileId && !favorited && (
+          {(actionable || booking.professionalProfileId || showBookAgain) && (
+            <div className="flex flex-wrap gap-2 border-t border-[var(--ml-dark-border)] pt-4">
+              {completed && booking.professionalProfileId && !favorited && (
                 <Button variant="ghost" size="sm" onClick={handleFavorite} disabled={favoriteLoading}>
-                  {favoriteLoading ? "Saving..." : "Save favorite cleaner"}
+                  {favoriteLoading ? "Saving..." : "Prefer this Pro"}
                 </Button>
               )}
               {favorited && (
-                <span className="inline-flex items-center px-3 text-sm text-accent">Saved to favorites</span>
+                <span className="inline-flex items-center px-3 text-sm text-[var(--ml-dark-mint)]">
+                  Preference saved — assigned when available
+                </span>
               )}
               {actionable && (
                 <>
@@ -130,13 +148,18 @@ export function BookingCard({ booking, showActions = true }: BookingCardProps) {
                   </Button>
                 </>
               )}
-              {showActions && completed ? (
+              {showBookAgain ? (
                 <Link href={buildRebookHref(booking)}>
-                  <Button variant="secondary" size="sm">
+                  <Button variant="accent" size="sm">
                     Book again
                   </Button>
                 </Link>
               ) : null}
+              <Link href={routes.bookingDetail(booking.id)}>
+                <Button variant="ghost" size="sm">
+                  View booking
+                </Button>
+              </Link>
             </div>
           )}
         </CardContent>

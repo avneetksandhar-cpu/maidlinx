@@ -1,5 +1,6 @@
 "use client";
 
+import { WingmanWordmark } from "@/components/brand/WingmanLogo";
 import { Button } from "@/components/ui/Button";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
@@ -7,10 +8,10 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 
 const navLinks = [
-  { href: "#how-it-works", label: "How It Works" },
-  { href: "#experiences", label: "Experiences" },
-  { href: "#membership", label: "Membership" },
-  { href: "#about", label: "About" },
+  { href: "/events", label: "Tonight" },
+  { href: "/plan", label: "Plan" },
+  { href: "/book", label: "Book $500" },
+  { href: "#how-it-works", label: "How it works" },
 ];
 
 export function Navbar() {
@@ -36,11 +37,8 @@ export function Navbar() {
       )}
     >
       <nav className="section-container flex h-16 items-center justify-between md:h-20">
-        <Link
-          href="/"
-          className="text-sm font-semibold uppercase tracking-[0.35em] text-ink transition-colors hover:text-accent"
-        >
-          Wingman
+        <Link href="/" aria-label="Wingman home" className="transition-opacity hover:opacity-80">
+          <WingmanWordmark logoSize={24} />
         </Link>
 
         <ul className="hidden items-center gap-8 md:flex">
@@ -57,8 +55,8 @@ export function Navbar() {
         </ul>
 
         <div className="hidden md:block">
-          <Link href="/onboarding">
-            <Button size="sm">Get Started</Button>
+          <Link href="/book">
+            <Button size="sm">Book $500</Button>
           </Link>
         </div>
 
@@ -107,8 +105,8 @@ export function Navbar() {
               </li>
             ))}
           </ul>
-          <Link href="/onboarding" className="mt-6 block" onClick={() => setMobileOpen(false)}>
-            <Button fullWidth>Get Started</Button>
+          <Link href="/book" className="mt-6 block" onClick={() => setMobileOpen(false)}>
+            <Button fullWidth>Book $500</Button>
           </Link>
         </div>
       ) : null}

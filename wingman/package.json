@@ -6,28 +6,43 @@
     "dev": "next dev --port 3005",
     "build": "next build",
     "start": "next start --port 3005",
-    "lint": "next lint"
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "migrate": "npx tsx db/migrate.ts",
+    "seed": "npx tsx db/seed.ts",
+    "sync:events": "npx tsx scripts/sync-events.ts",
+    "expo:config": "npm --prefix mobile run config"
   },
   "dependencies": {
     "@clerk/nextjs": "^6.12.0",
+    "@neondatabase/serverless": "^1.0.1",
+    "@radix-ui/react-slot": "^1.3.3",
     "@supabase/ssr": "^0.6.1",
     "@supabase/supabase-js": "^2.49.8",
     "@tanstack/react-query": "^5.67.3",
+    "class-variance-authority": "^0.7.1",
     "framer-motion": "^12.6.3",
     "next": "^15.2.4",
+    "pg": "^8.16.3",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "stripe": "^17.7.0"
+    "stripe": "^17.7.0",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
+    "@eslint/eslintrc": "^3.3.1",
     "@tailwindcss/postcss": "^4.0.17",
     "@types/node": "^20.17.24",
+    "@types/pg": "^8.15.5",
     "@types/react": "^19.0.12",
     "@types/react-dom": "^19.0.4",
     "eslint": "^9.22.0",
     "eslint-config-next": "^15.2.4",
     "postcss": "^8.5.3",
     "tailwindcss": "^4.0.17",
-    "typescript": "^5.8.2"
+    "tsx": "^4.20.5",
+    "typescript": "^5.8.2",
+    "vitest": "^3.2.4"
   }
 }

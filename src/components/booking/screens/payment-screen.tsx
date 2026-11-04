@@ -16,6 +16,7 @@ import {
   step6CustomerSchema,
 } from "@/lib/bookings/booking-helpers";
 import { bookingStatusPath } from "@/lib/bookings/booking-routes";
+import { saveUsualClean } from "@/lib/bookings/usual-clean";
 import { useBookingPricing } from "@/hooks/use-booking-pricing";
 import {
   createBooking,
@@ -217,6 +218,7 @@ function PaymentScreenInner() {
       setAccessToken(result.accessToken);
       updateState({ bookingId: result.booking.id });
       await persistSavedAddress();
+      saveUsualClean(state);
       trackBookingEvent("booking_completed", {
         bookingId: result.booking.id,
         devTest: true,
@@ -240,6 +242,7 @@ function PaymentScreenInner() {
     try {
       const confirmed = await fetchBooking(booking.id, accessToken);
       setBooking(confirmed);
+      saveUsualClean(state);
       trackFunnelStep("completed", { bookingId: confirmed.id });
       resetState();
       router.push(bookingStatusPath(confirmed.id, accessToken));
@@ -262,8 +265,8 @@ function PaymentScreenInner() {
     return (
       <BookingFlowChrome
         screenId="payment"
-        title="Secure payment"
-        subtitle="Guest checkout — no account required."
+        title="Confirm & pay"
+        subtitle="Deposit today · balance after the job · Stripe TEST."
         hideCta
       >
         <CheckoutStep
@@ -277,30 +280,42 @@ function PaymentScreenInner() {
 
   const busy = submitting || devSubmitting;
   const bookLabel = (() => {
-    if (submitting) return quoteOnly ? "Submitting…" : "Booking…";
+    if (submitting) return quoteOnly ? "Submitting…" : "Confirming…";
     if (quoteOnly) return "Request quote";
     if (pricing && !pricing.quoteOnly) {
-      return `Book MaidLinx — ${formatCurrency(pricing.totalCents, pricing.currency)}`;
+      return `Confirm · ${formatCurrency(pricing.totalCents, pricing.currency)}`;
     }
-    return "Book MaidLinx";
+    return "Confirm clean";
   })();
 
   return (
     <BookingFlowChrome
       screenId="payment"
-      title="Checkout"
-      subtitle="Guest checkout is fine — no account required."
+      title="Confirm your clean"
+      subtitle="Stripe TEST · deposit today · balance after the job."
       ctaLabel={bookLabel}
       ctaDisabled={busy || !pricing || !isServerVerified}
       ctaLoading={submitting}
       onContinue={() => void createAndProceed()}
     >
-      <div className="space-y-8">
+      <div className="space-y-6">
         {globalError ? (
-          <p className="rounded-xl bg-red-50 px-4 py-3 text-sm text-error" role="alert">
+          <p
+            className="rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300"
+            role="alert"
+          >
             {globalError}
           </p>
         ) : null}
+
+        <div className="rounded-2xl border border-[var(--ml-book-border,#e2e8f0)] bg-[var(--ml-book-selected,#E6FAFA)] px-4 py-3.5 text-[14px] leading-relaxed text-[var(--ml-book-ink,#01193D)]">
+          <p className="font-semibold">When you&apos;re charged</p>
+          <p className="mt-1 text-[var(--ml-book-ink-muted,#4a5568)]">
+            Stripe TEST checkout. We charge a deposit now to hold your booking; the remaining
+            balance is charged after the clean. Double-tap is safe — checkout is idempotent.
+            Your slot is rechecked before payment.
+          </p>
+        </div>
 
         <PriceReviewStep
           pricing={pricing}

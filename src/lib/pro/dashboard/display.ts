@@ -93,6 +93,36 @@ export function getJobStatusLabel(status: string): string {
   return BOOKING_STATUS_LABELS[status as keyof typeof BOOKING_STATUS_LABELS] ?? status;
 }
 
+/** Property title from real address fields only — never invent names. */
+export function formatPropertyLabel(job: {
+  addressLine1: string | null;
+  addressCity: string | null;
+  addressState: string | null;
+  addressRevealed?: boolean;
+}): string {
+  if (job.addressRevealed !== false && job.addressLine1?.trim()) {
+    return job.addressLine1.trim();
+  }
+  const city = job.addressCity?.trim();
+  if (city) {
+    const state = job.addressState?.trim();
+    return state ? `${city}, ${state}` : city;
+  }
+  return "Property";
+}
+
+/** Entry/access notes from booking notes (Access: …) or honest fallback. */
+export function formatEntryDetails(notes: string | null): string {
+  if (!notes?.trim()) {
+    return "Entry details will be shared before arrival.";
+  }
+  const accessMatch = notes.match(/Access:\s*(.+?)(?:\n|$)/i);
+  if (accessMatch?.[1]?.trim()) return accessMatch[1].trim();
+  return notes.trim();
+}
+
+export const JOB_PHOTO_SLOT_CAP = 6;
+
 export function isToday(iso: string): boolean {
   const date = new Date(iso);
   const now = new Date();

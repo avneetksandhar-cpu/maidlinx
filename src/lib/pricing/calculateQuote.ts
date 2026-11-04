@@ -11,10 +11,10 @@ import {
   BATHROOM_CENTS,
   BEDROOM_CENTS,
   PLATFORM_FEE_PERCENT,
-  SERVICE_BASE_CENTS,
   estimateDurationMinutes,
   squareFootageAdjustment,
 } from "@/lib/pricing/config";
+import { getServiceBaseCentsForMarket } from "@/lib/pricing/market-prices";
 import type { PriceBreakdown } from "@/lib/pricing/types";
 
 export type { PriceBreakdown };
@@ -65,7 +65,7 @@ export function calculateBookingPrice(input: BookingQuoteInput): PriceBreakdown 
     };
   }
 
-  const baseCents = SERVICE_BASE_CENTS[serviceType] ?? SERVICE_BASE_CENTS.standard;
+  const baseCents = getServiceBaseCentsForMarket(marketResolve.market?.id, serviceType);
   const bedroomCents = input.bedrooms * BEDROOM_CENTS;
   const bathroomCents = input.bathrooms * BATHROOM_CENTS;
   const squareFootageCents = squareFootageAdjustment(input.squareFootage);

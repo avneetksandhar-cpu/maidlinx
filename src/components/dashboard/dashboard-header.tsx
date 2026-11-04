@@ -1,5 +1,3 @@
-import { Heading, Text } from "@/components/ui";
-
 interface DashboardHeaderProps {
   title: string;
   description?: string;
@@ -7,13 +5,11 @@ interface DashboardHeaderProps {
 
 export function DashboardHeader({ title, description }: DashboardHeaderProps) {
   return (
-    <div className="mb-8">
-      <Heading as="h1">{title}</Heading>
-      {description && (
-        <Text muted className="mt-2 max-w-2xl">
-          {description}
-        </Text>
-      )}
+    <div className="mb-6">
+      <h1 className="text-2xl font-semibold tracking-tight text-[var(--ml-dark-ink)]">{title}</h1>
+      {description ? (
+        <p className="mt-2 max-w-2xl text-sm text-[var(--ml-dark-ink-muted)]">{description}</p>
+      ) : null}
     </div>
   );
 }

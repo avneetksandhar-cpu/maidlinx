@@ -1,12 +1,13 @@
 "use client";
 
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
 import { Button, Card, CardContent, Input, Label } from "@/components/ui";
 
 interface CapabilitiesFormProps {
   initialServiceIds: string[];
   initialZoneIds: string[];
+  initialMarketId?: string | null;
   hasVehicle: boolean;
   travelRadiusKm: number | null;
   services: Array<{ id: string; name: string; category: string }>;
@@ -14,9 +15,15 @@ interface CapabilitiesFormProps {
   payoutStatus: "not_connected" | "pending" | "ready";
 }
 
+const MARKET_OPTIONS = [
+  { id: "TORONTO_GTA", label: "Toronto / GTA (CAD)" },
+  { id: "SOUTH_FLORIDA", label: "South Florida (USD)" },
+] as const;
+
 export function CapabilitiesForm({
   initialServiceIds,
   initialZoneIds,
+  initialMarketId = null,
   hasVehicle: initialHasVehicle,
   travelRadiusKm: initialRadius,
   services,
@@ -24,6 +31,7 @@ export function CapabilitiesForm({
   payoutStatus,
 }: CapabilitiesFormProps) {
   const router = useRouter();
+  const [marketId, setMarketId] = useState<string>(initialMarketId ?? "");
   const [serviceIds, setServiceIds] = useState(initialServiceIds);
   const [zoneIds, setZoneIds] = useState(initialZoneIds);
   const [hasVehicle, setHasVehicle] = useState(initialHasVehicle);
@@ -34,8 +42,20 @@ export function CapabilitiesForm({
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  const zonesForMarket = useMemo(() => {
+    if (!marketId) return zones;
+    return zones.filter((z) => z.marketId === marketId);
+  }, [marketId, zones]);
+
   function toggle(list: string[], id: string, setter: (next: string[]) => void) {
     setter(list.includes(id) ? list.filter((x) => x !== id) : [...list, id]);
+  }
+
+  function onMarketChange(next: string) {
+    setMarketId(next);
+    setZoneIds((prev) =>
+      prev.filter((id) => zones.find((z) => z.id === id)?.marketId === next),
+    );
   }
 
   async function handleSave(event: React.FormEvent) {
@@ -43,11 +63,17 @@ export function CapabilitiesForm({
     setLoading(true);
     setMessage(null);
     setError(null);
+    if (!marketId) {
+      setError("Select your market (Toronto / GTA or South Florida).");
+      setLoading(false);
+      return;
+    }
     try {
       const response = await fetch("/api/cleaner/capabilities", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          marketId,
           serviceIds,
           zoneIds,
           hasVehicle,
@@ -56,7 +82,7 @@ export function CapabilitiesForm({
       });
       const payload = await response.json();
       if (!response.ok) throw new Error(payload.error ?? "Unable to save.");
-      setMessage("Services and zones saved.");
+      setMessage("Market, services, and zones saved.");
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unable to save.");
@@ -67,6 +93,34 @@ export function CapabilitiesForm({
 
   return (
     <form onSubmit={handleSave} className="space-y-4">
+      <Card>
+        <CardContent className="space-y-3">
+          <div>
+            <h3 className="font-display text-lg font-semibold text-navy">Market</h3>
+            <p className="mt-1 text-sm text-ink-muted">
+              One market only — Toronto / GTA (CAD) or South Florida (USD).
+            </p>
+          </div>
+          <div className="grid gap-2">
+            {MARKET_OPTIONS.map((market) => (
+              <label
+                key={market.id}
+                className="flex min-h-12 items-center gap-3 rounded-lg border border-border px-3 py-3 text-sm"
+              >
+                <input
+                  type="radio"
+                  name="market"
+                  checked={marketId === market.id}
+                  onChange={() => onMarketChange(market.id)}
+                  className="h-4 w-4 accent-teal"
+                />
+                <span className="text-ink">{market.label}</span>
+              </label>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
       <Card>
         <CardContent className="space-y-3">
           <div>
@@ -99,25 +153,29 @@ export function CapabilitiesForm({
           <div>
             <h3 className="font-display text-lg font-semibold text-navy">Service zones</h3>
             <p className="mt-1 text-sm text-ink-muted">
-              Choose the areas where you take jobs.
+              Choose areas in your market where you take jobs.
             </p>
           </div>
-          <div className="grid gap-2">
-            {zones.map((zone) => (
-              <label
-                key={zone.id}
-                className="flex min-h-12 items-center gap-3 rounded-lg border border-border px-3 py-3 text-sm"
-              >
-                <input
-                  type="checkbox"
-                  checked={zoneIds.includes(zone.id)}
-                  onChange={() => toggle(zoneIds, zone.id, setZoneIds)}
-                  className="h-4 w-4 accent-teal"
-                />
-                <span className="text-ink">{zone.name}</span>
-              </label>
-            ))}
-          </div>
+          {!marketId ? (
+            <p className="text-sm text-ink-muted">Select a market first.</p>
+          ) : (
+            <div className="grid gap-2">
+              {zonesForMarket.map((zone) => (
+                <label
+                  key={zone.id}
+                  className="flex min-h-12 items-center gap-3 rounded-lg border border-border px-3 py-3 text-sm"
+                >
+                  <input
+                    type="checkbox"
+                    checked={zoneIds.includes(zone.id)}
+                    onChange={() => toggle(zoneIds, zone.id, setZoneIds)}
+                    className="h-4 w-4 accent-teal"
+                  />
+                  <span className="text-ink">{zone.name}</span>
+                </label>
+              ))}
+            </div>
+          )}
           <div>
             <Label htmlFor="travel-radius">Travel radius (km)</Label>
             <Input

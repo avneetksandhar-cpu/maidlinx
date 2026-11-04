@@ -36,7 +36,7 @@ export function getServiceTiersForProperty(
     return [
       {
         id: "airbnb",
-        label: "Turnover",
+        label: "Airbnb turnover",
         description: "Guest-ready between stays",
         serviceType: "airbnb_turnover",
         serviceSlug: "airbnb",
@@ -44,14 +44,14 @@ export function getServiceTiersForProperty(
       },
       {
         id: "deep",
-        label: "Deep",
+        label: "Deep clean",
         description: "Detailed reset for longer gaps",
         serviceType: "deep",
         serviceSlug: "deep",
       },
       {
         id: "standard",
-        label: "Standard",
+        label: "Standard clean",
         description: "Light refresh between guests",
         serviceType: "standard",
         serviceSlug: "residential",
@@ -175,7 +175,7 @@ export function getServiceTiersForProperty(
   return [
     {
       id: "standard",
-      label: "Standard",
+      label: "Standard clean",
       description: "Regular clean for lived-in homes",
       serviceType: "standard",
       serviceSlug: "residential",
@@ -183,14 +183,14 @@ export function getServiceTiersForProperty(
     },
     {
       id: "deep",
-      label: "Deep Clean",
+      label: "Deep clean",
       description: "Top-to-bottom with extra attention",
       serviceType: "deep",
       serviceSlug: "deep",
     },
     {
       id: "move",
-      label: "Move Clean",
+      label: "Move clean",
       description: "Empty-home move-in or move-out",
       serviceType: "move_out",
       serviceSlug: "move-out",

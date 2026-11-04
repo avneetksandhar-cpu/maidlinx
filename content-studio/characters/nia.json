@@ -1,0 +1,19 @@
+{
+  "id": "nia",
+  "name": "Nia",
+  "role": "MaidLinx cleaning expert",
+  "voice": "Sophisticated, calm, deadpan",
+  "look": {
+    "hair": "Polished, practical",
+    "wardrobe": "Navy professional MaidLinx uniform with subtle turquoise branding",
+    "era": "Modern premium service"
+  },
+  "personality": [
+    "Unflappable",
+    "Competent without hype",
+    "Hero of the satisfying clean"
+  ],
+  "consistencyNotes": "Navy + turquoise MaidLinx cues only. No slapstick; competence is the joke.",
+  "referenceDir": "characters/nia/references",
+  "referenceImages": []
+}

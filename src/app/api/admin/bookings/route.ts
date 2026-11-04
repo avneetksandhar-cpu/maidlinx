@@ -1,4 +1,4 @@
-import { jsonError, jsonSuccess } from "@/lib/api/response";
+import { adminCatchStatus, jsonError, jsonSuccess } from "@/lib/api/response";
 import { bulkUpdateBookings, listBookings } from "@/lib/admin/bookings";
 import { requireAdminApiPermission } from "@/lib/admin/session";
 import { bulkBookingActionSchema, bookingFiltersSchema } from "@/lib/validations/admin";
@@ -14,7 +14,7 @@ export async function GET(request: Request) {
     return jsonSuccess(result);
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unable to load bookings.";
-    return jsonError(message, 403);
+    return jsonError(message, adminCatchStatus(error));
   }
 }
 

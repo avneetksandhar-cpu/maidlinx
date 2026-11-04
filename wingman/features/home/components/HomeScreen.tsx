@@ -1,204 +1,212 @@
 "use client";
 
-import { AppHeader } from "@/components/layout/AppHeader";
+import { EventCard } from "@/components/cards/EventCard";
+import { VenueCard } from "@/components/cards/VenueCard";
 import { AppShell } from "@/components/layout/AppShell";
-import {
-  featuredExperiences,
-  homeCategories,
-  type ExperienceCategory,
-} from "@/features/home/data/experiences";
+import { AtmospherePhoto } from "@/components/media/AtmospherePhoto";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { WingmanWordmark } from "@/components/brand/WingmanLogo";
+import { HERO_PHOTO } from "@/lib/photos/atmosphere";
+import type { PublicEvent } from "@/lib/marketplace/queries";
+import { bookNightHref } from "@/lib/marketplace/book-href";
+import { pickFeaturedEvents } from "@/lib/marketplace/featured";
+import { customerBookingStatus } from "@/lib/marketplace/status-copy";
+import { getLatestConfirmed, getOpenBooking, type StoredBooking } from "@/features/booking/storage";
+import { useAuth } from "@/hooks/useAuth";
 import { fadeUpShort } from "@/lib/animations";
-import { cn } from "@/lib/utils";
+import type { PublicVenue } from "@/lib/venues/types";
 import { motion } from "framer-motion";
-import Image from "next/image";
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 
 const fadeUp = fadeUpShort;
 
-function getGreeting(): string {
-  const hour = new Date().getHours();
-  if (hour < 12) return "Good Morning";
-  if (hour < 17) return "Good Afternoon";
-  return "Good Evening";
+function firstNameFrom(userName: string | null | undefined, email: string | null | undefined) {
+  const source = userName?.trim() || email?.split("@")[0] || "";
+  if (!source) return "";
+  const token = source.split(/[\s._+]+/)[0] ?? source;
+  return token.charAt(0).toUpperCase() + token.slice(1);
 }
 
-function SearchIcon() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      className="h-5 w-5 text-ink-subtle"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={1.5}
-      aria-hidden
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
-      />
-    </svg>
-  );
-}
-
-function ExperienceCard({
-  experience,
-  index,
+export function HomeScreen({
+  initialEvents = [],
+  initialVenues = [],
 }: {
-  experience: (typeof featuredExperiences)[number];
-  index: number;
+  initialEvents?: PublicEvent[];
+  initialVenues?: PublicVenue[];
 }) {
-  return (
-    <motion.div
-      custom={0.15 + index * 0.06}
-      variants={fadeUp}
-      initial="hidden"
-      animate="visible"
-    >
-      <Link
-        href={`/experiences/${experience.id}`}
-        className="group relative block overflow-hidden rounded-2xl border border-border bg-surface"
-      >
-        <div className="relative aspect-[4/3] w-full overflow-hidden">
-          <Image
-            src={experience.imageUrl}
-            alt={experience.imageAlt}
-            fill
-            className="object-cover transition-transform duration-500 group-hover:scale-105"
-            sizes="430px"
-          />
-          <div
-            aria-hidden
-            className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"
-          />
-          {experience.badge ? (
-            <span className="absolute left-4 top-4 rounded-full bg-accent/90 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-black">
-              {experience.badge}
-            </span>
-          ) : null}
-        </div>
+  const { user } = useAuth();
+  const [events, setEvents] = useState<PublicEvent[]>(initialEvents);
+  const [venues, setVenues] = useState<PublicVenue[]>(initialVenues);
+  const [confirmed, setConfirmed] = useState<StoredBooking | undefined>();
+  const [open, setOpen] = useState<StoredBooking | undefined>();
+  const [liveStatus, setLiveStatus] = useState<{ id: string; status: string; title: string } | null>(null);
 
-        <div className="absolute inset-x-0 bottom-0 p-5">
-          <p className="text-xs font-medium uppercase tracking-wider text-accent">
-            {experience.location}
-          </p>
-          <h3 className="mt-1 text-lg font-semibold leading-snug text-ink">
-            {experience.title}
-          </h3>
-          <div className="mt-3 flex items-center justify-between">
-            <p className="text-sm text-ink-muted">Host · {experience.hostName}</p>
-            <p className="text-sm font-medium text-accent">{experience.priceLabel}</p>
-          </div>
-        </div>
-      </Link>
-    </motion.div>
-  );
-}
+  useEffect(() => {
+    setConfirmed(getLatestConfirmed());
+    setOpen(getOpenBooking());
+    if (initialEvents.length === 0) {
+      void fetch("/api/events?when=all")
+        .then((response) => response.json())
+        .then((payload: { events?: PublicEvent[] }) => setEvents(payload.events ?? []))
+        .catch(() => setEvents([]));
+    }
+    if (initialVenues.length === 0) {
+      void fetch("/api/venues")
+        .then((response) => response.json())
+        .then((payload: { venues?: PublicVenue[] }) => setVenues(payload.venues ?? []))
+        .catch(() => setVenues([]));
+    }
+    void fetch("/api/requests")
+      .then((response) => (response.ok ? response.json() : { requests: [] }))
+      .then((payload: { requests?: Array<{ id: string; status: string; event_name?: string; occasion?: string }> }) => {
+        const row = payload.requests?.[0];
+        if (row) {
+          setLiveStatus({
+            id: row.id,
+            status: row.status,
+            title:
+              row.event_name?.trim() ||
+              (row.occasion && row.occasion !== "night_out" ? row.occasion.replace(/_/g, " ") : "Your evening"),
+          });
+        }
+      })
+      .catch(() => undefined);
+  }, [initialEvents.length, initialVenues.length]);
 
-export function HomeScreen() {
-  const [activeCategory, setActiveCategory] = useState<ExperienceCategory | "all">("all");
-  const [searchQuery, setSearchQuery] = useState("");
-
-  const filteredExperiences = useMemo(() => {
-    return featuredExperiences.filter((exp) => {
-      const matchesCategory =
-        activeCategory === "all" || exp.category === activeCategory;
-      const query = searchQuery.trim().toLowerCase();
-      const matchesSearch =
-        !query ||
-        exp.title.toLowerCase().includes(query) ||
-        exp.location.toLowerCase().includes(query);
-      return matchesCategory && matchesSearch;
-    });
-  }, [activeCategory, searchQuery]);
+  const greeting = firstNameFrom(user?.displayName, user?.email);
+  const { featured, label: featuredLabel } = pickFeaturedEvents(events);
 
   return (
     <AppShell showNav noPadding>
-      <div className="px-5">
-        <AppHeader />
+      <header className="relative z-20 flex items-center justify-between px-5 pt-3 pb-2">
+        <WingmanWordmark logoSize={22} />
+        <p className="text-[0.85rem] text-ink-muted">Miami</p>
+        <Link
+          href="/profile"
+          aria-label="Account"
+          className="flex h-9 w-9 items-center justify-center rounded-full bg-ivory/10 text-[0.75rem] text-ivory"
+        >
+          {(greeting || "W").slice(0, 1)}
+        </Link>
+      </header>
 
+      <section className="relative isolate -mt-[3.25rem] h-[78svh] overflow-hidden xl:h-[580px]">
+        <div className="absolute inset-0">
+          <AtmospherePhoto
+            photo={HERO_PHOTO}
+            className="h-full w-full"
+            imageClassName="brightness-[1.18] contrast-[1.08] saturate-[1.05]"
+            sizes="(min-width: 1280px) 1120px, 100vw"
+            priority
+            overlay={false}
+          />
+        </div>
+        <div
+          aria-hidden
+          className="absolute inset-0 bg-[linear-gradient(180deg,rgba(7,9,15,0.42)_0%,rgba(7,9,15,0.08)_32%,rgba(7,9,15,0.28)_58%,#07090f_100%)]"
+        />
         <motion.div
           initial="hidden"
           animate="visible"
-          className="pb-6"
+          className="absolute inset-x-0 bottom-0 z-10 px-6 pb-10 xl:max-w-2xl xl:px-10"
         >
-          <motion.p custom={0} variants={fadeUp} className="text-sm text-ink-muted">
-            {getGreeting()},
-          </motion.p>
+          {greeting ? (
+            <motion.p custom={0} variants={fadeUp} className="text-[0.95rem] text-ink-muted">
+              {greeting}.
+            </motion.p>
+          ) : null}
           <motion.h1
-            custom={0.05}
+            custom={0.06}
             variants={fadeUp}
-            className="text-2xl font-bold tracking-tight text-ink"
+            className="mt-3 font-display text-[3.15rem] leading-[1.02] text-ink drop-shadow-[0_12px_40px_rgba(0,0,0,0.55)]"
           >
-            Alex
+            Tonight is handled.
           </motion.h1>
-
-          <motion.div custom={0.1} variants={fadeUp} className="relative mt-6">
-            <input
-              type="search"
-              placeholder="Search experiences, venues, hosts..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className={cn(
-                "w-full rounded-xl border border-border bg-surface py-3.5 pl-11 pr-4",
-                "text-sm text-ink placeholder:text-ink-subtle",
-                "focus:border-accent/50 focus:outline-none focus:ring-1 focus:ring-accent/30",
-              )}
-            />
-            <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2">
-              <SearchIcon />
-            </span>
+          <motion.p custom={0.12} variants={fadeUp} className="mt-4 max-w-[20rem] text-[1rem] leading-relaxed text-ink-muted">
+            The best of Miami, through people who know it.
+          </motion.p>
+          <motion.div custom={0.18} variants={fadeUp} className="mt-8 flex flex-col gap-3 sm:flex-row">
+            <Link
+              href={bookNightHref({ go: Boolean(user), source: "home" })}
+              className="gold-btn inline-flex h-12 items-center justify-center px-6 text-[0.95rem]"
+            >
+              Book tonight · $500
+            </Link>
+            <Link
+              href="/plan"
+              className="inline-flex h-12 items-center justify-center bg-navy/35 px-6 text-[0.95rem] text-ink backdrop-blur-sm"
+            >
+              Plan my night
+            </Link>
           </motion.div>
         </motion.div>
-      </div>
+      </section>
 
-      <motion.div
-        initial="hidden"
-        animate="visible"
-        custom={0.15}
-        variants={fadeUp}
-        className="mb-6 flex gap-2 overflow-x-auto px-5 pb-1 scrollbar-none"
-      >
-        <button
-          type="button"
-          onClick={() => setActiveCategory("all")}
-          className={cn(
-            "shrink-0 rounded-full px-4 py-2 text-sm font-medium transition-colors",
-            activeCategory === "all"
-              ? "bg-accent text-black"
-              : "border border-border bg-surface text-ink-muted hover:border-accent/30",
-          )}
-        >
-          All
-        </button>
-        {homeCategories.map((cat) => (
-          <button
-            key={cat.id}
-            type="button"
-            onClick={() => setActiveCategory(cat.id)}
-            className={cn(
-              "shrink-0 rounded-full px-4 py-2 text-sm font-medium transition-colors",
-              activeCategory === cat.id
-                ? "bg-accent text-black"
-                : "border border-border bg-surface text-ink-muted hover:border-accent/30",
+      <div className="bg-background px-6 pb-16 xl:px-10">
+        {liveStatus || confirmed || open ? (
+          <section className="pt-12">
+            <p className="text-label">Your night</p>
+            {liveStatus ? (
+              <Link href={`/requests/${liveStatus.id}`} className="mt-3 block">
+                <h2 className="font-display text-3xl text-ink">{liveStatus.title}</h2>
+                <p className="mt-2 text-champagne">{customerBookingStatus(liveStatus.status)}</p>
+              </Link>
+            ) : confirmed ? (
+              <Link href={`/ticket?ref=${confirmed.ref}`} className="mt-3 block">
+                <h2 className="font-display text-3xl text-ink">{confirmed.title}</h2>
+                <p className="mt-2 text-champagne">Confirmed</p>
+              </Link>
+            ) : open ? (
+              <Link href={`/booking?ref=${open.ref}`} className="mt-3 block">
+                <h2 className="font-display text-3xl text-ink">{open.title}</h2>
+                <p className="mt-2 text-champagne">Being arranged</p>
+              </Link>
+            ) : null}
+          </section>
+        ) : null}
+
+        <section className="pt-14">
+          <div className="flex items-end justify-between gap-4">
+            <div>
+              <p className="text-label">{featuredLabel}</p>
+              <h2 className="font-display mt-2 text-3xl text-ink">Worth knowing about</h2>
+            </div>
+            <Link href="/events" className="text-[0.9rem] text-ink-muted underline-offset-4 hover:text-ink hover:underline">
+              The week
+            </Link>
+          </div>
+          <div className="mt-8 space-y-10 xl:grid xl:grid-cols-2 xl:gap-x-10 xl:gap-y-12 xl:space-y-0">
+            {featured.length === 0 ? (
+              <EmptyState
+                title="Tonight’s shortlist is being curated."
+                body="Look at the week, or ask Andres to arrange it."
+                action={
+                  <Link href={bookNightHref({ source: "home" })} className="text-champagne">
+                    Book tonight · $500
+                  </Link>
+                }
+              />
+            ) : (
+              featured.map((event) => <EventCard key={event.id} event={event} />)
             )}
-          >
-            {cat.label}
-          </button>
-        ))}
-      </motion.div>
+          </div>
+        </section>
 
-      <div className="flex flex-col gap-5 px-5 pb-6">
-        {filteredExperiences.length === 0 ? (
-          <p className="py-12 text-center text-sm text-ink-muted">
-            No experiences match your search.
-          </p>
-        ) : (
-          filteredExperiences.map((exp, i) => (
-            <ExperienceCard key={exp.id} experience={exp} index={i} />
-          ))
-        )}
+        <section className="pt-16">
+          <p className="text-label">Popular in Miami</p>
+          <h2 className="font-display mt-2 text-3xl text-ink">Rooms people ask for</h2>
+          <div className="mt-8 flex gap-4 overflow-x-auto pb-2 scrollbar-none">
+            {venues.length === 0 ? (
+              <EmptyState title="The rooms are still coming in." body="Explore the week while we keep the list honest." />
+            ) : (
+              venues.slice(0, 8).map((venue) => <VenueCard key={venue.id} venue={venue} />)
+            )}
+          </div>
+          <Link href="/venues" className="mt-6 inline-block text-[0.9rem] text-ink-muted underline-offset-4 hover:text-ink hover:underline">
+            All rooms
+          </Link>
+        </section>
       </div>
     </AppShell>
   );

@@ -1,4 +1,5 @@
-import { createAdminClient } from "@/lib/supabase/admin";
+import { createAdminClient, hasAdminEnv } from "@/lib/supabase/admin";
+import { createClient } from "@/lib/supabase/server";
 import { normalizeRole } from "@/lib/auth/roles";
 import type { AuthProfile, UserRole } from "@/lib/auth/types";
 
@@ -23,8 +24,53 @@ function mapProfile(row: Record<string, unknown>): AuthProfile {
   };
 }
 
-export async function ensureProfileForUser(input: EnsureProfileInput): Promise<AuthProfile> {
+async function getDbClient() {
+  if (hasAdminEnv()) {
+    return createAdminClient();
+  }
+  // Auth trigger normally creates the row; fall back to the user-scoped client.
+  return createClient();
+}
+
+function isBootstrapAdminEmail(email: string): boolean {
+  const bootstrapEmail = process.env.ADMIN_BOOTSTRAP_EMAIL?.toLowerCase()?.trim();
+  return Boolean(bootstrapEmail && email.toLowerCase() === bootstrapEmail);
+}
+
+/**
+ * Server-only: promote the configured ADMIN_BOOTSTRAP_EMAIL profile to admin.
+ * Does not weaken middleware — /owner and /admin still require an authenticated admin role.
+ * Uses service role only; never trusts client/metadata role claims.
+ */
+export async function promoteBootstrapAdminIfNeeded(input: {
+  userId: string;
+  email: string;
+  profile: AuthProfile;
+}): Promise<AuthProfile> {
+  if (!isBootstrapAdminEmail(input.email) || input.profile.role === "admin") {
+    return input.profile;
+  }
+  if (!hasAdminEnv()) {
+    return input.profile;
+  }
+
   const supabase = createAdminClient();
+  const { data, error } = await supabase
+    .from("profiles")
+    .update({ role: "admin" } as never)
+    .eq("id", input.userId)
+    .select("id, role, first_name, last_name, phone, avatar_url")
+    .maybeSingle();
+
+  if (error || !data) {
+    return input.profile;
+  }
+
+  return mapProfile(data as Record<string, unknown>);
+}
+
+export async function ensureProfileForUser(input: EnsureProfileInput): Promise<AuthProfile> {
+  const supabase = await getDbClient();
 
   const { data: existing, error: fetchError } = await supabase
     .from("profiles")
@@ -43,21 +89,37 @@ export async function ensureProfileForUser(input: EnsureProfileInput): Promise<A
     if (!existing.phone && input.phone) updates.phone = input.phone;
     if (!existing.avatar_url && input.avatarUrl) updates.avatar_url = input.avatarUrl;
 
+    // One-way customer → cleaner when signup metadata / apply intent requests it.
+    // Never self-assign admin from metadata (bootstrap path only).
+    const requestedRole = normalizeRole(input.role ?? null);
+    const currentRole = normalizeRole(String(existing.role));
+    if (
+      requestedRole === "cleaner" &&
+      currentRole === "customer" &&
+      !isBootstrapAdminEmail(input.email)
+    ) {
+      updates.role = "cleaner";
+    }
+
     if (Object.keys(updates).length > 0) {
       await supabase.from("profiles").update(updates as never).eq("id", input.userId);
     }
 
-    return mapProfile({ ...existing, ...updates });
+    const profile = mapProfile({ ...existing, ...updates });
+    return promoteBootstrapAdminIfNeeded({
+      userId: input.userId,
+      email: input.email,
+      profile,
+    });
   }
 
-  const bootstrapEmail = process.env.ADMIN_BOOTSTRAP_EMAIL?.toLowerCase();
+  // Never allow client/metadata self-assignment of admin.
   const requestedRole = normalizeRole(input.role ?? null);
-  const role: UserRole =
-    bootstrapEmail && input.email.toLowerCase() === bootstrapEmail
-      ? "admin"
-      : requestedRole === "cleaner"
-        ? "cleaner"
-        : "customer";
+  const role: UserRole = isBootstrapAdminEmail(input.email)
+    ? "admin"
+    : requestedRole === "cleaner"
+      ? "cleaner"
+      : "customer";
 
   const { data: created, error: createError } = await supabase
     .from("profiles")
@@ -76,10 +138,21 @@ export async function ensureProfileForUser(input: EnsureProfileInput): Promise<A
     .single();
 
   if (createError || !created) {
+    // Trigger may have raced; re-read own row.
+    const { data: raced } = await supabase
+      .from("profiles")
+      .select("id, role, first_name, last_name, phone, avatar_url")
+      .eq("id", input.userId)
+      .maybeSingle();
+    if (raced) {
+      return mapProfile(raced as Record<string, unknown>);
+    }
     throw new Error(createError?.message ?? "Failed to create profile.");
   }
 
-  await supabase.from("notification_preferences").insert({ profile_id: created.id });
+  if (hasAdminEnv()) {
+    await supabase.from("notification_preferences").insert({ profile_id: created.id });
+  }
 
   return mapProfile(created as Record<string, unknown>);
 }

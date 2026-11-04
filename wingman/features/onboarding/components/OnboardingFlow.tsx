@@ -1,176 +1,70 @@
 "use client";
 
-import { Button } from "@/components/ui/Button";
-import { onboardingSlides } from "@/features/onboarding/data/slides";
-import type { OnboardingSlide } from "@/features/onboarding/data/slides";
-import { slideTransition } from "@/lib/animations";
-import { cn } from "@/lib/utils";
-import {
-  AnimatePresence,
-  motion,
-  type PanInfo,
-} from "framer-motion";
-import Image from "next/image";
+import { WingmanWordmark } from "@/components/brand/WingmanLogo";
+import { fadeUpShort } from "@/lib/animations";
+import { motion } from "framer-motion";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useCallback, useState } from "react";
 
-const SWIPE_THRESHOLD = 50;
-
-type OnboardingSlideViewProps = {
-  slide: OnboardingSlide;
-  direction: number;
-};
-
-function OnboardingSlideView({ slide, direction }: OnboardingSlideViewProps) {
-  return (
-    <motion.div
-      key={slide.id}
-      custom={direction}
-      initial={{ opacity: 0, x: direction > 0 ? 80 : -80 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: direction > 0 ? -80 : 80 }}
-      transition={slideTransition}
-      className="absolute inset-0 flex flex-col"
-    >
-      <div className="relative h-[55dvh] w-full overflow-hidden">
-        <Image
-          src={slide.imageUrl}
-          alt={slide.imageAlt}
-          fill
-          priority
-          className="object-cover"
-          sizes="(max-width: 512px) 100vw, 512px"
-        />
-        <div
-          aria-hidden
-          className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-black/40"
-        />
-        <div
-          aria-hidden
-          className="absolute inset-x-0 top-0 h-1 bg-accent"
-        />
-      </div>
-
-      <div className="flex flex-1 flex-col justify-end bg-background px-6 pb-4 pt-8">
-        <p className="text-label font-medium text-accent tracking-[0.25em]">
-          {slide.id === "access" ? "Step 1" : slide.id === "verified" ? "Step 2" : "Step 3"}
-        </p>
-        <h2 className="text-balance mt-3 text-2xl font-bold leading-snug tracking-tight text-ink sm:text-3xl">
-          {slide.title}
-        </h2>
-        {slide.subtitle ? (
-          <p className="mt-4 text-sm leading-relaxed text-ink-muted">
-            {slide.subtitle}
-          </p>
-        ) : null}
-      </div>
-    </motion.div>
-  );
-}
+const fadeUp = fadeUpShort;
 
 export function OnboardingFlow() {
-  const router = useRouter();
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [direction, setDirection] = useState(0);
-
-  const isLastSlide = currentIndex === onboardingSlides.length - 1;
-  const slide = onboardingSlides[currentIndex];
-
-  const goTo = useCallback(
-    (index: number) => {
-      setDirection(index > currentIndex ? 1 : -1);
-      setCurrentIndex(index);
-    },
-    [currentIndex],
-  );
-
-  const next = useCallback(() => {
-    if (isLastSlide) {
-      router.push("/auth");
-      return;
-    }
-    goTo(currentIndex + 1);
-  }, [currentIndex, goTo, isLastSlide, router]);
-
-  const onDragEnd = useCallback(
-    (_: unknown, info: PanInfo) => {
-      if (info.offset.x < -SWIPE_THRESHOLD && currentIndex < onboardingSlides.length - 1) {
-        goTo(currentIndex + 1);
-      } else if (info.offset.x > SWIPE_THRESHOLD && currentIndex > 0) {
-        goTo(currentIndex - 1);
-      }
-    },
-    [currentIndex, goTo],
-  );
-
   return (
-    <div className="min-h-dvh w-full bg-black">
-      <div className="relative mx-auto flex min-h-dvh w-full max-w-[430px] flex-col bg-background shadow-[0_0_80px_rgba(0,0,0,0.8)]">
-      <header className="absolute left-0 right-0 top-0 z-20 flex items-center justify-between px-6 pt-[max(1.5rem,env(safe-area-inset-top))]">
-        <Link
-          href="/"
-          className="text-sm font-semibold uppercase tracking-[0.3em] text-accent transition-colors hover:text-accent-hover"
+    <div className="min-h-dvh w-full bg-background-alt">
+      <div className="relative mx-auto flex min-h-dvh w-full max-w-[430px] flex-col overflow-hidden bg-background lg:max-w-[1080px]">
+        <div
+          aria-hidden
+          className="absolute inset-0 bg-[url('/photos/miami-night.jpg')] bg-cover bg-center"
+        />
+        <div
+          aria-hidden
+          className="absolute inset-0 bg-[linear-gradient(180deg,rgba(7,9,15,0.45)_0%,rgba(7,9,15,0.2)_36%,rgba(7,9,15,0.72)_70%,#07090f_100%)]"
+        />
+
+        <motion.div
+          initial="hidden"
+          animate="visible"
+          className="relative z-10 flex min-h-dvh flex-col px-7 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-[max(3.25rem,env(safe-area-inset-top))]"
         >
-          Wingman
-        </Link>
-        {!isLastSlide ? (
-          <button
-            type="button"
-            onClick={() => router.push("/auth")}
-            className="text-sm text-ink-muted transition-colors hover:text-ink"
-          >
-            Skip
-          </button>
-        ) : (
-          <span className="w-10" aria-hidden />
-        )}
-      </header>
+          <motion.div custom={0} variants={fadeUp} className="pt-4">
+            <WingmanWordmark logoSize={22} />
+          </motion.div>
 
-      <motion.div
-        className="relative flex-1 touch-pan-y"
-        drag="x"
-        dragConstraints={{ left: 0, right: 0 }}
-        dragElastic={0.15}
-        onDragEnd={onDragEnd}
-      >
-        <AnimatePresence mode="wait" custom={direction}>
-          <OnboardingSlideView slide={slide} direction={direction} />
-        </AnimatePresence>
-      </motion.div>
-
-      <footer className="relative z-20 border-t border-border bg-background px-6 pb-[max(2rem,env(safe-area-inset-bottom))] pt-6">
-        <div className="mb-8 flex justify-center gap-2" role="tablist" aria-label="Onboarding progress">
-          {onboardingSlides.map((s, i) => (
-            <button
-              key={s.id}
-              type="button"
-              role="tab"
-              aria-selected={i === currentIndex}
-              aria-label={`Slide ${i + 1} of ${onboardingSlides.length}`}
-              onClick={() => goTo(i)}
-              className={cn(
-                "h-1 rounded-full transition-all duration-300",
-                i === currentIndex ? "w-8 bg-accent" : "w-4 bg-border-subtle",
-              )}
-            />
-          ))}
-        </div>
-
-        <Button size="lg" fullWidth onClick={next}>
-          {isLastSlide ? "Get Started" : "Next"}
-        </Button>
-
-        <p className="mt-6 text-center text-sm text-ink-muted">
-          Already a member?{" "}
-          <Link
-            href="/auth"
-            className="font-medium text-accent underline-offset-2 transition-colors hover:text-accent-hover hover:underline"
-          >
-            Login
-          </Link>
-        </p>
-      </footer>
+          <div className="mt-auto max-w-md pb-4">
+            <motion.p custom={0.06} variants={fadeUp} className="text-[0.95rem] text-ink-muted">
+              Miami
+            </motion.p>
+            <motion.h1
+              custom={0.1}
+              variants={fadeUp}
+              className="mt-3 font-display text-[3.15rem] leading-[1.02] text-ink"
+            >
+              Tonight is handled.
+            </motion.h1>
+            <motion.p custom={0.16} variants={fadeUp} className="mt-4 max-w-[20rem] text-[1rem] leading-relaxed text-ink-muted">
+              The best of Miami, through people who know it.
+            </motion.p>
+            <motion.div custom={0.22} variants={fadeUp} className="mt-8 flex flex-col gap-3">
+              <Link href="/booking/location" className="inline-flex h-12 items-center justify-center rounded-[16px] bg-[#00C2FF] px-6 text-[16px] font-medium text-[#050508]">
+                Plan my night
+              </Link>
+              <Link href="/auth" className="inline-flex h-12 items-center justify-center text-[0.95rem] text-ink-muted">
+                Sign in
+              </Link>
+            </motion.div>
+            <motion.p custom={0.28} variants={fadeUp} className="mt-8 text-center text-[0.75rem] text-ink-subtle">
+              18+ · $500 starts the night with Andres
+            </motion.p>
+            <p className="mt-3 text-center text-[0.75rem] text-ink-subtle">
+              <Link href="/legal/privacy" className="underline-offset-2 hover:underline">
+                Privacy
+              </Link>
+              {" · "}
+              <Link href="/legal/terms" className="underline-offset-2 hover:underline">
+                Terms
+              </Link>
+            </p>
+          </div>
+        </motion.div>
       </div>
     </div>
   );

@@ -5,9 +5,13 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   await requireAdminSession();
 
   return (
-    <div className="flex min-h-screen bg-surface-muted">
+    <div
+      data-theme="ml-dark"
+      className="flex min-h-dvh bg-[var(--ml-dark-bg)] text-[var(--ml-dark-ink)]"
+      style={{ fontFamily: "var(--ml-font-ios)" }}
+    >
       <AdminNav />
-      <main className="min-w-0 flex-1">{children}</main>
+      <main className="min-w-0 flex-1 pb-8">{children}</main>
     </div>
   );
 }

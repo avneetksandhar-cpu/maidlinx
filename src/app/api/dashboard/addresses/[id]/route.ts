@@ -26,7 +26,7 @@ export async function PATCH(
 ) {
   try {
     if (!hasAdminEnv()) {
-      return jsonError("Address storage is not configured.", 503);
+      return jsonError("Saved addresses are temporarily unavailable. Please try again shortly.", 503);
     }
 
     const userId = await requireCustomerUser();
@@ -69,7 +69,7 @@ export async function DELETE(
 ) {
   try {
     if (!hasAdminEnv()) {
-      return jsonError("Address storage is not configured.", 503);
+      return jsonError("Saved addresses are temporarily unavailable. Please try again shortly.", 503);
     }
 
     const userId = await requireCustomerUser();

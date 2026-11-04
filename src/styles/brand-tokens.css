@@ -1,0 +1,160 @@
+/*
+  MaidLinx brand tokens — sampled from official logo assets:
+  /public/brand/maidlinx-logo.png
+  Dominant logo fill (mint/teal): #08e0d4 (modal #08e1d6 ≈ same)
+  Dominant wordmark/icon (navy): #003474 (modal opaque navy #013475 ≈ same)
+
+  Primary buttons use exact logo teal with navy text for WCAG AA contrast
+  (white-on-teal ≈ 1.66:1 fail; navy-on-teal ≈ 7.24:1 pass).
+
+  Booking + app shells use logo navy as the page background (white text ≈ 12:1).
+  Elevated/surface steps are navy mixed toward white — not a new palette.
+*/
+
+:root {
+  --maidlinx-logo-teal: #08e0d4;
+  --maidlinx-logo-navy: #003474;
+  --maidlinx-mint-hex: #08e0d4;
+  --maidlinx-teal: #08e0d4;
+  --maidlinx-teal-hover: #06c9bf;
+  --maidlinx-teal-pressed: #05b3aa;
+  --maidlinx-teal-muted: #e6fffc;
+  --maidlinx-teal-soft: #b8f7f1;
+  --maidlinx-navy: #003474;
+  --maidlinx-navy-light: #0a4588;
+  --maidlinx-bg: #fafafa;
+  --maidlinx-ink: #003474;
+  --maidlinx-text: #0f172a;
+  --maidlinx-muted: #64748b;
+  --maidlinx-border: #e5e7eb;
+  --shadow-soft: 0 1px 2px rgb(0 52 116 / 0.04);
+  --shadow-card: 0 1px 3px rgb(0 52 116 / 0.05), 0 4px 12px rgb(0 52 116 / 0.04);
+
+  /*
+    App dark theme — founder midnight mockup (AFTER BOOKING / matching / arrival / receipt):
+    BG #01193D · surfaces #102B49 · white text · CTA #04CED2 + navy labels
+  */
+  --ml-dark-bg: #01193d;
+  --ml-dark-bg-elevated: #0a2748;
+  --ml-dark-surface: #102b49;
+  --ml-dark-surface-2: #163556;
+  --ml-dark-border: #1e4064;
+  --ml-dark-border-strong: #2a5478;
+  --ml-dark-ink: #ffffff;
+  --ml-dark-ink-muted: #b0bcc8;
+  --ml-dark-ink-subtle: #8fa0b5;
+  --ml-dark-mint: #04ced2;
+  --ml-dark-mint-glow: 0 0 24px rgb(4 206 210 / 0.28);
+  /* Solid teal app chrome */
+  --ml-app-header: #04ced2;
+  --ml-app-header-ink: #01193d;
+  --ml-font-ios: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display",
+    "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  /* Shared mobile card radius / tap target */
+  --ml-card-radius: 1rem;
+  --ml-tap-min: 2.75rem;
+}
+
+/*
+  Founder customer booking + post-booking design system (canonical).
+  Scope: 4-step /book/* funnel AND /bookings/[id] live status (data-theme="ml-book").
+
+  Brand: circular MaidLinx mark, compact header
+  Colors: white bg · navy text #01193D · turquoise CTA #04CED2 (navy labels)
+           · pale aqua selected #E6FAFA
+  Type: --ml-font-ios (system), left-aligned headings, readable body
+  Controls: one primary CTA; running total above CTA when quote available
+  Nav: app tabs Home · Bookings · My Home · Account; booking Step 1–4 of 4
+*/
+[data-theme="ml-book"] {
+  --ml-book-bg: #ffffff;
+  --ml-book-ink: #01193d;
+  --ml-book-ink-muted: #4a5568;
+  --ml-book-ink-subtle: #718096;
+  --ml-book-primary: #04ced2;
+  --ml-book-primary-hover: #03b8bc;
+  --ml-book-selected: #e6fafa;
+  --ml-book-border: #e2e8f0;
+  --ml-book-border-strong: #cbd5e1;
+  --ml-book-surface: #ffffff;
+  --ml-dark-bg: var(--ml-book-bg);
+  --ml-dark-bg-elevated: #f8fafc;
+  --ml-dark-surface: var(--ml-book-surface);
+  --ml-dark-surface-2: #f1f5f9;
+  --ml-dark-border: var(--ml-book-border);
+  --ml-dark-border-strong: var(--ml-book-border-strong);
+  --ml-dark-ink: var(--ml-book-ink);
+  --ml-dark-ink-muted: var(--ml-book-ink-muted);
+  --ml-dark-ink-subtle: var(--ml-book-ink-subtle);
+  --ml-dark-mint: var(--ml-book-primary);
+  --ml-dark-mint-glow: none;
+  --ml-app-header: #ffffff;
+  --ml-app-header-ink: var(--ml-book-ink);
+  --color-background: var(--ml-book-bg);
+  --color-bg: var(--ml-book-bg);
+  --color-surface: var(--ml-book-surface);
+  --color-surface-muted: #f8fafc;
+  --color-surface-elevated: #ffffff;
+  --color-ink: var(--ml-book-ink);
+  --color-ink-muted: var(--ml-book-ink-muted);
+  --color-ink-subtle: var(--ml-book-ink-subtle);
+  --color-accent: var(--ml-book-primary);
+  --color-accent-hover: var(--ml-book-primary-hover);
+  --color-accent-muted: var(--ml-book-selected);
+  --color-accent-foreground: var(--ml-book-ink);
+  --color-navy: var(--ml-book-ink);
+  --color-navy-light: #1a365d;
+  --color-teal: var(--ml-book-primary);
+  --color-teal-muted: var(--ml-book-selected);
+  --color-border: var(--ml-book-border);
+  --color-border-strong: var(--ml-book-border-strong);
+  --color-gold: var(--ml-book-primary);
+  --color-gold-hover: var(--ml-book-primary-hover);
+  --color-gold-muted: var(--ml-book-selected);
+  --maidlinx-bg: var(--ml-book-bg);
+  --maidlinx-ink: var(--ml-book-ink);
+  --maidlinx-text: var(--ml-book-ink);
+  --maidlinx-muted: var(--ml-book-ink-muted);
+  --maidlinx-border: var(--ml-book-border);
+  --shadow-soft: 0 1px 2px rgb(1 25 61 / 0.04);
+  --shadow-card: 0 1px 3px rgb(1 25 61 / 0.05), 0 4px 12px rgb(1 25 61 / 0.04);
+  --shadow-elevated: 0 8px 24px rgb(1 25 61 / 0.08);
+  color-scheme: light;
+  font-family: var(--ml-font-ios);
+}
+
+/* Scoped dark theme for cleaner/ops shells + B2B dashboard */
+[data-theme="ml-dark"] {
+  --color-background: var(--ml-dark-bg);
+  --color-bg: var(--ml-dark-bg);
+  --color-surface: var(--ml-dark-surface);
+  --color-surface-muted: var(--ml-dark-surface-2);
+  --color-surface-elevated: var(--ml-dark-bg-elevated);
+  --color-ink: var(--ml-dark-ink);
+  --color-ink-muted: var(--ml-dark-ink-muted);
+  --color-ink-subtle: var(--ml-dark-ink-subtle);
+  --color-accent: var(--ml-dark-mint);
+  --color-accent-hover: #06c9bf;
+  --color-accent-muted: rgb(8 224 212 / 0.12);
+  --color-accent-foreground: #003474;
+  /* Keep brand navy as logo navy (not ink/white) for accents & on-teal labels */
+  --color-navy: #003474;
+  --color-navy-light: #a8b8c8;
+  --color-teal: var(--ml-dark-mint);
+  --color-teal-muted: rgb(8 224 212 / 0.18);
+  --color-border: var(--ml-dark-border);
+  --color-border-strong: var(--ml-dark-border-strong);
+  --color-gold: var(--ml-dark-mint);
+  --color-gold-hover: #06c9bf;
+  --color-gold-muted: rgb(8 224 212 / 0.12);
+  --maidlinx-bg: var(--ml-dark-bg);
+  --maidlinx-ink: var(--ml-dark-ink);
+  --maidlinx-text: var(--ml-dark-ink);
+  --maidlinx-muted: var(--ml-dark-ink-muted);
+  --maidlinx-border: var(--ml-dark-border);
+  --shadow-soft: 0 1px 2px rgb(0 20 50 / 0.35);
+  --shadow-card: 0 4px 16px rgb(0 20 50 / 0.4);
+  --shadow-elevated: 0 12px 32px rgb(0 20 50 / 0.45);
+  color-scheme: dark;
+  font-family: var(--ml-font-ios);
+}

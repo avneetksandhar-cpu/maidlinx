@@ -54,31 +54,53 @@ function BreakdownRows({ pricing }: { pricing: PriceBreakdown }) {
         <span className="font-medium">{pricing.serviceLabel ?? "Cleaning"}</span>
       </div>
       <div className="flex justify-between gap-4">
-        <span className="text-ink-muted">Base</span>
+        <span className="text-ink-muted">Base price</span>
         <span className="font-medium tabular-nums">
-          {formatCurrency(pricing.baseCents + pricing.bedroomCents + pricing.bathroomCents + pricing.squareFootageCents, currency)}
+          {formatCurrency(pricing.baseCents + pricing.squareFootageCents, currency)}
         </span>
       </div>
-      <div className="flex justify-between gap-4">
-        <span className="text-ink-muted">Extras</span>
-        <span className="font-medium tabular-nums">
-          {formatCurrency(pricing.extrasCents, currency)}
-        </span>
-      </div>
+      {pricing.bedroomCents > 0 ? (
+        <div className="flex justify-between gap-4">
+          <span className="text-ink-muted">Additional bedrooms</span>
+          <span className="font-medium tabular-nums">
+            {formatCurrency(pricing.bedroomCents, currency)}
+          </span>
+        </div>
+      ) : null}
+      {pricing.bathroomCents > 0 ? (
+        <div className="flex justify-between gap-4">
+          <span className="text-ink-muted">Additional bathrooms</span>
+          <span className="font-medium tabular-nums">
+            {formatCurrency(pricing.bathroomCents, currency)}
+          </span>
+        </div>
+      ) : null}
+      {pricing.extrasCents > 0 ? (
+        <div className="flex justify-between gap-4">
+          <span className="text-ink-muted">Extras</span>
+          <span className="font-medium tabular-nums">
+            {formatCurrency(pricing.extrasCents, currency)}
+          </span>
+        </div>
+      ) : null}
       <div className="flex justify-between gap-4">
         <span className="text-ink-muted">Fees</span>
         <span className="font-medium tabular-nums">{formatCurrency(feesCents, currency)}</span>
       </div>
-      <div className="flex justify-between gap-4">
-        <span className="text-ink-muted">Tax</span>
-        <span className="font-medium tabular-nums">{formatCurrency(taxCents, currency)}</span>
-      </div>
-      <div className="flex justify-between gap-4">
-        <span className="text-ink-muted">Discount</span>
-        <span className="font-medium tabular-nums">
-          {discountCents > 0 ? `−${formatCurrency(discountCents, currency)}` : formatCurrency(0, currency)}
-        </span>
-      </div>
+      {taxCents > 0 ? (
+        <div className="flex justify-between gap-4">
+          <span className="text-ink-muted">Tax</span>
+          <span className="font-medium tabular-nums">{formatCurrency(taxCents, currency)}</span>
+        </div>
+      ) : null}
+      {discountCents > 0 ? (
+        <div className="flex justify-between gap-4">
+          <span className="text-ink-muted">Discount</span>
+          <span className="font-medium tabular-nums">
+            −{formatCurrency(discountCents, currency)}
+          </span>
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -164,7 +186,14 @@ export function PriceSummary({
 
   if (variant === "embedded") {
     return (
-      <div className={cn("rounded-2xl bg-surface-muted/80 p-5", className)}>{content}</div>
+      <div
+        className={cn(
+          "rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-5",
+          className,
+        )}
+      >
+        {content}
+      </div>
     );
   }
 

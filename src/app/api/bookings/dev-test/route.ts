@@ -38,8 +38,11 @@ export async function POST(request: Request) {
   }
 
   if (!hasAdminEnv()) {
+    console.error(
+      "[bookings/dev-test] SUPABASE_NOT_CONFIGURED: missing NEXT_PUBLIC_SUPABASE_URL and/or SUPABASE_SERVICE_ROLE_KEY",
+    );
     return jsonError(
-      "Booking storage is not configured. Add Supabase admin env vars.",
+      "Booking is temporarily unavailable. Please try again shortly.",
       503,
       "SUPABASE_NOT_CONFIGURED",
     );

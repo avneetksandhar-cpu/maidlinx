@@ -134,7 +134,7 @@ export function ConfirmationStep({ booking, accessToken }: ConfirmationStepProps
       </dl>
 
       <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-        <Link href={`/booking/${booking.id}${tokenQuery}`} className="sm:flex-1">
+        <Link href={`/bookings/${booking.id}${tokenQuery}`} className="sm:flex-1">
           <Button variant="secondary" className="w-full">
             View confirmation page
           </Button>

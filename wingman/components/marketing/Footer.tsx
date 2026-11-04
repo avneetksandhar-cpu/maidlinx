@@ -1,11 +1,13 @@
+import { WingmanWordmark } from "@/components/brand/WingmanLogo";
+import { AppStoreButton } from "@/components/ui/app-store-button";
 import Link from "next/link";
 
 const footerLinks = {
   Product: [
-    { href: "#experiences", label: "Experiences" },
-    { href: "#membership", label: "Membership" },
-    { href: "#how-it-works", label: "How It Works" },
-    { href: "/onboarding", label: "Get Started" },
+    { href: "/events", label: "Tonight" },
+    { href: "/plan", label: "Plan My Night" },
+    { href: "/book", label: "Book $500" },
+    { href: "#how-it-works", label: "How it works" },
   ],
   Company: [
     { href: "#about", label: "About" },
@@ -14,9 +16,9 @@ const footerLinks = {
     { href: "#", label: "Contact" },
   ],
   Legal: [
-    { href: "#", label: "Terms" },
-    { href: "#", label: "Privacy" },
-    { href: "#", label: "Cookies" },
+    { href: "/legal/terms", label: "Terms" },
+    { href: "/legal/privacy", label: "Privacy" },
+    { href: "/policies", label: "Policies" },
   ],
 };
 
@@ -26,16 +28,24 @@ export function Footer() {
       <div className="section-container">
         <div className="grid gap-12 md:grid-cols-[1.5fr_1fr_1fr_1fr]">
           <div>
-            <Link
-              href="/"
-              className="text-sm font-semibold uppercase tracking-[0.35em] text-ink"
-            >
-              Wingman
+            <Link href="/" aria-label="Wingman home">
+              <WingmanWordmark logoSize={24} />
             </Link>
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-ink-muted">
-              Miami&apos;s private marketplace for exclusive experiences.
-              Verified hosts. VIP access. Members only.
+              Miami nights: lounges, hookah, clubs, raves, events. One Wingman.
+              $500 start-the-night service.
             </p>
+            <div className="mt-6">
+              <a
+                href="#"
+                aria-label="App Store download is not available. TestFlight is not live."
+              >
+                <AppStoreButton type="button" />
+              </a>
+              <p className="mt-2 max-w-xs text-xs text-ink-subtle">
+                App Store listing coming soon.
+              </p>
+            </div>
           </div>
 
           {Object.entries(footerLinks).map(([group, links]) => (

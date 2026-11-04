@@ -1,4 +1,5 @@
-import { requireRole, getSession } from "@/lib/auth/session";
+import { redirect } from "next/navigation";
+import { requireSession, getSession } from "@/lib/auth/session";
 import {
   ADMIN_PERMISSIONS,
   hasPermission,
@@ -14,6 +15,11 @@ export interface AdminProfile {
   email: string;
   roleLabel: string;
   permissions: string[];
+}
+
+function isBootstrapAdminEmail(email: string | null | undefined): boolean {
+  const bootstrap = process.env.ADMIN_BOOTSTRAP_EMAIL?.toLowerCase()?.trim();
+  return Boolean(bootstrap && email?.toLowerCase() === bootstrap);
 }
 
 async function loadAdminPermissions(profileId: string): Promise<{
@@ -49,14 +55,14 @@ async function loadAdminPermissions(profileId: string): Promise<{
 }
 
 export async function requireAdminSession(): Promise<AdminProfile> {
-  const session = await requireRole(["admin"], "/");
-
-  const bootstrapEmail = process.env.ADMIN_BOOTSTRAP_EMAIL?.toLowerCase();
-  const isBootstrap =
-    Boolean(bootstrapEmail) && session.user.email.toLowerCase() === bootstrapEmail;
+  // Do not use requireRole(["admin"]) alone — bootstrap founders may still be
+  // "customer" until promoteBootstrapAdminIfNeeded succeeds (or if service role
+  // is briefly unavailable). Match middleware + getAdminSessionOrNull.
+  const session = await requireSession();
+  const isBootstrap = isBootstrapAdminEmail(session.user.email);
 
   if (session.profile?.role !== "admin" && !isBootstrap) {
-    throw new Error("Admin access denied.");
+    redirect("/");
   }
 
   const profileId = session.profile?.id ?? session.user.id;
@@ -83,9 +89,7 @@ export async function getAdminSessionOrNull(): Promise<AdminProfile | null> {
   const session = await getSession();
   if (!session) return null;
 
-  const bootstrapEmail = process.env.ADMIN_BOOTSTRAP_EMAIL?.toLowerCase();
-  const isBootstrap =
-    Boolean(bootstrapEmail) && session.user.email.toLowerCase() === bootstrapEmail;
+  const isBootstrap = isBootstrapAdminEmail(session.user.email);
 
   if (session.profile?.role !== "admin" && !isBootstrap) {
     return null;

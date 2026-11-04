@@ -10,8 +10,11 @@ import {
 import type { StoredBooking } from "@/lib/bookings/repository";
 import { getBookingStatusLabel } from "@/lib/bookings/status";
 import { getCustomerTimelineState } from "@/lib/bookings/status-timeline";
+import { BookingMapPreview } from "@/components/booking/booking-map-preview";
 import { BookingStatusTimeline } from "@/components/booking/booking-status-timeline";
+import { LiveCleanerMap } from "@/components/booking/live-cleaner-map";
 import { calculateDepositCents, getDepositPercent } from "@/lib/payments/deposit";
+import { isLiveLocationStatus } from "@/lib/bookings/status";
 import { Button } from "@/components/ui";
 import { formatCurrency } from "@/lib/utils";
 import { routes } from "@/config/site";
@@ -90,6 +93,15 @@ export function BookingConfirmationDetails({
   const cleanerName = booking.cleaner
     ? [booking.cleaner.firstName, booking.cleaner.lastName].filter(Boolean).join(" ")
     : null;
+  const addressLabel = [
+    booking.address_line1,
+    booking.address_line2,
+    booking.address_city,
+    booking.address_state,
+    booking.address_postal_code,
+  ]
+    .filter(Boolean)
+    .join(", ");
 
   return (
     <>
@@ -147,6 +159,27 @@ export function BookingConfirmationDetails({
         <p className="mt-4 rounded-xl bg-surface-muted px-4 py-3 text-sm font-medium text-ink">
           Finding your cleaning professional…
         </p>
+      ) : null}
+
+      {addressLabel && !isCancelled ? (
+        <div className="mt-6">
+          {isLiveLocationStatus(booking.status) ? (
+            <LiveCleanerMap
+              bookingId={booking.id}
+              accessToken={accessToken}
+              status={booking.status}
+              customerLat={booking.address_latitude}
+              customerLng={booking.address_longitude}
+              addressLabel={addressLabel}
+            />
+          ) : (
+            <BookingMapPreview
+              latitude={booking.address_latitude}
+              longitude={booking.address_longitude}
+              label={addressLabel}
+            />
+          )}
+        </div>
       ) : null}
 
       {timeline.showCleaner && booking.cleaner ? (

@@ -2,21 +2,31 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { Card, CardContent } from "@/components/ui";
-import { checklistProgress, type ChecklistItem } from "@/lib/pro/dashboard/checklist";
+import { Check } from "lucide-react";
+import { checklistCounts, type ChecklistItem } from "@/lib/pro/dashboard/checklist";
+import { cn } from "@/lib/utils";
 
 interface JobChecklistProps {
   jobId: string;
   items: ChecklistItem[];
   disabled?: boolean;
+  showProgressBar?: boolean;
+  title?: string;
 }
 
-export function JobChecklist({ jobId, items, disabled = false }: JobChecklistProps) {
+export function JobChecklist({
+  jobId,
+  items,
+  disabled = false,
+  showProgressBar = false,
+  title = "Service checklist",
+}: JobChecklistProps) {
   const router = useRouter();
   const [checklist, setChecklist] = useState(items);
   const [saving, setSaving] = useState(false);
 
-  const progress = checklistProgress(checklist);
+  const { done, total } = checklistCounts(checklist);
+  const pct = total === 0 ? 0 : Math.round((done / total) * 100);
 
   async function toggleItem(id: string) {
     if (disabled) return;
@@ -40,47 +50,63 @@ export function JobChecklist({ jobId, items, disabled = false }: JobChecklistPro
   }
 
   return (
-    <Card>
-      <CardContent className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h3 className="font-display text-lg font-semibold text-ink">Job checklist</h3>
-          <span className="text-sm font-medium text-gold">{progress}%</span>
-        </div>
+    <section className="space-y-3">
+      <div className="flex items-center justify-between gap-3">
+        <h3 className="text-base font-semibold text-[var(--ml-dark-ink)]">{title}</h3>
+        {showProgressBar ? (
+          <span className="text-sm font-medium tabular-nums text-[var(--ml-dark-mint)]">
+            {done} of {total}
+          </span>
+        ) : null}
+      </div>
 
-        <div className="h-2 overflow-hidden rounded-full bg-surface-muted">
+      {showProgressBar ? (
+        <div className="h-1.5 overflow-hidden rounded-full bg-[var(--ml-dark-surface-2)]">
           <div
-            className="h-full rounded-full bg-gold transition-all duration-300"
-            style={{ width: `${progress}%` }}
+            className="h-full rounded-full bg-[var(--ml-dark-mint)] transition-all duration-300"
+            style={{ width: `${pct}%` }}
           />
         </div>
+      ) : null}
 
-        <ul className="space-y-2">
-          {checklist.map((item) => (
-            <li key={item.id}>
-              <label
-                className={`flex cursor-pointer items-center gap-3 rounded-lg border px-4 py-3 text-sm transition-colors ${
+      <ul className="space-y-1">
+        {checklist.map((item) => (
+          <li key={item.id}>
+            <button
+              type="button"
+              disabled={disabled || saving}
+              onClick={() => void toggleItem(item.id)}
+              className={cn(
+                "flex w-full min-h-12 items-center gap-3 rounded-xl px-1 py-2.5 text-left text-[15px] transition-colors",
+                "disabled:opacity-60",
+                item.completed
+                  ? "text-[var(--ml-dark-ink)]"
+                  : "text-[var(--ml-dark-ink)] active:bg-[var(--ml-dark-surface-2)]",
+              )}
+            >
+              <span
+                className={cn(
+                  "flex size-6 shrink-0 items-center justify-center rounded-full border-2",
                   item.completed
-                    ? "border-gold/30 bg-gold-muted/50"
-                    : "border-border hover:bg-surface-muted"
-                } ${disabled ? "cursor-not-allowed opacity-60" : ""}`}
+                    ? "border-[var(--ml-dark-mint)] bg-[var(--ml-dark-mint)] text-[var(--color-accent-foreground)]"
+                    : "border-[var(--ml-dark-border-strong)] bg-transparent",
+                )}
+                aria-hidden
               >
-                <input
-                  type="checkbox"
-                  checked={item.completed}
-                  disabled={disabled || saving}
-                  onChange={() => toggleItem(item.id)}
-                  className="h-4 w-4 accent-gold"
-                />
-                <span className={item.completed ? "text-ink-muted line-through" : "text-ink"}>
-                  {item.label}
-                </span>
-              </label>
-            </li>
-          ))}
-        </ul>
+                {item.completed ? <Check className="size-3.5" strokeWidth={3} /> : null}
+              </span>
+              <span className={cn(item.completed && "text-[var(--ml-dark-ink-muted)]")}>
+                {item.label}
+              </span>
+            </button>
+          </li>
+        ))}
+      </ul>
 
-        {saving && <p className="text-xs text-ink-muted">Saving...</p>}
-      </CardContent>
-    </Card>
+      {checklist.length === 0 ? (
+        <p className="text-sm text-[var(--ml-dark-ink-muted)]">No checklist items for this service.</p>
+      ) : null}
+      {saving ? <p className="text-xs text-[var(--ml-dark-ink-muted)]">Saving…</p> : null}
+    </section>
   );
 }

@@ -1,10 +1,11 @@
 /** Deposit percentage charged at booking checkout (balance due later). */
 export function getDepositPercent(): number {
   const raw = process.env.DEPOSIT_PERCENT ?? process.env.NEXT_PUBLIC_DEPOSIT_PERCENT;
-  const parsed = raw ? Number(raw) : 25;
+  // Design + product default: 50% deposit at checkout (Stripe TEST mode).
+  const parsed = raw ? Number(raw) : 50;
 
   if (!Number.isFinite(parsed) || parsed <= 0 || parsed > 100) {
-    return 25;
+    return 50;
   }
 
   return parsed;

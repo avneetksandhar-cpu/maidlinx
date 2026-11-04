@@ -61,6 +61,7 @@ describe("promo server validation", () => {
     discountValue: 10,
     minOrderCents: 10000,
     maxUses: 5,
+    maxUsesPerCustomer: null,
     usedCount: 1,
     validFrom: null,
     validUntil: null,
@@ -219,6 +220,7 @@ describe("matching eligibility", () => {
         cancelledJobsByProfileId: new Map(),
         favoriteProfileIds: new Set(),
         repeatProfileIds: new Set(),
+        requireStrictMarketplace: false,
       },
     );
     expect(result.eligible).toBe(false);

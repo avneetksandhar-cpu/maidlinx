@@ -58,7 +58,7 @@ export function ReturningCustomerBanner({ onApply, className }: ReturningCustome
     >
       <p className="text-sm font-medium text-ink-muted">{greeting}</p>
       <p className="mt-1 font-display text-xl font-semibold tracking-tight text-ink">
-        Book again?
+        Book my usual clean?
       </p>
 
       <div className="mt-4 flex items-start gap-3 rounded-lg bg-surface-muted/80 px-3 py-3">
@@ -87,7 +87,7 @@ export function ReturningCustomerBanner({ onApply, className }: ReturningCustome
                 onApply(usualCleanToBookingPatch(profile));
               }}
         >
-          Book again
+          Book my usual clean
         </Button>
         <Button
           type="button"

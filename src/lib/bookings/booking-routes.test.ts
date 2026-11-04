@@ -1,147 +1,145 @@
 import { describe, expect, it } from "vitest";
 import {
   BOOKING_SCREEN_PATHS,
+  getBookingEntryPath,
   getGuardRedirect,
   getNextScreen,
   getPreviousScreen,
   isAddressComplete,
+  isCleanPanelComplete,
   isDetailsComplete,
   isReviewReady,
   isScheduleComplete,
 } from "@/lib/bookings/booking-routes";
 import { DEFAULT_BOOKING_STATE, type BookingState } from "@/lib/bookings/booking-state";
+import {
+  BOOKING_RESUME_AFTER_AUTH,
+  bookingSignInHref,
+  isBookingAuthRequired,
+} from "@/lib/bookings/booking-auth";
 
 function baseAddress(overrides: Partial<BookingState> = {}): BookingState {
   return {
     ...DEFAULT_BOOKING_STATE,
     line1: "123 King St W",
-    city: "Toronto",
-    state: "ON",
-    postalCode: "M5H 1A1",
-    country: "CA",
-    marketId: "TORONTO_GTA",
+    city: "Miami",
+    state: "FL",
+    postalCode: "33130",
+    country: "US",
+    marketId: "SOUTH_FLORIDA",
     inServiceArea: true,
     ...overrides,
   };
 }
 
-describe("booking route guards", () => {
-  it("requires address before property", () => {
-    expect(getGuardRedirect("property", DEFAULT_BOOKING_STATE)).toBe(
+function cleanReady(overrides: Partial<BookingState> = {}): BookingState {
+  return baseAddress({
+    propertyType: "house",
+    bedrooms: 2,
+    bathrooms: 1,
+    squareFootage: 1500,
+    serviceType: "standard",
+    serviceTierId: "standard",
+    extras: ["inside_oven"],
+    ...overrides,
+  });
+}
+
+describe("booking route guards (4-panel address-first)", () => {
+  it("starts at address", () => {
+    expect(getBookingEntryPath()).toBe(BOOKING_SCREEN_PATHS.address);
+  });
+
+  it("allows address without category", () => {
+    expect(getGuardRedirect("address", DEFAULT_BOOKING_STATE)).toBeNull();
+    expect(getGuardRedirect("welcome", DEFAULT_BOOKING_STATE)).toBeNull();
+  });
+
+  it("collapses property into clean panel when address is set", () => {
+    expect(getGuardRedirect("property", baseAddress())).toBe(BOOKING_SCREEN_PATHS.service);
+  });
+
+  it("requires address before clean panel", () => {
+    expect(getGuardRedirect("service", DEFAULT_BOOKING_STATE)).toBe(
       BOOKING_SCREEN_PATHS.address,
     );
   });
 
-  it("allows property when address is complete", () => {
-    expect(getGuardRedirect("property", baseAddress())).toBeNull();
+  it("allows clean panel when address is complete", () => {
+    expect(getGuardRedirect("service", baseAddress())).toBeNull();
   });
 
-  it("requires property before details", () => {
-    expect(getGuardRedirect("details", baseAddress())).toBe(BOOKING_SCREEN_PATHS.property);
+  it("advances address → service (clean)", () => {
+    expect(getNextScreen("address", baseAddress())).toBe("service");
+    expect(getPreviousScreen("service", baseAddress())).toBe("address");
   });
 
-  it("skips addons for quote-only services", () => {
-    const state = baseAddress({
-      propertyType: "post_construction",
-      bedrooms: 0,
-      bathrooms: 1,
-      squareFootage: 1500,
-      serviceType: "post_construction",
-      serviceTierId: "pro",
-    });
-    expect(getNextScreen("service", state)).toBe("date");
-    expect(getGuardRedirect("addons", state)).toBe(BOOKING_SCREEN_PATHS.date);
-    expect(getPreviousScreen("date", state)).toBe("service");
+  it("advances service → date (when)", () => {
+    expect(getNextScreen("service", cleanReady())).toBe("date");
+    expect(getPreviousScreen("date", cleanReady())).toBe("service");
+  });
+
+  it("advances date → review", () => {
+    expect(getNextScreen("date", cleanReady())).toBe("review");
+    expect(getPreviousScreen("review", cleanReady())).toBe("date");
+  });
+
+  it("collapses time/access into when panel", () => {
+    expect(getGuardRedirect("time", cleanReady())).toBe(BOOKING_SCREEN_PATHS.date);
+    expect(getGuardRedirect("access", cleanReady({ date: "2026-11-12", arrivalWindow: "afternoon", schedulePreset: "asap" }))).toBe(
+      BOOKING_SCREEN_PATHS.date,
+    );
+  });
+
+  it("skips addons/details screens into clean panel", () => {
+    expect(getGuardRedirect("details", cleanReady())).toBe(BOOKING_SCREEN_PATHS.service);
+    expect(getGuardRedirect("addons", cleanReady())).toBe(BOOKING_SCREEN_PATHS.service);
   });
 
   it("blocks payment until schedule is complete", () => {
-    const state = baseAddress({
-      propertyType: "house",
-      bedrooms: 2,
-      bathrooms: 2,
-      squareFootage: 1500,
-      serviceType: "standard",
-      serviceTierId: "standard",
-      extras: [],
-    });
+    const state = cleanReady();
     expect(isScheduleComplete(state)).toBe(false);
     expect(getGuardRedirect("payment", state)).toBe(BOOKING_SCREEN_PATHS.date);
   });
 
-  it("splits date → time → access → review", () => {
-    const withDate = baseAddress({
-      propertyType: "house",
-      bedrooms: 2,
-      bathrooms: 2,
-      squareFootage: 1500,
-      serviceType: "standard",
-      serviceTierId: "standard",
-      extras: [],
-      schedulePreset: "tomorrow",
-      date: "2026-08-12",
-    });
-    expect(getNextScreen("date", withDate)).toBe("time");
-    expect(getGuardRedirect("time", withDate)).toBeNull();
-    expect(getGuardRedirect("access", withDate)).toBe(BOOKING_SCREEN_PATHS.time);
-
-    const withTime = { ...withDate, arrivalWindow: "morning" as const };
-    expect(getNextScreen("time", withTime)).toBe("access");
-    expect(getGuardRedirect("access", withTime)).toBeNull();
-    expect(getNextScreen("access", withTime)).toBe("review");
-  });
-
-  it("skips time for ASAP", () => {
-    const state = baseAddress({
-      propertyType: "house",
-      bedrooms: 2,
-      bathrooms: 2,
-      squareFootage: 1500,
-      serviceType: "standard",
-      serviceTierId: "standard",
-      extras: [],
-      schedulePreset: "asap",
-      date: "2026-08-11",
+  it("allows review when clean + schedule complete", () => {
+    const state = cleanReady({
+      date: "2026-11-12",
       arrivalWindow: "afternoon",
+      schedulePreset: "asap",
     });
-    expect(getNextScreen("date", state)).toBe("access");
-    expect(getGuardRedirect("time", state)).toBe(BOOKING_SCREEN_PATHS.access);
-    expect(getPreviousScreen("access", state)).toBe("date");
-  });
-
-  it("allows review when full draft is ready", () => {
-    const state = baseAddress({
-      propertyType: "house",
-      bedrooms: 2,
-      bathrooms: 2,
-      squareFootage: 1500,
-      serviceType: "standard",
-      serviceTierId: "standard",
-      extras: [],
-      schedulePreset: "tomorrow",
-      date: "2026-08-11",
-      arrivalWindow: "morning",
-    });
-    expect(isAddressComplete(state)).toBe(true);
-    expect(isDetailsComplete(state)).toBe(true);
+    expect(isCleanPanelComplete(state)).toBe(true);
     expect(isReviewReady(state)).toBe(true);
     expect(getGuardRedirect("review", state)).toBeNull();
-    expect(getGuardRedirect("payment", state)).toBeNull();
   });
 
-  it("requires move direction for move properties", () => {
-    const incomplete = baseAddress({
-      propertyType: "move",
-      bedrooms: 2,
-      bathrooms: 1,
-      squareFootage: 1500,
-      serviceAnswers: {},
-    });
-    expect(isDetailsComplete(incomplete)).toBe(false);
+  it("validates details completeness", () => {
+    expect(isDetailsComplete(cleanReady())).toBe(true);
+    expect(
+      isDetailsComplete(
+        baseAddress({
+          propertyType: "house",
+          bedrooms: 2,
+          bathrooms: 1,
+          squareFootage: undefined,
+        }),
+      ),
+    ).toBe(false);
+  });
 
-    const complete = {
-      ...incomplete,
-      serviceAnswers: { moveDirection: "move_out" },
-    };
-    expect(isDetailsComplete(complete)).toBe(true);
+  it("gates auth at payment — quote/review before sign-in OK", () => {
+    expect(isBookingAuthRequired("address")).toBe(false);
+    expect(isBookingAuthRequired("service")).toBe(false);
+    expect(isBookingAuthRequired("date")).toBe(false);
+    expect(isBookingAuthRequired("review")).toBe(false);
+    expect(isBookingAuthRequired("payment")).toBe(true);
+    expect(BOOKING_RESUME_AFTER_AUTH).toBe(BOOKING_SCREEN_PATHS.review);
+    expect(bookingSignInHref()).toContain("from=booking");
+    expect(bookingSignInHref()).toContain(encodeURIComponent(BOOKING_SCREEN_PATHS.review));
+  });
+
+  it("recognizes complete addresses", () => {
+    expect(isAddressComplete(baseAddress())).toBe(true);
+    expect(isAddressComplete(DEFAULT_BOOKING_STATE)).toBe(false);
   });
 });

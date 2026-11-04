@@ -17,13 +17,13 @@ async function SavedPlacesContent() {
   return (
     <>
       <DashboardHeader
-        title="Saved Places"
-        description="Home, Work, and other addresses for faster booking."
+        title="Properties"
+        description="Homes, Airbnbs, and offices you clean for — book from any property."
       />
       {addresses.length === 0 ? (
         <EmptyState
-          title="No saved places yet"
-          description="Add a Home or Work address below — or save one during checkout."
+          title="No properties yet"
+          description="Add a home, rental, or office below — or save one during checkout."
           actionLabel="Book a clean"
           actionHref={routes.book}
         />

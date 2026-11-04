@@ -3,7 +3,18 @@ import {
   normalizeBookingStatus,
   validateBookingStatusTransition,
   isPaidBookingStatus,
+  isLiveLocationStatus,
 } from "@/lib/bookings/status";
+
+describe("isLiveLocationStatus", () => {
+  it("allows en-route and arrived only", () => {
+    expect(isLiveLocationStatus("on_the_way")).toBe(true);
+    expect(isLiveLocationStatus("arrived")).toBe(true);
+    expect(isLiveLocationStatus("cleaner_on_way")).toBe(true);
+    expect(isLiveLocationStatus("accepted")).toBe(false);
+    expect(isLiveLocationStatus("completed")).toBe(false);
+  });
+});
 
 describe("normalizeBookingStatus", () => {
   it("maps legacy statuses", () => {

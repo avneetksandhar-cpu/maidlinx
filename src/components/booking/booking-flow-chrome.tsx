@@ -1,15 +1,12 @@
 "use client";
 
 import { useMemo } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
-import { SiteLogo } from "@/components/brand/site-logo";
 import { Button } from "@/components/ui";
-import { BookingFlowSummary } from "@/components/booking/booking-flow-summary";
 import {
-  BOOKING_SCREENS,
   BOOKING_SCREEN_PATHS,
-  getBookingScreenIndex,
   getPreviousScreen,
   type BookingScreenId,
 } from "@/lib/bookings/booking-routes";
@@ -17,7 +14,7 @@ import { useBooking } from "@/components/booking/booking-provider";
 import { buildQuoteInput } from "@/lib/bookings/booking-helpers";
 import { useBookingPricing } from "@/hooks/use-booking-pricing";
 import { cn, formatCurrency } from "@/lib/utils";
-import { routes, siteConfig } from "@/config/site";
+import { routes } from "@/config/site";
 
 interface BookingFlowChromeProps {
   screenId: BookingScreenId;
@@ -33,6 +30,25 @@ interface BookingFlowChromeProps {
   /** Extra content above the sticky CTA (e.g. running total). */
   footerHint?: React.ReactNode;
   className?: string;
+  /** Optional location row under the title (category screen). */
+  locationSlot?: React.ReactNode;
+  /** Override back destination (e.g. return to review after edit). */
+  backHref?: string | null;
+  /** Hide estimated total row when custom footerHint is enough. */
+  hideDefaultTotal?: boolean;
+}
+
+/** Customer-facing 4 panels: Where → Clean → When → Review */
+const BOOKING_PHASES: BookingScreenId[][] = [
+  ["welcome", "address"],
+  ["property", "service", "details", "addons"],
+  ["date", "time", "access"],
+  ["review", "payment"],
+];
+
+function bookingPhaseIndex(id: BookingScreenId): number {
+  const idx = BOOKING_PHASES.findIndex((phase) => phase.includes(id));
+  return idx >= 0 ? idx : 0;
 }
 
 export function BookingProgressBar({
@@ -42,20 +58,34 @@ export function BookingProgressBar({
   currentId: BookingScreenId;
   className?: string;
 }) {
-  const current = getBookingScreenIndex(currentId);
-  const total = BOOKING_SCREENS.length;
-  const pct = Math.round(((current + 1) / total) * 100);
+  const phase = bookingPhaseIndex(currentId);
+  const total = BOOKING_PHASES.length;
+  const step = phase + 1;
 
   return (
-    <div
-      className={cn("booking-progress-track", className)}
-      role="progressbar"
-      aria-valuenow={current + 1}
-      aria-valuemin={1}
-      aria-valuemax={total}
-      aria-label="Booking progress"
-    >
-      <div className="booking-progress-fill" style={{ width: `${pct}%` }} />
+    <div className={cn("booking-progress w-full", className)}>
+      <div className="mb-1.5 text-center text-[11px] font-semibold tracking-wide text-[var(--ml-book-ink-muted,#4a5568)]">
+        Step {step} of {total}
+      </div>
+      <div
+        className="mx-auto flex w-full max-w-[280px] items-center justify-center gap-1.5"
+        role="progressbar"
+        aria-valuenow={step}
+        aria-valuemin={1}
+        aria-valuemax={total}
+        aria-label={`Booking progress, step ${step} of ${total}`}
+      >
+        {Array.from({ length: total }, (_, i) => (
+          <span
+            key={i}
+            className={cn(
+              "h-1.5 flex-1 rounded-full transition-colors duration-200",
+              i <= phase ? "bg-[var(--ml-book-primary,#04CED2)]" : "bg-[#e5e7eb]",
+            )}
+            aria-hidden
+          />
+        ))}
+      </div>
     </div>
   );
 }
@@ -71,7 +101,30 @@ export function BookingProgressDots({
   return <BookingProgressBar currentId={currentId} className={className} />;
 }
 
-export function BookingFlowChrome({
+function CircularMark({ href }: { href: string }) {
+  return (
+    <a
+      href={href}
+      className="inline-flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-white ring-1 ring-[var(--ml-book-border,#e2e8f0)]"
+      aria-label="MaidLinx home"
+    >
+      <Image
+        src="/brand/maidlinx-mark.png"
+        alt="MaidLinx"
+        width={36}
+        height={36}
+        className="size-9 object-cover"
+        priority
+      />
+    </a>
+  );
+}
+
+/**
+ * Light 4-step booking shell — white / navy #01193D / turquoise #04CED2.
+ * Sticky primary CTA, Step X of 4 progress, circular mark.
+ */
+export function BookingShell({
   screenId,
   title,
   subtitle,
@@ -83,10 +136,15 @@ export function BookingFlowChrome({
   onContinue,
   footerHint,
   className,
+  locationSlot,
+  backHref,
+  hideDefaultTotal = false,
 }: BookingFlowChromeProps) {
   const router = useRouter();
   const { state } = useBooking();
   const prev = getPreviousScreen(screenId, state);
+  const phase = bookingPhaseIndex(screenId);
+  const showBack = phase > 0 || Boolean(backHref);
 
   const quoteInput = useMemo(
     () => buildQuoteInput(state, { requireAddress: true, allowPreview: true }),
@@ -102,18 +160,11 @@ export function BookingFlowChrome({
       ? formatCurrency(pricing.totalCents, pricing.currency)
       : null;
 
-  const priceHint = estimatedTotal ? (
-    <div className="flex items-center justify-between gap-3 text-sm">
-      <span className="text-ink-muted">Estimated total</span>
-      <span className="font-semibold tabular-nums text-ink">
-        {priceLoading ? "Updating…" : estimatedTotal}
-      </span>
-    </div>
-  ) : null;
-
-  const mergedFooterHint = footerHint ?? priceHint;
-
   const handleBack = () => {
+    if (backHref) {
+      router.push(backHref);
+      return;
+    }
     if (prev) {
       router.push(BOOKING_SCREEN_PATHS[prev]);
       return;
@@ -121,72 +172,80 @@ export function BookingFlowChrome({
     router.push(routes.home);
   };
 
+  const showSticky = !hideCta && Boolean(onContinue);
+
   return (
-    <div className={cn("min-h-dvh bg-background", className)}>
-      <header className="sticky top-0 z-50 border-b border-border bg-surface/95 backdrop-blur-sm">
-        <div className="mx-auto flex h-14 w-full max-w-6xl items-center justify-between gap-3 px-4">
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={handleBack}
-              className="inline-flex size-9 items-center justify-center rounded-lg text-ink transition-colors duration-200 hover:bg-surface-muted"
-              aria-label={prev ? "Go back" : "Back to home"}
-            >
-              <ChevronLeft className="size-5" strokeWidth={2} aria-hidden />
-            </button>
-            <SiteLogo variant="mark" href={routes.home} className="shrink-0" />
+    <div
+      data-theme="ml-book"
+      className={cn(
+        "booking-shell flex h-dvh flex-col overflow-hidden bg-white text-[var(--ml-book-ink,#01193D)]",
+        className,
+      )}
+      style={{ fontFamily: "var(--ml-font-ios)" }}
+    >
+      <header className="z-50 shrink-0 border-b border-[var(--ml-book-border,#e2e8f0)] bg-white">
+        <div className="relative mx-auto flex h-14 max-w-[680px] items-center px-3 pt-[env(safe-area-inset-top)] sm:px-4">
+          <div className="z-10 flex min-w-[2.75rem] items-center justify-start gap-1">
+            {showBack ? (
+              <button
+                type="button"
+                onClick={handleBack}
+                className="inline-flex size-10 items-center justify-center rounded-xl text-[var(--ml-book-ink,#01193D)] transition-colors hover:bg-black/5"
+                aria-label="Go back"
+              >
+                <ChevronLeft className="size-6" strokeWidth={2.25} aria-hidden />
+              </button>
+            ) : null}
+            <CircularMark href={routes.home} />
           </div>
-          <a
-            href={siteConfig.links.support}
-            className="rounded-lg px-3 py-2 text-sm font-medium text-ink-muted transition-colors duration-200 hover:text-ink"
-          >
-            Help
-          </a>
+
+          <div className="pointer-events-none absolute inset-x-16 flex justify-center sm:inset-x-24">
+            <BookingProgressBar currentId={screenId} />
+          </div>
+
+          <div className="z-10 ml-auto flex min-w-[2.75rem] items-center justify-end" />
         </div>
-        <BookingProgressBar currentId={screenId} />
       </header>
 
-      <div className="mx-auto grid w-full max-w-6xl gap-8 px-4 pt-6 pb-28 lg:grid-cols-[minmax(0,1fr)_20rem] lg:gap-12 lg:pt-10 lg:pb-16">
-        <div className="mx-auto w-full max-w-xl lg:mx-0 lg:max-w-none">
-          <div className="mb-8 animate-[fadeIn_0.25s_ease]">
-            <h1 className="booking-step-title">{title}</h1>
-            {subtitle ? <p className="booking-step-subtitle">{subtitle}</p> : null}
-          </div>
-          <div className="animate-[fadeIn_0.3s_ease]">{children}</div>
+      <main
+        className={cn(
+          "booking-slide-main mx-auto w-full max-w-[680px] flex-1 overflow-y-auto overscroll-y-contain px-4 pt-5 sm:pt-6",
+          showSticky
+            ? "pb-[calc(8.5rem+env(safe-area-inset-bottom))]"
+            : "pb-[max(1.5rem,env(safe-area-inset-bottom))]",
+        )}
+      >
+        <div className="booking-shell-enter mb-5 sm:mb-6">
+          <h1 className="booking-step-title text-[var(--ml-book-ink,#01193D)]">{title}</h1>
+          {subtitle ? (
+            <p className="booking-step-subtitle text-[var(--ml-book-ink-muted,#4a5568)]">
+              {subtitle}
+            </p>
+          ) : null}
+          {locationSlot ? <div className="mt-2.5">{locationSlot}</div> : null}
         </div>
-
-        <div className="hidden lg:block">
-          <div className="sticky top-20">
-            <BookingFlowSummary
-              footerHint={mergedFooterHint}
-              estimatedTotal={estimatedTotal}
-              priceLoading={priceLoading}
-            />
-            {!hideCta && onContinue ? (
-              <Button
-                type="button"
-                variant="accent"
-                size="lg"
-                className="mt-4 h-12 w-full rounded-lg text-base font-semibold"
-                disabled={ctaDisabled || ctaLoading}
-                onClick={onContinue}
-              >
-                {ctaLoading ? "Please wait…" : ctaLabel}
-              </Button>
-            ) : null}
-          </div>
+        <div className="booking-shell-enter" style={{ animationDelay: "40ms" }}>
+          {children}
         </div>
-      </div>
+      </main>
 
-      {!hideCta && onContinue ? (
-        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-surface/95 px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 backdrop-blur-md lg:hidden">
-          <div className="mx-auto w-full max-w-lg space-y-2">
-            {mergedFooterHint}
+      {showSticky ? (
+        <div className="booking-sticky-footer shrink-0 border-t border-[var(--ml-book-border,#e2e8f0)] bg-white/95 backdrop-blur-md">
+          <div className="mx-auto w-full max-w-[680px] space-y-2 px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+            {footerHint ??
+              (!hideDefaultTotal && estimatedTotal ? (
+                <div className="flex items-center justify-between gap-3 text-[15px]">
+                  <span className="text-[var(--ml-book-ink-muted,#4a5568)]">Estimated total</span>
+                  <span className="font-semibold tabular-nums text-[var(--ml-book-ink,#01193D)]">
+                    {priceLoading ? "Updating…" : estimatedTotal}
+                  </span>
+                </div>
+              ) : null)}
             <Button
               type="button"
               variant="accent"
               size="lg"
-              className="h-12 w-full rounded-lg text-base font-semibold"
+              className="booking-cta-btn h-14 w-full rounded-2xl text-base font-bold shadow-none"
               disabled={ctaDisabled || ctaLoading}
               onClick={onContinue}
             >
@@ -197,4 +256,9 @@ export function BookingFlowChrome({
       ) : null}
     </div>
   );
+}
+
+/** Alias — BookingShell is the canonical name. */
+export function BookingFlowChrome(props: BookingFlowChromeProps) {
+  return <BookingShell {...props} />;
 }

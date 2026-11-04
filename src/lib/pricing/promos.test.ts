@@ -10,6 +10,7 @@ const base: Coupon = {
   discountValue: 2000,
   minOrderCents: 5000,
   maxUses: null,
+  maxUsesPerCustomer: null,
   usedCount: 0,
   validFrom: null,
   validUntil: null,

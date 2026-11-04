@@ -1,8 +1,10 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AdminDataTable, type Column } from "@/components/admin/admin-data-table";
 import { Button } from "@/components/ui";
+import { routes } from "@/config/site";
 import type { AdminCleaner } from "@/lib/admin/cleaners";
 
 export function CleanersTable({ cleaners }: { cleaners: AdminCleaner[] }) {
@@ -90,6 +92,12 @@ export function CleanersTable({ cleaners }: { cleaners: AdminCleaner[] }) {
           >
             {row.isActive ? "Deactivate" : "Activate"}
           </Button>
+          <Link
+            href={routes.ownerCleaner(row.professionalId)}
+            className="inline-flex min-h-8 items-center px-2 text-sm underline text-ink"
+          >
+            Ops
+          </Link>
         </div>
       ),
     },

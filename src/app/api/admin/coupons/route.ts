@@ -1,4 +1,4 @@
-import { jsonError, jsonSuccess } from "@/lib/api/response";
+import { adminCatchStatus, jsonError, jsonSuccess } from "@/lib/api/response";
 import { bulkDeactivateCoupons, createCoupon, listCoupons, toggleCoupon } from "@/lib/admin/coupons";
 import { requireAdminApiPermission } from "@/lib/admin/session";
 import { createCouponSchema } from "@/lib/validations/admin";
@@ -9,7 +9,7 @@ export async function GET() {
     const coupons = await listCoupons();
     return jsonSuccess({ coupons });
   } catch (error) {
-    return jsonError(error instanceof Error ? error.message : "Unable to load coupons.", 403);
+    return jsonError(error instanceof Error ? error.message : "Unable to load coupons.", adminCatchStatus(error));
   }
 }
 
@@ -30,6 +30,7 @@ export async function POST(request: Request) {
       ...parsed.data,
       description: parsed.data.description ?? null,
       maxUses: parsed.data.maxUses ?? null,
+      maxUsesPerCustomer: null,
       validFrom: parsed.data.validFrom ?? null,
       validUntil: parsed.data.validUntil ?? null,
     });
