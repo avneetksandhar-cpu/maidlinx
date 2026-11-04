@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   getCustomerStatusHeadline,
   getCustomerTimelineState,
+  getDayOfTimelineState,
   getLiveJobTimelineState,
 } from "@/lib/bookings/status-timeline";
 
@@ -66,5 +67,23 @@ describe("getLiveJobTimelineState", () => {
     expect(getLiveJobTimelineState("in_progress").steps[2]?.state).toBe("current");
     expect(getLiveJobTimelineState("completed").steps[3]?.state).toBe("current");
     expect(getLiveJobTimelineState("assigned").currentIndex).toBe(-1);
+  });
+});
+
+describe("getDayOfTimelineState", () => {
+  it("uses Confirmed → On the way → Arrived → Cleaning → Complete", () => {
+    expect(getDayOfTimelineState("accepted").steps.map((s) => s.label)).toEqual([
+      "Confirmed",
+      "On the way",
+      "Arrived",
+      "Cleaning",
+      "Complete",
+    ]);
+    expect(getDayOfTimelineState("accepted").steps[0]?.state).toBe("current");
+    expect(getDayOfTimelineState("on_the_way").steps[1]?.state).toBe("current");
+    expect(getDayOfTimelineState("arrived").steps[2]?.state).toBe("current");
+    expect(getDayOfTimelineState("in_progress").steps[3]?.state).toBe("current");
+    expect(getDayOfTimelineState("completed").steps[4]?.state).toBe("current");
+    expect(getDayOfTimelineState("awaiting_assignment").currentIndex).toBe(-1);
   });
 });

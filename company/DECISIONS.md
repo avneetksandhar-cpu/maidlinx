@@ -2,6 +2,13 @@
 
 Format: date · decision · owner · rationale · status
 
+## 2026-11-04 — STRIPE_MODEL_FLAG: keep deposit-upfront until founder RED approve after-clean
+
+- **Decision:** Current checkout **charges a deposit upfront** (default 50% PaymentIntent, automatic capture) at request. Founder intended model is **charge agreed total after clean completes**. **Do not change production payment capture timing** without explicit founder RED approval. Document gap; keep Stripe LIVE OFF; customer UI must show due now vs due after clean honestly for the current deposit model.
+- **Owner:** Founder / Lead Engineer
+- **Rationale:** Changing auth/capture mid-flight risks double-charge, incomplete refunds, and Launch Gate integrity. Evidence in `company/AGENT_REPORTS/2026-11-04-stripe-model-flag.md`.
+- **Status:** Flagged — awaiting founder decision
+
 ## 2026-10-19 — Native iOS = Capacitor shell; www stays app-open dark web
 
 - **Decision:** Ship MaidLinx toward App Store as a **Capacitor iOS shell** (`com.maidlinx.app`) that loads production www (`https://www.maidlinx.com`). Production web must serve the **app shell** (standalone meta, dark theme, AppOpenHome — not marketing-site chrome). Capacitor `ios/` stays in-repo for later Xcode/TestFlight; it is **not** required for www. Stripe LIVE stays OFF. App Store submission requires founder approval.

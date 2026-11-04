@@ -30,21 +30,24 @@
   --shadow-soft: 0 1px 2px rgb(0 52 116 / 0.04);
   --shadow-card: 0 1px 3px rgb(0 52 116 / 0.05), 0 4px 12px rgb(0 52 116 / 0.04);
 
-  /* App dark theme = logo navy (booking / customer / Capacitor) */
-  --ml-dark-bg: #003474;
-  --ml-dark-bg-elevated: #0f407c;
-  --ml-dark-surface: #1a4882;
-  --ml-dark-surface-2: #245087;
-  --ml-dark-border: #2e598d;
-  --ml-dark-border-strong: #476d9b;
-  --ml-dark-ink: #f5f7f6;
+  /*
+    App dark theme — founder midnight mockup (AFTER BOOKING / matching / arrival / receipt):
+    BG #01193D · surfaces #102B49 · white text · CTA #04CED2 + navy labels
+  */
+  --ml-dark-bg: #01193d;
+  --ml-dark-bg-elevated: #0a2748;
+  --ml-dark-surface: #102b49;
+  --ml-dark-surface-2: #163556;
+  --ml-dark-border: #1e4064;
+  --ml-dark-border-strong: #2a5478;
+  --ml-dark-ink: #ffffff;
   --ml-dark-ink-muted: #b0bcc8;
-  --ml-dark-ink-subtle: #94a5ba;
-  --ml-dark-mint: #08e0d4;
-  --ml-dark-mint-glow: 0 0 24px rgb(8 224 212 / 0.28);
-  /* Solid teal app chrome (design reference header bar) */
-  --ml-app-header: #08e0d4;
-  --ml-app-header-ink: #003474;
+  --ml-dark-ink-subtle: #8fa0b5;
+  --ml-dark-mint: #04ced2;
+  --ml-dark-mint-glow: 0 0 24px rgb(4 206 210 / 0.28);
+  /* Solid teal app chrome */
+  --ml-app-header: #04ced2;
+  --ml-app-header-ink: #01193d;
   --ml-font-ios: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display",
     "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   /* Shared mobile card radius / tap target */
@@ -53,8 +56,15 @@
 }
 
 /*
-  Customer booking funnel — light 4-step design tokens (exact).
-  Navy text #01193D · turquoise CTA #04CED2 · selected #E6FAFA
+  Founder customer booking + post-booking design system (canonical).
+  Scope: 4-step /book/* funnel AND /bookings/[id] live status (data-theme="ml-book").
+
+  Brand: circular MaidLinx mark, compact header
+  Colors: white bg · navy text #01193D · turquoise CTA #04CED2 (navy labels)
+           · pale aqua selected #E6FAFA
+  Type: --ml-font-ios (system), left-aligned headings, readable body
+  Controls: one primary CTA; running total above CTA when quote available
+  Nav: app tabs Home · Bookings · My Home · Account; booking Step 1–4 of 4
 */
 [data-theme="ml-book"] {
   --ml-book-bg: #ffffff;

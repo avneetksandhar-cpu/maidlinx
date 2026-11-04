@@ -9,6 +9,7 @@ import {
   getServiceLabel,
 } from "@/lib/dashboard/display";
 import { isPaidBookingStatus } from "@/lib/bookings/status";
+import { getCustomerFriendlyStatusLabel } from "@/lib/bookings/status-timeline";
 import { formatCurrency } from "@/lib/utils";
 import { routes } from "@/config/site";
 import { cn } from "@/lib/utils";
@@ -82,7 +83,7 @@ export function UpcomingBookingCard({
         {showViewAll ? (
           <Link
             href={routes.dashboardBookings}
-            className="text-sm font-medium text-[var(--ml-dark-mint)] hover:text-[var(--color-accent-hover)]"
+            className="text-sm font-medium text-[var(--ml-dark-mint,#04CED2)] hover:opacity-90"
           >
             View all ›
           </Link>
@@ -91,9 +92,9 @@ export function UpcomingBookingCard({
 
       <Link
         href={href}
-        className="flex items-start gap-3 rounded-2xl border border-[var(--ml-dark-border)] bg-[var(--ml-dark-surface)] p-4 shadow-[var(--shadow-soft)] transition-colors hover:border-[var(--ml-dark-mint)]/40"
+        className="flex items-start gap-3 rounded-2xl border border-[var(--ml-dark-border)] bg-[var(--ml-dark-surface,#102B49)] p-4 shadow-[var(--shadow-soft)] transition-colors hover:border-[var(--ml-dark-mint,#04CED2)]/40"
       >
-        <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-[var(--ml-dark-mint)]/15 text-[var(--ml-dark-mint)]">
+        <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-[var(--ml-dark-mint,#04CED2)]/15 text-[var(--ml-dark-mint,#04CED2)]">
           <CalendarDollarIcon />
         </span>
         <div className="min-w-0 flex-1">
@@ -111,10 +112,13 @@ export function UpcomingBookingCard({
           <p className="mt-0.5 truncate text-sm text-[var(--ml-dark-ink-subtle)]">
             {formatAddress(source.addressLine1, source.addressCity, source.addressState)}
           </p>
+          <p className="mt-1 text-xs font-semibold text-[var(--ml-dark-mint,#04CED2)]">
+            {getCustomerFriendlyStatusLabel(source.status)}
+          </p>
         </div>
         <div className="shrink-0 text-right">
           {paid ? (
-            <span className="inline-flex rounded-full bg-[var(--ml-dark-mint)]/15 px-2.5 py-0.5 text-xs font-semibold text-[var(--ml-dark-mint)]">
+            <span className="inline-flex rounded-full bg-[var(--ml-dark-mint,#04CED2)]/15 px-2.5 py-0.5 text-xs font-semibold text-[var(--ml-dark-mint,#04CED2)]">
               Paid
             </span>
           ) : null}
