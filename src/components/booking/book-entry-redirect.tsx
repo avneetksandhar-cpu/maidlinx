@@ -8,10 +8,16 @@ import {
   getFurthestScreenPath,
   isAddressComplete,
 } from "@/lib/bookings/booking-routes";
-import { bookingSignInHref } from "@/lib/bookings/booking-auth";
+import { bookingSignInHref, isBookingAuthRequired } from "@/lib/bookings/booking-auth";
 import { readUsualClean } from "@/lib/bookings/usual-clean";
 import { useBooking } from "@/components/booking/booking-provider";
 import { useAuthSession } from "@/hooks/use-auth-session";
+import type { BookingScreenId } from "@/lib/bookings/booking-routes";
+
+function pathToScreenId(path: string): BookingScreenId | null {
+  const entry = Object.entries(BOOKING_SCREEN_PATHS).find(([, p]) => path.startsWith(p));
+  return (entry?.[0] as BookingScreenId | undefined) ?? null;
+}
 
 function BookEntryInner() {
   const router = useRouter();
@@ -34,13 +40,9 @@ function BookEntryInner() {
     }
 
     const qs = searchParams?.toString() ?? "";
-    // Rebook: prefill is applied — jump to date so customer only picks schedule.
+    // Rebook: prefill is applied — jump to When so customer only picks schedule.
     if (searchParams?.get("rebook") === "1" && state.line1 && state.serviceType) {
       const target = BOOKING_SCREEN_PATHS.date;
-      if (authStatus !== "authenticated") {
-        router.replace(bookingSignInHref(qs ? `${target}?${qs}` : target));
-        return;
-      }
       router.replace(qs ? `${target}?${qs}` : target);
       return;
     }
@@ -54,10 +56,15 @@ function BookEntryInner() {
       return;
     }
 
-    // Draft already has address — resume furthest step (auth gate if needed).
+    // Draft already has address — resume furthest step (auth only at review/pay).
     if (isAddressComplete(state)) {
       const furthest = getFurthestScreenPath(state);
-      if (authStatus !== "authenticated") {
+      const screenId = pathToScreenId(furthest.split("?")[0] ?? furthest);
+      if (
+        screenId &&
+        isBookingAuthRequired(screenId) &&
+        authStatus !== "authenticated"
+      ) {
         router.replace(bookingSignInHref(furthest));
         return;
       }

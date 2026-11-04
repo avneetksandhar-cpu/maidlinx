@@ -130,7 +130,7 @@ export function BookingStatusTimeline({
               ) : null}
               {step.key === "cleaner_assigned" && current && !assignedDetail ? (
                 <p className="mt-0.5 text-sm text-[var(--ml-dark-ink-muted)]">
-                  Finding your MaidLinx Pro…
+                  Finding your cleaner
                 </p>
               ) : null}
             </div>

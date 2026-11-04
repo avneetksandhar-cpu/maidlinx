@@ -52,7 +52,68 @@
   --ml-tap-min: 2.75rem;
 }
 
-/* Scoped dark theme for /book/* shell + B2B dashboard */
+/*
+  Customer booking funnel — light 4-step design tokens (exact).
+  Navy text #01193D · turquoise CTA #04CED2 · selected #E6FAFA
+*/
+[data-theme="ml-book"] {
+  --ml-book-bg: #ffffff;
+  --ml-book-ink: #01193d;
+  --ml-book-ink-muted: #4a5568;
+  --ml-book-ink-subtle: #718096;
+  --ml-book-primary: #04ced2;
+  --ml-book-primary-hover: #03b8bc;
+  --ml-book-selected: #e6fafa;
+  --ml-book-border: #e2e8f0;
+  --ml-book-border-strong: #cbd5e1;
+  --ml-book-surface: #ffffff;
+  --ml-dark-bg: var(--ml-book-bg);
+  --ml-dark-bg-elevated: #f8fafc;
+  --ml-dark-surface: var(--ml-book-surface);
+  --ml-dark-surface-2: #f1f5f9;
+  --ml-dark-border: var(--ml-book-border);
+  --ml-dark-border-strong: var(--ml-book-border-strong);
+  --ml-dark-ink: var(--ml-book-ink);
+  --ml-dark-ink-muted: var(--ml-book-ink-muted);
+  --ml-dark-ink-subtle: var(--ml-book-ink-subtle);
+  --ml-dark-mint: var(--ml-book-primary);
+  --ml-dark-mint-glow: none;
+  --ml-app-header: #ffffff;
+  --ml-app-header-ink: var(--ml-book-ink);
+  --color-background: var(--ml-book-bg);
+  --color-bg: var(--ml-book-bg);
+  --color-surface: var(--ml-book-surface);
+  --color-surface-muted: #f8fafc;
+  --color-surface-elevated: #ffffff;
+  --color-ink: var(--ml-book-ink);
+  --color-ink-muted: var(--ml-book-ink-muted);
+  --color-ink-subtle: var(--ml-book-ink-subtle);
+  --color-accent: var(--ml-book-primary);
+  --color-accent-hover: var(--ml-book-primary-hover);
+  --color-accent-muted: var(--ml-book-selected);
+  --color-accent-foreground: var(--ml-book-ink);
+  --color-navy: var(--ml-book-ink);
+  --color-navy-light: #1a365d;
+  --color-teal: var(--ml-book-primary);
+  --color-teal-muted: var(--ml-book-selected);
+  --color-border: var(--ml-book-border);
+  --color-border-strong: var(--ml-book-border-strong);
+  --color-gold: var(--ml-book-primary);
+  --color-gold-hover: var(--ml-book-primary-hover);
+  --color-gold-muted: var(--ml-book-selected);
+  --maidlinx-bg: var(--ml-book-bg);
+  --maidlinx-ink: var(--ml-book-ink);
+  --maidlinx-text: var(--ml-book-ink);
+  --maidlinx-muted: var(--ml-book-ink-muted);
+  --maidlinx-border: var(--ml-book-border);
+  --shadow-soft: 0 1px 2px rgb(1 25 61 / 0.04);
+  --shadow-card: 0 1px 3px rgb(1 25 61 / 0.05), 0 4px 12px rgb(1 25 61 / 0.04);
+  --shadow-elevated: 0 8px 24px rgb(1 25 61 / 0.08);
+  color-scheme: light;
+  font-family: var(--ml-font-ios);
+}
+
+/* Scoped dark theme for cleaner/ops shells + B2B dashboard */
 [data-theme="ml-dark"] {
   --color-background: var(--ml-dark-bg);
   --color-bg: var(--ml-dark-bg);

@@ -195,7 +195,21 @@
   .booking-select-card[data-selected="true"] {
     border-color: var(--color-accent);
     background-color: var(--color-accent-muted);
-    box-shadow: 0 0 0 1px rgb(8 224 212 / 0.35), var(--ml-dark-mint-glow, none);
+    box-shadow: none;
+  }
+
+  [data-theme="ml-book"] .booking-select-card[data-selected="true"] {
+    border-color: var(--ml-book-primary, #04ced2);
+    background-color: var(--ml-book-selected, #e6fafa);
+  }
+
+  [data-theme="ml-book"] .booking-cta-btn {
+    background-color: #04ced2;
+    color: #01193d;
+  }
+
+  [data-theme="ml-book"] .booking-cta-btn:hover:not(:disabled) {
+    background-color: #03b8bc;
   }
 
   .booking-shell-enter {

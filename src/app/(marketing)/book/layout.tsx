@@ -18,7 +18,7 @@ export default function BookLayout({
   return (
     <GoogleMapsProvider>
       <BookingProvider>
-        <div data-theme="ml-dark" className="min-h-dvh bg-[var(--ml-dark-bg)] text-[var(--ml-dark-ink)]">
+        <div data-theme="ml-book" className="min-h-dvh bg-white text-[var(--ml-book-ink,#01193D)]">
           {children}
         </div>
       </BookingProvider>

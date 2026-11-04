@@ -47,8 +47,9 @@ describe("getCustomerTimelineState", () => {
     expect(getCustomerStatusHeadline("in_progress")).toBe("Cleaning in progress");
     expect(getCustomerStatusHeadline("completed")).toBe("Cleaning complete");
     expect(getCustomerStatusHeadline("awaiting_assignment")).toBe(
-      "Finding your MaidLinx Pro…",
+      "Finding your cleaner",
     );
+    expect(getCustomerStatusHeadline("assigned")).toBe("Confirmed");
   });
 });
 

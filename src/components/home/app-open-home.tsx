@@ -17,10 +17,6 @@ import {
   isAddressComplete,
 } from "@/lib/bookings/booking-routes";
 import {
-  BOOKING_RESUME_AFTER_AUTH,
-  bookingSignInHref,
-} from "@/lib/bookings/booking-auth";
-import {
   isCustomerHomeBookableArea,
   isMarketBookingOpen,
   resolveCustomerHomeWaitlistReason,
@@ -192,9 +188,8 @@ function AppOpenHomeInner() {
       marketId: state.marketId,
     });
     if (isAddressComplete(state) && flOk) {
-      if (authStatus === "authenticated") return BOOKING_RESUME_AFTER_AUTH;
-      if (authStatus === "guest") return bookingSignInHref(BOOKING_RESUME_AFTER_AUTH);
-      return BOOKING_SCREEN_PATHS.address;
+      // Address check before sign-in — continue into 4-step funnel (Clean panel).
+      return BOOKING_SCREEN_PATHS.service;
     }
     if (state.postalCode && flOk) {
       return getBookingEntryPath({ prefillAddress: true });
@@ -333,11 +328,8 @@ function AppOpenHomeInner() {
                     patched.city &&
                     patched.postalCode
                   ) {
-                    if (authStatus === "authenticated") {
-                      router.push(BOOKING_RESUME_AFTER_AUTH);
-                    } else if (authStatus === "guest") {
-                      router.push(bookingSignInHref(BOOKING_RESUME_AFTER_AUTH));
-                    }
+                    // Address check OK before sign-in — enter Clean panel.
+                    router.push(BOOKING_SCREEN_PATHS.service);
                   }
                 }}
                 variant="hero"
