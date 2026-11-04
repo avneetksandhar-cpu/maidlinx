@@ -253,6 +253,31 @@ export function ReviewScreen() {
                   </span>
                 </li>
               ) : null}
+              {(pricing.discountLines && pricing.discountLines.length > 0
+                ? pricing.discountLines.filter((line) => line.amountCents > 0)
+                : (pricing.discountCents ?? 0) > 0
+                  ? [
+                      {
+                        label:
+                          state.recurringFrequency &&
+                          state.recurringFrequency !== "one_time"
+                            ? "Recurring discount"
+                            : "Discount",
+                        amountCents: pricing.discountCents ?? 0,
+                      },
+                    ]
+                  : []
+              ).map((line) => (
+                <li
+                  key={`${line.label}-${line.amountCents}`}
+                  className="flex justify-between gap-3 text-[var(--ml-book-ink-muted)]"
+                >
+                  <span>{line.label}</span>
+                  <span className="tabular-nums">
+                    −{formatCurrency(line.amountCents, pricing.currency)}
+                  </span>
+                </li>
+              ))}
               <li className="flex justify-between gap-3 border-t border-[var(--ml-book-border)] pt-2 text-base font-bold">
                 <span>Total USD</span>
                 <span className="tabular-nums">{totalLabel}</span>

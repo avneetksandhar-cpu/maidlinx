@@ -143,6 +143,66 @@ describe("smart discount stack", () => {
   });
 });
 
+describe("recurring cleaning discount", () => {
+  it("one-time matches legacy with zero discount", () => {
+    const legacy = calculateBookingPrice(miami);
+    const engine = runPricingEngine({
+      quote: miami,
+      schedule: { recurring: "one_time" },
+    });
+    expect(engine.public.discountCents).toBe(0);
+    expect(engine.public.totalCents).toBe(legacy.totalCents);
+  });
+
+  it("weekly applies 10% off subtotal (configured recurringWeeklyMult 0.9)", () => {
+    const oneTime = runPricingEngine({
+      quote: miami,
+      schedule: { recurring: "one_time" },
+    });
+    const weekly = runPricingEngine({
+      quote: miami,
+      schedule: { recurring: "weekly" },
+    });
+    const expectedCut = Math.round(oneTime.public.subtotalCents * 0.1);
+    expect(weekly.public.discountCents).toBe(expectedCut);
+    expect(weekly.public.totalCents).toBe(oneTime.public.totalCents - expectedCut);
+    expect(weekly.discountStack.some((l) => l.type === "recurring")).toBe(true);
+    expect(weekly.public.totalCents).toBeLessThan(oneTime.public.totalCents);
+  });
+
+  it("biweekly and monthly apply smaller configured cuts than weekly", () => {
+    const weekly = runPricingEngine({
+      quote: miami,
+      schedule: { recurring: "weekly" },
+    });
+    const biweekly = runPricingEngine({
+      quote: miami,
+      schedule: { recurring: "biweekly" },
+    });
+    const monthly = runPricingEngine({
+      quote: miami,
+      schedule: { recurring: "monthly" },
+    });
+    expect(biweekly.public.discountCents).toBeGreaterThan(0);
+    expect(monthly.public.discountCents).toBeGreaterThan(0);
+    expect(weekly.public.discountCents).toBeGreaterThan(biweekly.public.discountCents);
+    expect(biweekly.public.discountCents).toBeGreaterThan(monthly.public.discountCents);
+  });
+
+  it("calculateBookingPrice preview matches engine weekly total when dynamic OFF", () => {
+    const preview = calculateBookingPrice({
+      ...miami,
+      recurringFrequency: "weekly",
+    });
+    const engine = runPricingEngine({
+      quote: miami,
+      schedule: { recurring: "weekly" },
+    });
+    expect(preview.discountCents).toBe(engine.public.discountCents);
+    expect(preview.totalCents).toBe(engine.public.totalCents);
+  });
+});
+
 describe("experiments", () => {
   it("assigns sticky deterministic variants", () => {
     const variants = [

@@ -30,7 +30,7 @@ export function RecurringFrequencyPicker({
             Recurring booking
           </p>
           <p className="mt-0.5 text-xs text-[var(--ml-dark-ink-muted)]">
-            Save time and get 10% off — preference only until confirmed.
+            Save time and get 10% off weekly — applied to this clean&apos;s total.
           </p>
         </div>
         <button

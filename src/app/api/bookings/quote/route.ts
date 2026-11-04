@@ -11,7 +11,6 @@ import { z } from "zod";
 
 const quoteRequestSchema = bookingQuoteSchema.extend({
   anonymousSessionId: z.string().trim().min(8).max(128).optional(),
-  recurringFrequency: z.enum(["one_time", "weekly", "biweekly", "monthly"]).optional(),
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
   arrivalWindow: z.enum(["morning", "afternoon", "evening"]).optional(),
 });
@@ -74,6 +73,7 @@ export async function POST(request: Request) {
         feesCents: pricing.feesCents,
         taxCents: pricing.taxCents,
         discountCents: pricing.discountCents,
+        discountLines: pricing.discountLines ?? [],
         totalCents: pricing.totalCents,
         currency: pricing.currency,
         quoteOnly: pricing.quoteOnly,

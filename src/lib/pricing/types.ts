@@ -10,6 +10,13 @@ export interface PriceBreakdown {
   feesCents?: number;
   taxCents?: number;
   discountCents?: number;
+  /** Public discount lines (promo / recurring) for review UI — never includes cost formulas. */
+  discountLines?: Array<{
+    type: "promo" | "referral" | "recurring" | "experiment" | "other";
+    label: string;
+    amountCents: number;
+    code?: string;
+  }>;
   totalCents: number;
   currency: "USD" | "CAD";
   estimatedDurationMinutes?: number;

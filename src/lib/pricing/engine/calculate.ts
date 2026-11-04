@@ -23,6 +23,7 @@ import {
   squareFootageAdjustment,
 } from "@/lib/pricing/config";
 import { getServiceBaseCentsForMarket } from "@/lib/pricing/market-prices";
+import { RECURRING_DISCOUNT_LABEL } from "@/lib/pricing/recurring-discount";
 import { DEFAULT_PRICING_RULES } from "@/lib/pricing/engine/defaults";
 import {
   NEUTRAL_SIGNALS,
@@ -244,7 +245,7 @@ export function runPricingEngine(input: RunPricingEngineInput): EngineQuoteResul
     if (recurringCut > 0) {
       discountLines.push({
         type: "recurring",
-        label: `Recurring (${input.schedule?.recurring ?? "plan"})`,
+        label: RECURRING_DISCOUNT_LABEL,
         amountCents: recurringCut,
       });
     }
@@ -318,6 +319,7 @@ export function runPricingEngine(input: RunPricingEngineInput): EngineQuoteResul
     feesCents: finalPlatformFee,
     taxCents,
     discountCents,
+    discountLines: finalLines,
     totalCents: customerTotal,
     currency,
     quoteOnly: false,
