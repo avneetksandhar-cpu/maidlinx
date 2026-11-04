@@ -13,7 +13,7 @@ import { getCustomerTimelineState } from "@/lib/bookings/status-timeline";
 import { BookingMapPreview } from "@/components/booking/booking-map-preview";
 import { BookingStatusTimeline } from "@/components/booking/booking-status-timeline";
 import { LiveCleanerMap } from "@/components/booking/live-cleaner-map";
-import { calculateDepositCents, getDepositPercent } from "@/lib/payments/deposit";
+import { getDueLaterCents, getDueNowCents, isPayAfterCleaningEnabled } from "@/lib/payments/pay-after";
 import { isLiveLocationStatus } from "@/lib/bookings/status";
 import { Button } from "@/components/ui";
 import { formatCurrency } from "@/lib/utils";
@@ -88,7 +88,9 @@ export function BookingConfirmationDetails({
   const isPendingPayment = booking.status === "pending_payment";
   const isCancelled = booking.status === "cancelled";
   const isConfirmed = isBookingPaymentConfirmed(booking.status) || booking.quote_requested;
-  const depositCents = calculateDepositCents(booking.total_cents);
+  const payAfter = isPayAfterCleaningEnabled();
+  const dueNowCents = getDueNowCents(booking.total_cents);
+  const dueLaterCents = getDueLaterCents(booking.total_cents);
   const timeline = getCustomerTimelineState(booking.status);
   const cleanerName = booking.cleaner
     ? [booking.cleaner.firstName, booking.cleaner.lastName].filter(Boolean).join(" ")
@@ -223,11 +225,17 @@ export function BookingConfirmationDetails({
         {!isCancelled && !booking.quote_requested ? (
           <>
             <div className="flex justify-between gap-4">
+              <dt className="text-ink-muted">Due now</dt>
+              <dd className="font-medium">
+                {formatCurrency(dueNowCents, booking.currency)}
+              </dd>
+            </div>
+            <div className="flex justify-between gap-4">
               <dt className="text-ink-muted">
-                {isPendingPayment ? "Deposit due" : `Deposit paid (${getDepositPercent()}%)`}
+                {payAfter ? "Charged after clean" : "Due after clean"}
               </dt>
               <dd className="font-medium">
-                {formatCurrency(depositCents, booking.currency)}
+                {formatCurrency(dueLaterCents, booking.currency)}
               </dd>
             </div>
             <div className="flex justify-between gap-4">

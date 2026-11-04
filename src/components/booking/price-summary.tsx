@@ -1,7 +1,7 @@
 "use client";
 
 import type { PriceBreakdown } from "@/lib/pricing/types";
-import { calculateDepositCents, getDepositPercent } from "@/lib/payments/deposit";
+import { getPaymentTimingCopy } from "@/lib/payments/pay-after";
 import { formatCurrency } from "@/lib/utils";
 import { Button } from "@/components/ui";
 import { cn } from "@/lib/utils";
@@ -154,12 +154,29 @@ export function PriceSummary({
           </div>
           {showDeposit && !pricing.quoteOnly ? (
             <div className="mt-5 rounded-xl bg-surface-muted px-4 py-3">
-              <div className="flex justify-between gap-4 text-sm">
-                <span className="text-ink-muted">Deposit today ({getDepositPercent()}%)</span>
-                <span className="font-semibold tabular-nums">
-                  {formatCurrency(calculateDepositCents(pricing.totalCents), pricing.currency)}
-                </span>
-              </div>
+              {(() => {
+                const timing = getPaymentTimingCopy(pricing.totalCents);
+                return (
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between gap-4">
+                      <span className="text-ink-muted">Due now</span>
+                      <span className="font-semibold tabular-nums">
+                        {formatCurrency(timing.dueNowCents, pricing.currency)}
+                      </span>
+                    </div>
+                    <div className="flex justify-between gap-4">
+                      <span className="text-ink-muted">
+                        {timing.model === "pay_after_cleaning"
+                          ? "Charged after clean"
+                          : "Due after clean"}
+                      </span>
+                      <span className="font-semibold tabular-nums">
+                        {formatCurrency(timing.dueLaterCents, pricing.currency)}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })()}
             </div>
           ) : null}
         </>

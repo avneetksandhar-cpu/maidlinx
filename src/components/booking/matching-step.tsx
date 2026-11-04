@@ -10,7 +10,7 @@ import { getBookingStatusLabel } from "@/lib/bookings/status";
 import type { StoredBooking } from "@/lib/bookings/repository";
 import { Button, Heading, Text } from "@/components/ui";
 import { formatCurrency } from "@/lib/utils";
-import { calculateDepositCents } from "@/lib/payments/deposit";
+import { getDueLaterCents, getDueNowCents, isPayAfterCleaningEnabled } from "@/lib/payments/pay-after";
 import { routes, siteConfig } from "@/config/site";
 import { saveUsualClean } from "@/lib/bookings/usual-clean";
 import type { BookingState } from "@/lib/bookings/booking-state";
@@ -111,9 +111,16 @@ export function MatchingStep({ booking, accessToken, bookingState }: MatchingSte
           </dd>
         </div>
         <div className="flex justify-between gap-4">
-          <dt className="text-ink-muted">Deposit paid</dt>
+          <dt className="text-ink-muted">
+            {isPayAfterCleaningEnabled() ? "Charged after clean" : "Deposit paid"}
+          </dt>
           <dd className="font-medium text-ink">
-            {formatCurrency(calculateDepositCents(booking.total_cents), booking.currency)}
+            {formatCurrency(
+              isPayAfterCleaningEnabled()
+                ? getDueLaterCents(booking.total_cents)
+                : getDueNowCents(booking.total_cents),
+              booking.currency,
+            )}
           </dd>
         </div>
         <div className="flex justify-between gap-4">

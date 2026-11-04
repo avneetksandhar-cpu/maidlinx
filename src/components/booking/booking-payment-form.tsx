@@ -30,9 +30,14 @@ interface BookingPaymentFormProps {
 }
 
 interface CheckoutDetails {
+  mode: "setup" | "payment";
+  timingModel: "pay_after_cleaning" | "deposit_upfront";
   clientSecret: string;
-  paymentIntentId: string;
+  paymentIntentId: string | null;
+  setupIntentId: string | null;
   depositCents: number;
+  dueNowCents: number;
+  dueLaterCents: number;
   totalCents: number;
   depositPercent: number;
 }
@@ -107,11 +112,20 @@ function PaymentForm({
   const [error, setError] = useState<string | null>(null);
   const [expressVisible, setExpressVisible] = useState(false);
   const submitLock = useRef(false);
+  const payAfter = checkout.mode === "setup";
 
-  async function finalizeSuccessfulPayment(paymentIntentId: string) {
+  async function finalizeSuccessful(ids: {
+    paymentIntentId?: string | null;
+    setupIntentId?: string | null;
+  }) {
     const token = accessToken ?? getStoredBookingAccessToken(bookingId);
     try {
-      await confirmBookingPaymentSync(bookingId, token, paymentIntentId);
+      await confirmBookingPaymentSync(
+        bookingId,
+        token,
+        ids.paymentIntentId,
+        ids.setupIntentId,
+      );
     } catch {
       // Fall through to poll — webhook may still confirm.
     }
@@ -122,7 +136,7 @@ function PaymentForm({
   async function confirmWithElements() {
     if (!stripe || !elements || submitLock.current) return;
     if (!legalConsent) {
-      setError("Please accept the Terms and Privacy Policy before paying.");
+      setError("Please accept the Terms and Privacy Policy before continuing.");
       return;
     }
 
@@ -134,6 +148,33 @@ function PaymentForm({
     const tokenQuery = token ? `?token=${encodeURIComponent(token)}` : "";
 
     try {
+      if (payAfter) {
+        const { error: submitError, setupIntent } = await stripe.confirmSetup({
+          elements,
+          confirmParams: {
+            return_url: `${window.location.origin}/bookings/${bookingId}${tokenQuery}`,
+          },
+          redirect: "if_required",
+        });
+
+        if (submitError) {
+          if (
+            submitError.code === "canceled" ||
+            /cancel/i.test(submitError.message ?? "")
+          ) {
+            setError(null);
+            return;
+          }
+          setError(submitError.message ?? "Unable to save card.");
+          return;
+        }
+
+        await finalizeSuccessful({
+          setupIntentId: setupIntent?.id ?? checkout.setupIntentId,
+        });
+        return;
+      }
+
       const { error: submitError, paymentIntent } = await stripe.confirmPayment({
         elements,
         confirmParams: {
@@ -143,7 +184,6 @@ function PaymentForm({
       });
 
       if (submitError) {
-        // Customer dismissed wallet sheet / cancelled — keep form usable.
         if (
           submitError.code === "canceled" ||
           /cancel/i.test(submitError.message ?? "")
@@ -155,12 +195,14 @@ function PaymentForm({
         return;
       }
 
-      await finalizeSuccessfulPayment(paymentIntent?.id ?? checkout.paymentIntentId);
+      await finalizeSuccessful({
+        paymentIntentId: paymentIntent?.id ?? checkout.paymentIntentId,
+      });
     } catch (pollError) {
       setError(
         pollError instanceof Error
           ? pollError.message
-          : "Payment succeeded but confirmation is still processing.",
+          : "Succeeded but confirmation is still processing.",
       );
     } finally {
       submitLock.current = false;
@@ -175,7 +217,7 @@ function PaymentForm({
 
   async function handleExpressConfirm(event: StripeExpressCheckoutElementConfirmEvent) {
     if (!legalConsent) {
-      setError("Please accept the Terms and Privacy Policy before paying.");
+      setError("Please accept the Terms and Privacy Policy before continuing.");
       event.paymentFailed({ reason: "fail" });
       return;
     }
@@ -186,28 +228,48 @@ function PaymentForm({
     }
   }
 
-  const balanceCents = checkout.totalCents - checkout.depositCents;
-
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="rounded-md border border-border bg-surface p-4 text-sm">
-        <div className="flex justify-between">
-          <span className="text-ink-muted">Deposit due today ({checkout.depositPercent}%)</span>
-          <span className="font-semibold text-ink">{formatCurrency(checkout.depositCents)}</span>
-        </div>
-        {balanceCents > 0 ? (
-          <div className="mt-2 flex justify-between">
-            <span className="text-ink-muted">Balance due after service</span>
-            <span>{formatCurrency(balanceCents)}</span>
-          </div>
-        ) : null}
+        {payAfter ? (
+          <>
+            <div className="flex justify-between">
+              <span className="text-ink-muted">Due now</span>
+              <span className="font-semibold text-ink">{formatCurrency(0)}</span>
+            </div>
+            <div className="mt-2 flex justify-between">
+              <span className="text-ink-muted">Charged after your clean</span>
+              <span className="font-semibold">{formatCurrency(checkout.dueLaterCents)}</span>
+            </div>
+            <p className="mt-2 text-xs text-ink-subtle">
+              Stripe TEST · we save your card now and charge the agreed total once when cleaning
+              completes.
+            </p>
+          </>
+        ) : (
+          <>
+            <div className="flex justify-between">
+              <span className="text-ink-muted">
+                Deposit due today ({checkout.depositPercent}%)
+              </span>
+              <span className="font-semibold text-ink">
+                {formatCurrency(checkout.depositCents)}
+              </span>
+            </div>
+            {checkout.dueLaterCents > 0 ? (
+              <div className="mt-2 flex justify-between">
+                <span className="text-ink-muted">Balance due after service</span>
+                <span>{formatCurrency(checkout.dueLaterCents)}</span>
+              </div>
+            ) : null}
+          </>
+        )}
         <div className="mt-2 flex justify-between border-t border-border pt-2">
           <span className="text-ink-muted">Booking total</span>
           <span>{formatCurrency(checkout.totalCents)}</span>
         </div>
       </div>
 
-      {/* Wallets (Apple Pay / Google Pay / Link) — same PaymentIntent lifecycle as card. */}
       <div className={expressVisible ? "space-y-3" : "hidden"}>
         <ExpressCheckoutElement
           options={{
@@ -237,7 +299,7 @@ function PaymentForm({
         />
         <div className="flex items-center gap-3 text-xs uppercase tracking-wide text-ink-subtle">
           <span className="h-px flex-1 bg-border" />
-          Or pay with card
+          Or use card
           <span className="h-px flex-1 bg-border" />
         </div>
       </div>
@@ -255,7 +317,11 @@ function PaymentForm({
       {error ? <p className="text-sm text-error">{error}</p> : null}
 
       <Button type="submit" disabled={!stripe || submitting || !legalConsent} className="w-full">
-        {submitting ? "Processing…" : `Pay deposit ${formatCurrency(checkout.depositCents)}`}
+        {submitting
+          ? "Processing…"
+          : payAfter
+            ? "Save card & request clean"
+            : `Pay deposit ${formatCurrency(checkout.depositCents)}`}
       </Button>
     </form>
   );
@@ -286,9 +352,14 @@ export function BookingPaymentForm({
         legalConsentPolicyVersion: LEGAL_CONSENT_POLICY_VERSION,
       });
       setCheckout({
+        mode: result.mode,
+        timingModel: result.timingModel,
         clientSecret: result.clientSecret,
         paymentIntentId: result.paymentIntentId,
+        setupIntentId: result.setupIntentId,
         depositCents: result.depositCents,
+        dueNowCents: result.dueNowCents,
+        dueLaterCents: result.dueLaterCents,
         totalCents: result.totalCents,
         depositPercent: result.depositPercent,
       });
@@ -304,8 +375,8 @@ export function BookingPaymentForm({
     return (
       <div className="space-y-4">
         <Text muted className="text-sm">
-          Total: {formatCurrency(totalCents)}. Accept the policies below to continue to secure
-          checkout (Apple Pay, Google Pay, Link, or card).
+          Total: {formatCurrency(totalCents)}. Accept the policies below to continue — Stripe TEST
+          saves your card and charges after the clean (nothing due now).
         </Text>
 
         <LegalConsentCheckbox
@@ -326,7 +397,7 @@ export function BookingPaymentForm({
           className="w-full"
           onClick={() => void beginCheckout()}
         >
-          {loading ? "Preparing secure checkout…" : "Continue to payment"}
+          {loading ? "Preparing secure checkout…" : "Continue to save card"}
         </Button>
       </div>
     );
@@ -341,8 +412,7 @@ export function BookingPaymentForm({
     return (
       <div className="space-y-3">
         <Text muted className="text-sm">
-          Deposit due: {formatCurrency(checkout.depositCents)} of{" "}
-          {formatCurrency(checkout.totalCents)}.
+          Agreed total: {formatCurrency(checkout.totalCents)}.
         </Text>
         <p className="rounded-lg border border-border bg-surface px-4 py-3 text-sm text-ink-muted">
           Card payments are temporarily unavailable. Please try again shortly.
