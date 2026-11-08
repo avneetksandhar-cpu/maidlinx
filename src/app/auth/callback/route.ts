@@ -14,6 +14,7 @@ export async function GET(request: Request) {
     role: searchParams.get("role"),
     next,
   });
+  const from = searchParams.get("from");
 
   if (code) {
     const supabase = await createClient();
@@ -88,5 +89,10 @@ export async function GET(request: Request) {
     }
   }
 
-  return NextResponse.redirect(`${origin}/sign-in?error=auth_callback_failed`);
+  const fail = new URLSearchParams();
+  fail.set("error", "auth_callback_failed");
+  fail.set("next", next);
+  if (roleHint === "cleaner") fail.set("role", "cleaner");
+  if (from === "booking") fail.set("from", "booking");
+  return NextResponse.redirect(`${origin}/sign-in?${fail.toString()}`);
 }

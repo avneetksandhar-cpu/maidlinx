@@ -31,6 +31,7 @@ export function AuthForm({ mode }: AuthFormProps) {
   const roleParam = searchParams?.get("role");
   const nextParam = searchParams?.get("next") ?? "";
   const fromBooking = isBookingAuthReturn(searchParams?.get("from"));
+  const oauthQueryError = searchParams?.get("error");
   const signupRole =
     roleParam === "cleaner" ||
     nextParam.startsWith("/cleaner") ||
@@ -48,7 +49,19 @@ export function AuthForm({ mode }: AuthFormProps) {
   const [loading, setLoading] = useState(false);
   const [magicLoading, setMagicLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(() => {
+    if (!oauthQueryError) return null;
+    if (/provider is not enabled|unsupported provider|oauth_start_failed/i.test(oauthQueryError)) {
+      return "Google sign-in isn’t available yet. Use email for now.";
+    }
+    if (oauthQueryError === "auth_callback_failed") {
+      return "Sign-in didn’t finish. Try again or use email.";
+    }
+    if (oauthQueryError === "auth_not_configured") {
+      return "Sign-in is temporarily unavailable. Please try again shortly.";
+    }
+    return oauthQueryError;
+  });
   const [showPasswordForm, setShowPasswordForm] = useState(!fromBooking);
 
   const submitLabel = mode === "sign-in" ? "Sign in" : "Create account";
@@ -213,7 +226,12 @@ export function AuthForm({ mode }: AuthFormProps) {
         </p>
       ) : null}
 
-      <OAuthButtons role={signupRole} nextPath={nextPath} size="lg" />
+      <OAuthButtons
+        role={signupRole}
+        nextPath={nextPath}
+        fromBooking={fromBooking}
+        size="lg"
+      />
       <OAuthDivider />
 
       {/* Simplest email path: magic link (customers in booking flow get this first) */}

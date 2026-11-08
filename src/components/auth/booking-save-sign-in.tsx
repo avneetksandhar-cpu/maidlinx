@@ -69,12 +69,21 @@ export function BookingSaveSignIn() {
   );
   const fromBooking = isBookingAuthReturn(searchParams?.get("from"));
   const backHref = fromBooking ? BOOKING_RESUME_AFTER_AUTH.replace("/review", "/date") : routes.bookDate;
+  const oauthQueryError = searchParams?.get("error");
 
   const [draft, setDraft] = useState<BookingState>(DEFAULT_BOOKING_STATE);
   const [email, setEmail] = useState("");
   const [magicLoading, setMagicLoading] = useState(false);
   const [sentTo, setSentTo] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(() =>
+    oauthQueryError
+      ? /provider is not enabled|unsupported provider|oauth_start_failed/i.test(oauthQueryError)
+        ? "Google sign-in isn’t available yet. Use email for now — your booking stays saved."
+        : oauthQueryError === "auth_callback_failed"
+          ? "Sign-in didn’t finish. Try again or use email."
+          : oauthQueryError
+      : null,
+  );
 
   useEffect(() => {
     setDraft(readDraft());
@@ -231,6 +240,7 @@ export function BookingSaveSignIn() {
         <OAuthButtons
           role="customer"
           nextPath={nextPath}
+          fromBooking={fromBooking}
           variant="booking-save"
         />
         {oauthEnabled.length > 0 ? <OAuthDivider /> : null}

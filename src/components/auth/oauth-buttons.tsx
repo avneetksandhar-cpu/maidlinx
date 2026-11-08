@@ -9,10 +9,23 @@ interface OAuthButtonsProps {
   /** customer | cleaner — preserved through OAuth callback */
   role: "customer" | "cleaner";
   nextPath: string;
+  /** Preserved on OAuth error redirects (booking draft resume). */
+  fromBooking?: boolean;
   /** Large mint/dark CTAs for booking gate (default). */
   size?: "md" | "lg";
   /** Compact outline rows for Save-your-booking (no competing weight). */
   variant?: "default" | "booking-save";
+}
+
+function oauthProviderUnavailableMessage(provider: OAuthProvider): string {
+  return provider === "google"
+    ? "Google sign-in isn’t available yet. Use email for now — your booking stays saved."
+    : "Apple sign-in isn’t available yet. Use email for now — your booking stays saved.";
+}
+
+function isProviderNotEnabledError(message: string | undefined | null): boolean {
+  if (!message) return false;
+  return /provider is not enabled|unsupported provider|oauth_start_failed/i.test(message);
 }
 
 function GoogleGlyph({ className }: { className?: string }) {
@@ -61,6 +74,7 @@ const rowClassBookingSave =
 export function OAuthButtons({
   role,
   nextPath,
+  fromBooking = false,
   size = "lg",
   variant = "default",
 }: OAuthButtonsProps) {
@@ -84,6 +98,7 @@ export function OAuthButtons({
     const params = new URLSearchParams();
     params.set("next", nextPath);
     if (role === "cleaner") params.set("role", "cleaner");
+    if (fromBooking) params.set("from", "booking");
     const serverStart = `/api/auth/oauth/${provider}?${params.toString()}`;
 
     try {
@@ -95,6 +110,7 @@ export function OAuthButtons({
       const redirectTo = buildOAuthRedirectTo(window.location.origin, {
         next: nextPath,
         role,
+        from: fromBooking ? "booking" : null,
       });
 
       const { data, error: oauthError } = await supabase.auth.signInWithOAuth({
@@ -110,6 +126,11 @@ export function OAuthButtons({
       });
 
       if (oauthError || !data.url) {
+        if (isProviderNotEnabledError(oauthError?.message)) {
+          setError(oauthProviderUnavailableMessage(provider));
+          setLoading(null);
+          return;
+        }
         window.location.assign(serverStart);
         return;
       }
