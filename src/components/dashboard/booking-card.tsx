@@ -8,6 +8,7 @@ import { RescheduleBookingDialog } from "@/components/dashboard/reschedule-booki
 import { StatusBadge } from "@/components/dashboard/status-badge";
 import { Button, Card, CardContent } from "@/components/ui";
 import type { DashboardBooking } from "@/lib/dashboard/bookings";
+import { buildRebookHref } from "@/lib/dashboard/booking-labels";
 import {
   canCancelOrReschedule,
   formatAddress,
@@ -21,30 +22,6 @@ import { routes } from "@/config/site";
 interface BookingCardProps {
   booking: DashboardBooking;
   showActions?: boolean;
-}
-
-function buildRebookHref(booking: DashboardBooking): string {
-  const params = new URLSearchParams({ rebook: "1", sourceBookingId: booking.id });
-  if (booking.serviceType) params.set("serviceType", booking.serviceType);
-  if (booking.addressLine1) params.set("line1", booking.addressLine1);
-  if (booking.addressLine2) params.set("line2", booking.addressLine2);
-  if (booking.addressCity) params.set("city", booking.addressCity);
-  if (booking.addressState) params.set("state", booking.addressState);
-  if (booking.addressPostalCode) params.set("postalCode", booking.addressPostalCode);
-  if (booking.addressCountry) params.set("country", booking.addressCountry);
-  if (booking.propertyType) params.set("propertyType", booking.propertyType);
-  if (booking.bedrooms != null) params.set("bedrooms", String(booking.bedrooms));
-  if (booking.bathrooms != null) params.set("bathrooms", String(booking.bathrooms));
-  if (booking.squareFootage != null) params.set("squareFootage", String(booking.squareFootage));
-  if (booking.extras.length > 0) params.set("extras", booking.extras.join(","));
-  if (booking.professionalProfileId) {
-    params.set("preferredCleanerId", booking.professionalProfileId);
-  }
-  if (booking.professionalName) {
-    params.set("preferredCleanerName", booking.professionalName);
-  }
-  // Jump to date so customer only picks new schedule after prefill.
-  return `${routes.bookDate}?${params.toString()}`;
 }
 
 export function BookingCard({ booking, showActions = true }: BookingCardProps) {

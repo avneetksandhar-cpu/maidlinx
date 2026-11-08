@@ -99,6 +99,7 @@ export const routes = {
   adminOpsDesk: "/admin/ops-desk",
   /** Legacy aliases — residential secondary; prefer Sites / Jobs / Billing */
   dashboardBookings: "/dashboard/bookings",
+  dashboardBooking: (id: string) => `/dashboard/bookings/${id}`,
   dashboardInvoices: "/dashboard/invoices",
   dashboardReceipts: "/dashboard/receipts",
   dashboardFavorites: "/dashboard/favorites",

@@ -18,6 +18,11 @@ export interface DashboardBooking {
   addressState: string | null;
   addressPostalCode: string | null;
   addressCountry: string | null;
+  addressLatitude: number | null;
+  addressLongitude: number | null;
+  addressId: string | null;
+  notes: string | null;
+  recurringPreference: string | null;
   professionalProfileId: string | null;
   professionalName: string | null;
   invoiceNumber: string | null;
@@ -68,6 +73,19 @@ function mapBooking(row: Record<string, unknown>): DashboardBooking {
     addressState: row.address_state ? String(row.address_state) : null,
     addressPostalCode: row.address_postal_code ? String(row.address_postal_code) : null,
     addressCountry: row.address_country ? String(row.address_country) : null,
+    addressLatitude:
+      row.address_latitude != null && row.address_latitude !== ""
+        ? Number(row.address_latitude)
+        : null,
+    addressLongitude:
+      row.address_longitude != null && row.address_longitude !== ""
+        ? Number(row.address_longitude)
+        : null,
+    addressId: row.address_id ? String(row.address_id) : null,
+    notes: row.notes ? String(row.notes) : null,
+    recurringPreference: row.recurring_preference
+      ? String(row.recurring_preference)
+      : null,
     professionalProfileId: row.professional_profile_id
       ? String(row.professional_profile_id)
       : null,
@@ -233,6 +251,25 @@ export async function rescheduleCustomerBooking(
       arrival_window_end: schedule.arrivalWindowEnd,
     })
     .eq("id", bookingId);
+
+  if (error) throw new Error(error.message);
+}
+
+export async function updateCustomerBookingNotes(
+  bookingId: string,
+  profileId: string,
+  email: string,
+  notes: string,
+): Promise<void> {
+  const booking = await getBookingForCustomer(bookingId, profileId, email);
+  if (!booking) throw new Error("Booking not found.");
+
+  const supabase = createAdminClient();
+  const { error } = await supabase
+    .from("bookings")
+    .update({ notes: notes.trim() || null })
+    .eq("id", bookingId)
+    .or(`customer_id.eq.${profileId},customer_email.eq.${email}`);
 
   if (error) throw new Error(error.message);
 }
