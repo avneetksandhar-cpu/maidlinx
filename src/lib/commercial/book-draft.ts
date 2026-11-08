@@ -153,7 +153,11 @@ export function writeCommercialBookDraft(
     updatedAt: new Date().toISOString(),
   };
   if (typeof window !== "undefined") {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+    try {
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+    } catch {
+      /* private mode / quota — draft stays in-memory for this call only */
+    }
   }
   return next;
 }

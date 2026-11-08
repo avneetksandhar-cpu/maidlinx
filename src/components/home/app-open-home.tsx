@@ -196,7 +196,11 @@ function AppOpenHomeInner() {
       const inFlorida = applyPostalCoverage(raw);
       if (!inFlorida) return;
       if (placeKind === "business") {
-        persistCommercialAddress({ postalCode: normalizePostalDraft(raw) });
+        try {
+          persistCommercialAddress({ postalCode: normalizePostalDraft(raw) });
+        } catch {
+          /* private / blocked storage — still continue into commercial intake */
+        }
         trackBookingEvent("booking_started", { entry: "commercial_home_zip_check" });
         router.push(routes.bookCommercialProperty);
       } else {
@@ -313,11 +317,8 @@ function AppOpenHomeInner() {
 
               {hint ||
               (hydrated &&
-                Boolean(state.postalCode?.trim() || state.line1?.trim()) &&
-                !isCustomerHomeBookableArea({
-                  inServiceArea: state.inServiceArea,
-                  marketId: state.marketId,
-                })) ? (
+                state.inServiceArea === false &&
+                Boolean(state.postalCode?.trim() || state.line1?.trim())) ? (
                 <p className="mt-2 text-[13px] leading-snug text-[#5A6578]" role="status">
                   {hint ?? outsideFloridaHint}
                 </p>
