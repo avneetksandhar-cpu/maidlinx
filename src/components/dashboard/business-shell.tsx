@@ -64,6 +64,11 @@ export function BusinessShell({ children, firstName }: BusinessShellProps) {
   const pathname = usePathname() ?? "";
   const [mobileOpen, setMobileOpen] = useState(false);
 
+  // Bookings tab owns its light chrome (header + white body + bottom nav).
+  if (pathname.startsWith(routes.dashboardBookings)) {
+    return <>{children}</>;
+  }
+
   return (
     <div
       data-theme="ml-dark"

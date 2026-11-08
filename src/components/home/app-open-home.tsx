@@ -1,28 +1,35 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
-import { UserRound } from "lucide-react";
+import { Building2, Home } from "lucide-react";
 import { BrandLockup } from "@/components/brand/brand-lockup";
 import { CustomerBottomNav } from "@/components/customer/customer-bottom-nav";
 import { AddressAutocomplete } from "@/components/booking/address-autocomplete";
 import { GoogleMapsProvider } from "@/components/booking/google-maps-provider";
+import { HomeActiveBookingCard } from "@/components/home/home-active-booking-card";
+import { OverviewCoastalMap } from "@/components/home/overview-coastal-map";
 import { WaitlistSignup } from "@/components/waitlist/waitlist-signup";
 import { useBookingState } from "@/hooks/use-booking-state";
 import { buildAddressStatePatch } from "@/lib/bookings/booking-helpers";
-import { isAddressComplete } from "@/lib/bookings/booking-routes";
+import {
+  BOOKING_SCREEN_PATHS,
+  isAddressComplete,
+} from "@/lib/bookings/booking-routes";
 import {
   isCustomerHomeBookableArea,
+  isMarketBookingOpen,
   resolveCustomerHomeWaitlistReason,
 } from "@/lib/markets/booking-availability";
 import { resolveServiceArea } from "@/lib/service-area";
-import { useAuthSession } from "@/hooks/use-auth-session";
 import { writeCommercialBookDraft } from "@/lib/commercial/book-draft";
 import { routes } from "@/config/site";
 import { trackBookingEvent } from "@/lib/analytics/booking";
 import type { BookingState } from "@/lib/bookings/booking-state";
+import { cn } from "@/lib/utils";
+
+type PlaceKind = "home" | "business";
 
 function looksLikePostalOrZip(raw: string): boolean {
   const t = raw.trim().toUpperCase().replace(/[\s-]/g, "");
@@ -54,8 +61,9 @@ export function AppOpenHome() {
 function AppOpenHomeInner() {
   const router = useRouter();
   const { state, updateState, hydrated } = useBookingState();
-  const authStatus = useAuthSession();
   const [hint, setHint] = useState<string | null>(null);
+  /** Mockup default: Home selected; Business preserves commercial path. Address state shared. */
+  const [placeKind, setPlaceKind] = useState<PlaceKind>("home");
 
   const waitlistReason = resolveCustomerHomeWaitlistReason({
     line1: state.line1,
@@ -65,7 +73,9 @@ function AppOpenHomeInner() {
   });
 
   const outsideFloridaHint =
-    "We don’t serve this area yet. MaidLinx commercial cleaning is launching in South Florida — join the waitlist or request a quote.";
+    placeKind === "business"
+      ? "We don’t serve this area yet. MaidLinx commercial cleaning is launching in South Florida — join the waitlist or request a quote."
+      : "We don’t serve this area yet. MaidLinx home cleaning is launching in South Florida — join the waitlist.";
 
   const applyAddress = (value: Partial<BookingState>) => {
     const patched = buildAddressStatePatch(state, value);
@@ -140,6 +150,29 @@ function AppOpenHomeInner() {
     router.push(routes.bookCommercialProperty);
   };
 
+  const enterResidentialFlow = () => {
+    trackBookingEvent("booking_started", { entry: "residential_home_check_availability" });
+    if (
+      isAddressComplete(state) &&
+      state.inServiceArea &&
+      isMarketBookingOpen(state.marketId)
+    ) {
+      router.push(BOOKING_SCREEN_PATHS.property);
+      return;
+    }
+    if (
+      isAddressComplete(state) &&
+      isCustomerHomeBookableArea({
+        inServiceArea: state.inServiceArea,
+        marketId: state.marketId,
+      })
+    ) {
+      router.push(BOOKING_SCREEN_PATHS.property);
+      return;
+    }
+    router.push(routes.bookAddress);
+  };
+
   const onCheckAvailability = () => {
     const draft = (state.line1 ?? "").trim();
 
@@ -153,7 +186,8 @@ function AppOpenHomeInner() {
         setHint(outsideFloridaHint);
         return;
       }
-      enterCommercialFlow();
+      if (placeKind === "business") enterCommercialFlow();
+      else enterResidentialFlow();
       return;
     }
 
@@ -161,9 +195,18 @@ function AppOpenHomeInner() {
       const raw = looksLikePostalOrZip(draft) ? draft : (state.postalCode ?? "");
       const inFlorida = applyPostalCoverage(raw);
       if (!inFlorida) return;
-      persistCommercialAddress({ postalCode: normalizePostalDraft(raw) });
-      trackBookingEvent("booking_started", { entry: "commercial_home_zip_check" });
-      router.push(routes.bookCommercialProperty);
+      if (placeKind === "business") {
+        try {
+          persistCommercialAddress({ postalCode: normalizePostalDraft(raw) });
+        } catch {
+          /* private / blocked storage — still continue into commercial intake */
+        }
+        trackBookingEvent("booking_started", { entry: "commercial_home_zip_check" });
+        router.push(routes.bookCommercialProperty);
+      } else {
+        trackBookingEvent("booking_started", { entry: "residential_home_zip_check" });
+        router.push(routes.bookAddress);
+      }
       return;
     }
 
@@ -174,142 +217,178 @@ function AppOpenHomeInner() {
         marketId: state.marketId,
       })
     ) {
-      enterCommercialFlow();
+      if (placeKind === "business") enterCommercialFlow();
+      else enterResidentialFlow();
       return;
     }
 
     if (!draft) {
-      setHint("Enter a South Florida business address or ZIP to check availability.");
+      setHint(
+        placeKind === "business"
+          ? "Enter a South Florida business address or ZIP to check availability."
+          : "Enter a South Florida home address or ZIP to check availability.",
+      );
       return;
     }
 
     setHint("Pick an address from the suggestions, or enter a South Florida ZIP.");
   };
 
-  const accountHref =
-    authStatus === "authenticated" ? routes.dashboardProfile : routes.signIn;
-
   return (
     <div
-      className="relative flex min-h-dvh flex-col overflow-x-hidden bg-[#01193D] text-white"
+      className="relative flex min-h-dvh flex-col overflow-x-hidden bg-white text-[#01193D]"
       style={{ fontFamily: "var(--ml-font-ios)" }}
     >
-      <header className="relative z-10 flex items-start justify-between gap-2 px-5 pt-[max(0.65rem,env(safe-area-inset-top))] pb-1">
-        <BrandLockup
-          href={routes.home}
-          size="default"
-          tone="onDark"
-          priority
-          subtitle="South Florida"
-        />
-        <Link
-          href={accountHref}
-          aria-label={authStatus === "authenticated" ? "Account" : "Sign in"}
-          className="mt-0.5 inline-flex size-10 shrink-0 items-center justify-center rounded-full border border-white/25 bg-white/10 text-white"
-        >
-          <UserRound className="size-5" strokeWidth={1.85} aria-hidden />
-        </Link>
+      {/* Deep navy header — circular mark + MaidLinx left; South Florida right */}
+      <header className="relative z-20 flex items-center justify-between gap-3 bg-[#01193D] px-5 pt-[max(0.65rem,env(safe-area-inset-top))] pb-3">
+        <BrandLockup href={routes.home} size="default" tone="onDark" priority />
+        <p className="shrink-0 text-[13px] font-semibold tracking-tight text-white/90 sm:text-[14px]">
+          South Florida
+        </p>
       </header>
 
-      <main className="relative z-10 flex flex-1 flex-col px-5 pb-[calc(5.25rem+env(safe-area-inset-bottom))] pt-2">
+      <main className="relative z-10 flex flex-1 flex-col pb-[calc(5.25rem+env(safe-area-inset-bottom))]">
         <div className="mx-auto flex w-full max-w-md flex-1 flex-col">
-          <h1 className="mt-2 text-[1.45rem] leading-tight font-semibold tracking-tight text-white sm:text-[1.6rem]">
-            Find a cleaning team for your workplace.
-          </h1>
-          <p className="mt-1.5 text-[14px] leading-snug text-white/65">
-            Book a one-time or recurring clean for your office, storefront, or managed
-            property.
-          </p>
+          {/* Upcoming clean takes priority above map + booking panel */}
+          <HomeActiveBookingCard
+            tone="light"
+            title="Your next clean"
+            className="mx-5 mt-3"
+          />
 
-          <div className="mt-4 rounded-2xl border border-white/15 bg-[#0A2348] px-3 py-3 shadow-[0_12px_40px_rgba(0,0,0,0.35)]">
-            <AddressAutocomplete
-              value={state}
-              onChange={(value) => applyAddress(value)}
-              onAddressSelected={(value) => {
-                applyAddress(value);
-                trackBookingEvent("address_selected", {
-                  marketId: value.marketId ?? state.marketId,
-                  placeId: value.googlePlaceId,
-                  entry: "commercial_home",
-                });
-              }}
-              variant="hero"
-              hideLocate
-              locationBiasMarket="SOUTH_FLORIDA"
-              label="Business address or ZIP code"
-              placeholder="Business address or ZIP code"
-              className="[&_label]:mb-1.5 [&_label]:block [&_label]:text-[11px] [&_label]:font-semibold [&_label]:tracking-wide [&_label]:text-white/55 [&_label]:uppercase [&_input]:h-12 [&_input]:rounded-xl [&_input]:border-0 [&_input]:bg-white/5 [&_input]:pl-11 [&_input]:text-[16px] [&_input]:text-white [&_input]:placeholder:text-white/40 [&_[data-hero-pin]]:text-[#04CED2]"
-            />
+          {/* Compact pale coastal map — shrinks first on short / narrow phones */}
+          <OverviewCoastalMap
+            className={cn(
+              "pointer-events-none relative w-full shrink-0 overflow-hidden bg-[#EEF3EC]",
+              "h-[128px]",
+              "max-[390px]:h-[110px]",
+              "max-[360px]:h-[96px]",
+              "[@media(max-height:720px)]:h-[100px]",
+              "[@media(max-height:640px)]:h-[80px]",
+              "[@media(max-height:560px)]:h-[64px]",
+              "sm:h-[148px]",
+            )}
+          />
 
-            {hint ||
-            (hydrated &&
-              Boolean(state.postalCode?.trim() || state.line1?.trim()) &&
-              !isCustomerHomeBookableArea({
-                inServiceArea: state.inServiceArea,
-                marketId: state.marketId,
-              })) ? (
-              <p className="mt-2 text-[13px] leading-snug text-white/70" role="status">
-                {hint ?? outsideFloridaHint}
-              </p>
-            ) : null}
+          {/* White booking panel — usable from first frame (map is pointer-events none) */}
+          <div className="relative z-20 -mt-3 flex flex-1 flex-col rounded-t-[1.5rem] bg-white px-5 pt-5 shadow-[0_-8px_24px_rgba(1,25,61,0.06)]">
+            <h1 className="text-[1.4rem] leading-tight font-bold tracking-tight text-[#01193D] sm:text-[1.55rem]">
+              Where do you need a clean?
+            </h1>
 
-            {waitlistReason ? (
-              <div className="mt-2">
-                <WaitlistSignup
-                  reason={waitlistReason}
-                  marketId={state.marketId}
-                  marketName={state.marketName}
-                  source="commercial_home"
-                  page="/"
-                  variant="compact"
-                />
-              </div>
-            ) : null}
-
-            <button
-              type="button"
-              onClick={onCheckAvailability}
-              className="mt-3 inline-flex h-12 w-full items-center justify-center rounded-xl bg-[#04CED2] text-[16px] font-semibold text-[#01193D]"
-            >
-              Check availability
-            </button>
-
-            <Link
-              href={routes.forBusinessQuote}
-              className="mt-3 block text-center text-[13px] font-medium text-[#04CED2] underline-offset-2 hover:underline"
-            >
-              Managing multiple properties? Request a quote
-            </Link>
-          </div>
-
-          <div className="relative mt-5 aspect-[16/9] w-full overflow-hidden rounded-2xl">
-            <Image
-              src="/booking/cat-office.jpg"
-              alt="South Florida office ready for a commercial clean"
-              fill
-              className="object-cover"
-              sizes="(max-width: 430px) 100vw, 430px"
-              priority
-            />
             <div
-              className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#01193D]/50 via-transparent to-transparent"
-              aria-hidden
-            />
-          </div>
-
-          <p className="mt-4 text-center text-[13px] text-white/50">
-            Looking for home cleaning?{" "}
-            <Link
-              href={routes.bookWelcome}
-              className="font-medium text-white/75 underline-offset-2 hover:text-white hover:underline"
+              className="mt-3 grid grid-cols-2 gap-1 rounded-full border border-[#E2E8EE] bg-[#F4F7FA] p-1"
+              role="tablist"
+              aria-label="Home or business"
             >
-              Come home to clean
-            </Link>
-          </p>
+              <PlaceTab
+                active={placeKind === "home"}
+                icon={<Home className="size-4" strokeWidth={2.25} aria-hidden />}
+                label="Home"
+                onClick={() => setPlaceKind("home")}
+              />
+              <PlaceTab
+                active={placeKind === "business"}
+                icon={<Building2 className="size-4" strokeWidth={2.25} aria-hidden />}
+                label="Business"
+                onClick={() => setPlaceKind("business")}
+              />
+            </div>
+
+            <div className="relative z-20 mt-3">
+              <AddressAutocomplete
+                value={state}
+                onChange={(value) => applyAddress(value)}
+                onAddressSelected={(value) => {
+                  applyAddress(value);
+                  trackBookingEvent("address_selected", {
+                    marketId: value.marketId ?? state.marketId,
+                    placeId: value.googlePlaceId,
+                    entry: placeKind === "business" ? "commercial_home" : "residential_home",
+                  });
+                }}
+                variant="hero"
+                hideLocate
+                locationBiasMarket="SOUTH_FLORIDA"
+                label="Address or ZIP code"
+                placeholder="Enter address or ZIP code"
+                className="[&_label]:sr-only [&_input]:h-12 [&_input]:rounded-xl [&_input]:border [&_input]:border-[#D8DEE6] [&_input]:bg-white [&_input]:pl-11 [&_input]:text-[16px] [&_input]:text-[#01193D] [&_input]:placeholder:text-[#8A93A3] [&_[data-hero-pin]]:text-[#04CED2]"
+              />
+
+              {hint ||
+              (hydrated &&
+                state.inServiceArea === false &&
+                Boolean(state.postalCode?.trim() || state.line1?.trim())) ? (
+                <p className="mt-2 text-[13px] leading-snug text-[#5A6578]" role="status">
+                  {hint ?? outsideFloridaHint}
+                </p>
+              ) : null}
+
+              {waitlistReason ? (
+                <div className="mt-2">
+                  <WaitlistSignup
+                    reason={waitlistReason}
+                    marketId={state.marketId}
+                    marketName={state.marketName}
+                    source={placeKind === "business" ? "commercial_home" : "homepage_hero"}
+                    page="/"
+                    variant="compact"
+                  />
+                </div>
+              ) : null}
+
+              <button
+                type="button"
+                onClick={onCheckAvailability}
+                className="mt-3 inline-flex h-12 w-full items-center justify-center rounded-xl bg-[#04CED2] text-[16px] font-semibold text-[#01193D] transition-opacity hover:opacity-95"
+              >
+                Check availability
+              </button>
+
+              {placeKind === "business" ? (
+                <Link
+                  href={routes.forBusinessQuote}
+                  className="mt-3 block text-center text-[13px] font-medium text-[#01193D]/70 underline-offset-2 hover:text-[#01193D] hover:underline"
+                >
+                  Managing multiple properties? Request a quote
+                </Link>
+              ) : null}
+            </div>
+          </div>
         </div>
       </main>
 
       <CustomerBottomNav />
     </div>
+  );
+}
+
+function PlaceTab({
+  active,
+  icon,
+  label,
+  onClick,
+}: {
+  active: boolean;
+  icon: ReactNode;
+  label: string;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      role="tab"
+      aria-selected={active}
+      onClick={onClick}
+      className={cn(
+        "inline-flex h-10 items-center justify-center gap-1.5 rounded-full text-[14px] font-semibold transition-colors",
+        active
+          ? "bg-[#04CED2] text-[#01193D] shadow-sm"
+          : "bg-transparent text-[#01193D]/70 hover:text-[#01193D]",
+      )}
+    >
+      {icon}
+      {label}
+    </button>
   );
 }

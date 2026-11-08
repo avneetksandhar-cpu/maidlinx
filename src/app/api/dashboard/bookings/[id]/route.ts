@@ -3,9 +3,14 @@ import {
   cancelCustomerBooking,
   getCustomerBookings,
   rescheduleCustomerBooking,
+  updateCustomerBookingNotes,
 } from "@/lib/dashboard/bookings";
 import { requireCustomerSession } from "@/lib/dashboard/session";
-import { cancelBookingSchema, rescheduleBookingSchema } from "@/lib/validations/dashboard";
+import {
+  cancelBookingSchema,
+  rescheduleBookingSchema,
+  updateBookingNotesSchema,
+} from "@/lib/validations/dashboard";
 
 interface RouteContext {
   params: Promise<{ id: string }>;
@@ -58,6 +63,15 @@ export async function PATCH(request: Request, context: RouteContext) {
         parsed.data.arrivalWindow,
       );
       return jsonSuccess({ rescheduled: true });
+    }
+
+    if (action === "update_notes") {
+      const parsed = updateBookingNotesSchema.safeParse(body);
+      if (!parsed.success) {
+        return jsonError(parsed.error.errors[0]?.message ?? "Invalid request.", 400);
+      }
+      await updateCustomerBookingNotes(id, profile.id, email, parsed.data.notes);
+      return jsonSuccess({ updated: true });
     }
 
     return jsonError("Unknown action.", 400);

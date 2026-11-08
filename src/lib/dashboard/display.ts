@@ -31,6 +31,44 @@ export function formatBookingTimeRange(
   }).format(new Date(scheduledAt));
 }
 
+/** Compact day label for list cards — "Fri, Nov 6" (no year). */
+export function formatBookingDayShort(iso: string): string {
+  return new Intl.DateTimeFormat("en-US", {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+  }).format(new Date(iso));
+}
+
+/** Arrival window copy — "9–11 AM arrival". */
+export function formatArrivalWindowLabel(
+  scheduledAt: string,
+  start: string | null,
+  end: string | null,
+): string {
+  const range = formatBookingTimeRange(scheduledAt, start, end)
+    .replace(/\s+/g, " ")
+    .replace(" – ", "–")
+    .replace(" - ", "–");
+  return `${range} arrival`;
+}
+
+/** Cleaner display — "Maya R." when last name exists. */
+export function formatCleanerShortName(fullName: string | null | undefined): string | null {
+  if (!fullName?.trim()) return null;
+  const parts = fullName.trim().split(/\s+/);
+  if (parts.length === 1) return parts[0]!;
+  const last = parts[parts.length - 1]!;
+  return `${parts[0]} ${last.charAt(0).toUpperCase()}.`;
+}
+
+export function cleanerInitials(fullName: string | null | undefined): string {
+  if (!fullName?.trim()) return "?";
+  const parts = fullName.trim().split(/\s+/);
+  if (parts.length === 1) return parts[0]!.slice(0, 2).toUpperCase();
+  return `${parts[0]!.charAt(0)}${parts[parts.length - 1]!.charAt(0)}`.toUpperCase();
+}
+
 export function formatShortDate(iso: string): string {
   return new Intl.DateTimeFormat("en-US", {
     month: "short",

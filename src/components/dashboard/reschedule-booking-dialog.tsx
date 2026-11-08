@@ -10,6 +10,10 @@ interface RescheduleBookingDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSuccess?: () => void;
+  /** Which visit is being changed (recurring-safe copy). */
+  visitLabel?: string;
+  arrivalLabel?: string;
+  recurring?: boolean;
 }
 
 export function RescheduleBookingDialog({
@@ -17,6 +21,9 @@ export function RescheduleBookingDialog({
   open,
   onOpenChange,
   onSuccess,
+  visitLabel,
+  arrivalLabel,
+  recurring = false,
 }: RescheduleBookingDialogProps) {
   const router = useRouter();
   const tomorrow = new Date();
@@ -72,10 +79,15 @@ export function RescheduleBookingDialog({
         className="relative w-full max-w-md rounded-xl border border-border bg-surface p-6 shadow-elevated"
       >
         <h2 id="reschedule-title" className="font-display text-lg font-semibold text-ink">
-          Reschedule booking
+          Reschedule visit
         </h2>
         <p className="mt-2 text-sm text-ink-muted">
-          Choose a new date and arrival window. Changes must be made at least 24 hours in advance.
+          {recurring && visitLabel
+            ? `Changing this visit only (${visitLabel}${arrivalLabel ? ` · ${arrivalLabel}` : ""}). Other visits in the series stay as scheduled.`
+            : visitLabel
+              ? `Rescheduling your visit on ${visitLabel}${arrivalLabel ? ` · ${arrivalLabel}` : ""}.`
+              : "Choose a new date and arrival window."}{" "}
+          Changes must be made at least 24 hours in advance.
         </p>
 
         <div className="mt-4 space-y-4">

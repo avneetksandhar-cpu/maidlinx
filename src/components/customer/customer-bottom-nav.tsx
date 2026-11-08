@@ -103,7 +103,7 @@ export function CustomerBottomNav({
     <nav
       aria-label="Customer"
       className={cn(
-        "fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-[#01193D]/97 backdrop-blur-md lg:hidden",
+        "fixed inset-x-0 bottom-0 z-40 border-t border-[#E8ECF0] bg-white/95 backdrop-blur-md lg:hidden",
         className,
       )}
       style={{
@@ -124,7 +124,7 @@ export function CustomerBottomNav({
                 "flex min-h-12 flex-col items-center justify-center gap-0.5 rounded-xl px-1 text-[10px] font-medium tracking-wide transition-colors",
                 active
                   ? "text-[#04CED2]"
-                  : "text-white/55 active:text-white/80",
+                  : "text-[#8A93A3] active:text-[#01193D]/75",
               )}
             >
               <Icon

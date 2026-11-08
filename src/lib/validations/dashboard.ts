@@ -12,6 +12,10 @@ export const rescheduleBookingSchema = z.object({
   arrivalWindow: z.enum(windowIds as ["morning", "afternoon", "evening"]),
 });
 
+export const updateBookingNotesSchema = z.object({
+  notes: z.string().max(2000),
+});
+
 export const updateProfileSchema = z.object({
   firstName: z.string().trim().min(1),
   lastName: z.string().trim().min(1),
