@@ -36,6 +36,16 @@ describe("oauth helpers", () => {
     );
   });
 
+  it("preserves from=booking on callback redirectTo", () => {
+    const url = buildOAuthRedirectTo("http://127.0.0.1:3001", {
+      next: "/book/review",
+      from: "booking",
+    });
+    expect(url).toBe(
+      "http://127.0.0.1:3001/auth/callback?next=%2Fbook%2Freview&from=booking",
+    );
+  });
+
   it("documents local + production + preview allowlist entries", () => {
     expect(SUPABASE_OAUTH_REDIRECT_ALLOWLIST.join("\n")).toContain("127.0.0.1:3001");
     expect(SUPABASE_OAUTH_REDIRECT_ALLOWLIST.join("\n")).toContain("maidlinx.com");

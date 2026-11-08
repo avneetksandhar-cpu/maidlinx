@@ -30,17 +30,19 @@ export function oauthRoleFromParams(input: {
 
 /**
  * Build the Supabase `redirectTo` for PKCE OAuth.
- * Role is carried in the query so /auth/callback can promote cleaner applicants.
+ * Role / from=booking are carried in the query so /auth/callback can resume
+ * cleaner applicants or the booking Save-your-booking gate on failure.
  */
 export function buildOAuthRedirectTo(
   origin: string,
-  input: { next?: string | null; role?: string | null },
+  input: { next?: string | null; role?: string | null; from?: string | null },
 ): string {
   const next = safeAuthNextPath(input.next, "/account");
   const role = oauthRoleFromParams({ role: input.role, next });
   const params = new URLSearchParams();
   params.set("next", next);
   if (role === "cleaner") params.set("role", "cleaner");
+  if (input.from === "booking") params.set("from", "booking");
   return `${origin.replace(/\/$/, "")}/auth/callback?${params.toString()}`;
 }
 

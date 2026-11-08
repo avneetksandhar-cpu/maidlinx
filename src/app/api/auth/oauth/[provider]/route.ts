@@ -34,7 +34,21 @@ export async function GET(
     role: searchParams.get("role"),
     next,
   });
-  const redirectTo = buildOAuthRedirectTo(origin, { next, role });
+  const from = searchParams.get("from");
+  const redirectTo = buildOAuthRedirectTo(origin, {
+    next,
+    role,
+    from: from === "booking" ? "booking" : null,
+  });
+
+  const signInErrorUrl = (message: string) => {
+    const params = new URLSearchParams();
+    params.set("error", message);
+    params.set("next", next);
+    if (role === "cleaner") params.set("role", "cleaner");
+    if (from === "booking") params.set("from", "booking");
+    return new URL(`/sign-in?${params.toString()}`, origin);
+  };
 
   const supabase = await createClient();
   const { data, error } = await supabase.auth.signInWithOAuth({
@@ -53,8 +67,9 @@ export async function GET(
   });
 
   if (error || !data.url) {
-    const message = encodeURIComponent(error?.message ?? "oauth_start_failed");
-    return NextResponse.redirect(new URL(`/sign-in?error=${message}`, origin));
+    return NextResponse.redirect(
+      signInErrorUrl(error?.message ?? "oauth_start_failed"),
+    );
   }
 
   return NextResponse.redirect(data.url);
